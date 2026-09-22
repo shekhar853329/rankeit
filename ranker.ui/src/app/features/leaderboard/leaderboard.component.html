@@ -1,0 +1,85 @@
+<section class="leaderboard">
+  <header class="leaderboard__header">
+    <h1>{{ categoryName() || categorySlug() }} leaderboard</h1>
+    <a routerLink="/categories">&larr; Back to categories</a>
+  </header>
+
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else if (notFound()) {
+    <p class="leaderboard__empty">Category not found.</p>
+  } @else {
+    <table class="leaderboard__table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Listing</th>
+          <th>Current bid</th>
+          <th>First bid</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of entries(); track entry.listingId) {
+          <tr [class.leaderboard__row--top]="entry.rank === 1">
+            <td>{{ entry.rank }}</td>
+            <td><a [href]="entry.listingUrl" target="_blank" rel="noopener">{{ entry.listingName }}</a></td>
+            <td>{{ entry.currentBidAmount | number: '1.2-2' }}</td>
+            <td>{{ entry.firstBidAt | date: 'short' }}</td>
+            <td><button type="button" (click)="selectListingToRebid(entry)">Reclaim / raise</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <nav class="leaderboard__pagination">
+      <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Prev</button>
+      <span>Page {{ page() }} ({{ totalCount() }} listings)</span>
+      <button type="button" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
+        Next
+      </button>
+    </nav>
+
+    <section class="bid-form">
+      <h2>{{ bidListingId() ? 'Raise / reclaim bid for "' + bidListingName() + '"' : 'New listing bid' }}</h2>
+      <p class="bid-form__rules">
+        Min starting bid: {{ minStartingBid() | number: '1.2-2' }} · Min increment over current top:
+        {{ minBidIncrement() | number: '1.2-2' }}
+      </p>
+
+      <button type="button" (click)="startNewListing()">Start a new listing instead</button>
+
+      @if (!bidListingId()) {
+        <label>
+          Listing name
+          <input type="text" [ngModel]="bidListingName()" (ngModelChange)="bidListingName.set($event)" />
+        </label>
+        <label>
+          Listing URL
+          <input type="url" [ngModel]="bidListingUrl()" (ngModelChange)="bidListingUrl.set($event)" />
+        </label>
+      }
+
+      <label>
+        Owner contact email
+        <input type="email" [ngModel]="bidOwnerEmail()" (ngModelChange)="bidOwnerEmail.set($event)" />
+      </label>
+      <label>
+        Target bid amount
+        <input type="number" [ngModel]="bidTargetAmount()" (ngModelChange)="bidTargetAmount.set($event)" />
+      </label>
+      <label>
+        Payment reference (gateway transaction ID)
+        <input type="text" [ngModel]="bidPaymentReference()" (ngModelChange)="bidPaymentReference.set($event)" />
+      </label>
+      <label>
+        Confirmed payment amount
+        <input type="number" [ngModel]="bidConfirmedAmount()" (ngModelChange)="bidConfirmedAmount.set($event)" />
+      </label>
+
+      <button type="button" [disabled]="submitting()" (click)="submitBid()">
+        {{ submitting() ? 'Submitting...' : 'Place bid' }}
+      </button>
+    </section>
+  }
+</section>

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ranker.Tests/ranker.Tests.csproj" />
+  <Project Path="ranker/ranker.csproj" />
+</Solution>

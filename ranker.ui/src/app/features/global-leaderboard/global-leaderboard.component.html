@@ -1,0 +1,24 @@
+<section class="global-leaderboard">
+  <header>
+    <h1>Top bidders across all categories</h1>
+    <a routerLink="/categories">Browse all categories &rarr;</a>
+  </header>
+
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else {
+    <ol class="global-leaderboard__list">
+      @for (entry of entries(); track entry.categoryId) {
+        <li>
+          <a [routerLink]="['/leaderboard', entry.categorySlug]" class="global-leaderboard__item">
+            <span class="rank">#{{ entry.rank }}</span>
+            <span class="category">{{ entry.categoryName }}</span>
+            <span class="listing">{{ entry.listingName }}</span>
+            <span class="amount">{{ entry.currentBidAmount | number: '1.2-2' }}</span>
+            <span class="score" title="Normalized score">x{{ entry.normalizedScore | number: '1.2-2' }}</span>
+          </a>
+        </li>
+      }
+    </ol>
+  }
+</section>

@@ -1,0 +1,5 @@
+backend/.vs/*
+backend/ranker/obj/*
+backend/ranker/bin/*
+backend/ranker.Tests/bin/*
+backend/ranker.Tests/obj/*

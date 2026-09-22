@@ -1,0 +1,17 @@
+namespace Ranker.Dtos;
+
+public sealed record CategoryDto(
+    int Id,
+    string Name,
+    string Slug,
+    int? ParentCategoryId,
+    decimal MinBidIncrement,
+    decimal MinStartingBid,
+    double ActivityScore,
+    int ListingCount);
+
+public sealed record CategoryTreeNodeDto(
+    int Id,
+    string Name,
+    string Slug,
+    IReadOnlyList<CategoryTreeNodeDto> Children);

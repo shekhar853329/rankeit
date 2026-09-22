@@ -1,0 +1,48 @@
+<section class="directory">
+  <header>
+    <h1>Category directory</h1>
+    <a routerLink="/">&larr; Global leaderboard</a>
+  </header>
+
+  <div class="directory__controls">
+    <input
+      type="search"
+      placeholder="Search categories..."
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+
+    <div class="directory__sort">
+      @for (option of sortOptions; track option.value) {
+        <button type="button" [class.active]="sortBy() === option.value" (click)="setSortBy(option.value)">
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else {
+    <ul class="directory__list">
+      @for (category of filteredCategories; track category.id) {
+        <li>
+          <a [routerLink]="['/leaderboard', category.slug]" class="directory__item">
+            <span class="name">{{ category.name }}</span>
+            <span class="listings">{{ category.listingCount }} listings</span>
+            <span class="score" title="Trending activity score">{{ category.activityScore | number: '1.1-1' }}</span>
+          </a>
+          <a [routerLink]="['/categories', category.slug]" class="directory__subcategories">Sub-categories &rarr;</a>
+        </li>
+      }
+    </ul>
+
+    <nav class="directory__pagination">
+      <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Prev</button>
+      <span>Page {{ page() }} ({{ totalCount() }} categories)</span>
+      <button type="button" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
+        Next
+      </button>
+    </nav>
+  }
+</section>
