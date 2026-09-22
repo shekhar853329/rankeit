@@ -1,24 +1,67 @@
-<section class="global-leaderboard">
-  <header>
-    <h1>Top bidders across all categories</h1>
-    <a routerLink="/categories">Browse all categories &rarr;</a>
-  </header>
+<section class="hero">
+  <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
 
-  @if (loading()) {
-    <p>Loading...</p>
-  } @else {
-    <ol class="global-leaderboard__list">
-      @for (entry of entries(); track entry.categoryId) {
+  <div class="hero__claim card">
+    @if (selectedSlug() === null) {
+      <h1>Discover today's top bidders</h1>
+      <p class="hero__subtitle">Pick a category above to see what it costs to claim the #1 spot.</p>
+      <a routerLink="/categories" class="btn btn-primary">Explore all categories</a>
+    } @else {
+      <h1>Claim #1 for <span class="hero__price">{{ claimPrice() | number: '1.0-2' }}</span></h1>
+      <p class="hero__subtitle">in {{ categoryData()?.categoryName }}</p>
+      <div class="hero__form">
+        <input
+          type="url"
+          placeholder="Your product URL or @handle"
+          [ngModel]="heroUrl()"
+          (ngModelChange)="heroUrl.set($event)"
+        />
+        <a
+          class="btn btn-primary"
+          [routerLink]="['/leaderboard', selectedSlug()]"
+          [queryParams]="{ url: heroUrl() || null }"
+        >
+          Claim rank
+        </a>
+      </div>
+    }
+  </div>
+</section>
+
+<div class="layout">
+  <section class="feed">
+    @if (loading()) {
+      <p>Loading...</p>
+    } @else if (rows().length === 0) {
+      <p class="feed__empty">No bids yet - be the first to claim a spot.</p>
+    } @else {
+      @for (row of rows(); track row.listingId) {
+        <a class="feed-row card" [class.feed-row--top]="row.rank === 1" [routerLink]="['/leaderboard', row.categorySlug]">
+          <span class="feed-row__rank">#{{ row.rank }}</span>
+          <span class="feed-row__avatar">{{ row.listingName.charAt(0).toUpperCase() }}</span>
+          <span class="feed-row__info">
+            <span class="feed-row__title">{{ row.listingName }}</span>
+            <span class="feed-row__meta">
+              <span class="badge">{{ row.categoryName }}</span>
+              <span class="feed-row__domain">{{ row.listingUrl }}</span>
+            </span>
+          </span>
+          <span class="feed-row__price">{{ row.currentBidAmount | number: '1.0-2' }}</span>
+        </a>
+      }
+    }
+  </section>
+
+  <aside class="sidebar card">
+    <h2>Trending categories</h2>
+    <ol class="sidebar__list">
+      @for (category of trendingCategories(); track category.id) {
         <li>
-          <a [routerLink]="['/leaderboard', entry.categorySlug]" class="global-leaderboard__item">
-            <span class="rank">#{{ entry.rank }}</span>
-            <span class="category">{{ entry.categoryName }}</span>
-            <span class="listing">{{ entry.listingName }}</span>
-            <span class="amount">{{ entry.currentBidAmount | number: '1.2-2' }}</span>
-            <span class="score" title="Normalized score">x{{ entry.normalizedScore | number: '1.2-2' }}</span>
-          </a>
+          <a [routerLink]="['/leaderboard', category.slug]">{{ category.name }}</a>
+          <span class="sidebar__score">{{ category.activityScore | number: '1.1-1' }}</span>
         </li>
       }
     </ol>
-  }
-</section>
+    <a routerLink="/categories" class="sidebar__see-all">See all categories →</a>
+  </aside>
+</div>

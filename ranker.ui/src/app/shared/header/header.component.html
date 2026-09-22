@@ -1,0 +1,15 @@
+<header class="site-header">
+  <a routerLink="/" class="site-header__brand">
+    <span class="site-header__mark">⚡</span>
+    RankIt
+  </a>
+
+  <nav class="site-header__nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+    <a routerLink="/categories" routerLinkActive="active">Categories</a>
+  </nav>
+
+  <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
+    {{ theme.dark() ? '☀️' : '🌙' }}
+  </button>
+</header>

@@ -1,0 +1,23 @@
+<div class="category-tabs">
+  <button
+    type="button"
+    class="pill"
+    [class.pill--active]="selected() === null"
+    (click)="select.emit(null)"
+  >
+    All
+  </button>
+
+  @for (category of categories(); track category.id) {
+    <button
+      type="button"
+      class="pill"
+      [class.pill--active]="selected() === category.slug"
+      (click)="select.emit(category.slug)"
+    >
+      {{ category.name }}
+    </button>
+  }
+
+  <a routerLink="/categories" class="pill category-tabs__explore">Explore →</a>
+</div>

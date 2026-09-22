@@ -1,7 +1,10 @@
 <section class="leaderboard">
   <header class="leaderboard__header">
-    <h1>{{ categoryName() || categorySlug() }} leaderboard</h1>
-    <a routerLink="/categories">&larr; Back to categories</a>
+    <div>
+      <a routerLink="/" class="leaderboard__back">&larr; Back home</a>
+      <h1>{{ categoryName() || categorySlug() }}</h1>
+    </div>
+    <span class="badge">{{ totalCount() }} listings</span>
   </header>
 
   @if (loading()) {
@@ -9,45 +12,39 @@
   } @else if (notFound()) {
     <p class="leaderboard__empty">Category not found.</p>
   } @else {
-    <table class="leaderboard__table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Listing</th>
-          <th>Current bid</th>
-          <th>First bid</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (entry of entries(); track entry.listingId) {
-          <tr [class.leaderboard__row--top]="entry.rank === 1">
-            <td>{{ entry.rank }}</td>
-            <td><a [href]="entry.listingUrl" target="_blank" rel="noopener">{{ entry.listingName }}</a></td>
-            <td>{{ entry.currentBidAmount | number: '1.2-2' }}</td>
-            <td>{{ entry.firstBidAt | date: 'short' }}</td>
-            <td><button type="button" (click)="selectListingToRebid(entry)">Reclaim / raise</button></td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <section class="feed">
+      @for (entry of entries(); track entry.listingId) {
+        <div class="feed-row card" [class.feed-row--top]="entry.rank === 1">
+          <span class="feed-row__rank">#{{ entry.rank }}</span>
+          <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
+          <span class="feed-row__info">
+            <a class="feed-row__title" [href]="entry.listingUrl" target="_blank" rel="noopener">
+              {{ entry.listingName }}
+            </a>
+            <span class="feed-row__meta">First bid {{ entry.firstBidAt | date: 'mediumDate' }}</span>
+          </span>
+          <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
+          <button type="button" class="btn" (click)="selectListingToRebid(entry)">Reclaim / raise</button>
+        </div>
+      }
+    </section>
 
     <nav class="leaderboard__pagination">
-      <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Prev</button>
+      <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Prev</button>
       <span>Page {{ page() }} ({{ totalCount() }} listings)</span>
-      <button type="button" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
+      <button type="button" class="btn" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
         Next
       </button>
     </nav>
 
-    <section class="bid-form">
+    <section class="bid-form card">
       <h2>{{ bidListingId() ? 'Raise / reclaim bid for "' + bidListingName() + '"' : 'New listing bid' }}</h2>
       <p class="bid-form__rules">
         Min starting bid: {{ minStartingBid() | number: '1.2-2' }} · Min increment over current top:
         {{ minBidIncrement() | number: '1.2-2' }}
       </p>
 
-      <button type="button" (click)="startNewListing()">Start a new listing instead</button>
+      <button type="button" class="pill" (click)="startNewListing()">Start a new listing instead</button>
 
       @if (!bidListingId()) {
         <label>
@@ -77,7 +74,7 @@
         <input type="number" [ngModel]="bidConfirmedAmount()" (ngModelChange)="bidConfirmedAmount.set($event)" />
       </label>
 
-      <button type="button" [disabled]="submitting()" (click)="submitBid()">
+      <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submitBid()">
         {{ submitting() ? 'Submitting...' : 'Place bid' }}
       </button>
     </section>

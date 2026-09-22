@@ -1,0 +1,49 @@
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 800;
+    font-size: 1.15rem;
+    text-decoration: none;
+  }
+
+  &__mark {
+    color: var(--accent);
+  }
+
+  &__nav {
+    display: flex;
+    gap: 1.5rem;
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.9rem;
+
+    a {
+      text-decoration: none;
+      color: var(--text-muted);
+
+      &.active {
+        color: var(--text);
+      }
+    }
+  }
+
+  &__theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius-pill);
+    width: 2.25rem;
+    height: 2.25rem;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+}

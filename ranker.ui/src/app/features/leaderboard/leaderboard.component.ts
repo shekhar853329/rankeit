@@ -49,6 +49,11 @@ export class LeaderboardComponent implements OnInit {
   readonly bidConfirmedAmount = signal<number | null>(null);
 
   ngOnInit(): void {
+    const prefillUrl = this.route.snapshot.queryParamMap.get('url');
+    if (prefillUrl) {
+      this.bidListingUrl.set(prefillUrl);
+    }
+
     this.route.paramMap
       .pipe(
         switchMap((params) => {
