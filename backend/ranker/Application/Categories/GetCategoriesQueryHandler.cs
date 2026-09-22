@@ -34,6 +34,7 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
 
         // ActivityScore (rule E2): recency-weighted recent bid count. A bid today counts ~1.0, one from
         // 29 days ago counts ~1/30 - recent activity dominates without ignoring older bids entirely.
+        // RecentClaimCount is the plain count of bids in the same window, for a human-readable "N claims".
         // Materialized on its own (rather than left-joined against Categories in one query) because EF
         // Core can't translate that combination - a GroupBy/Sum aggregate correlated inside a LEFT JOIN.
         var activityScores = await dbContext.Bids
@@ -43,10 +44,11 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
             {
                 CategoryId = g.Key,
                 Score = g.Sum(b => 1.0 / (1 + EF.Functions.DateDiffDay(b.CreatedAt, now))),
+                Count = g.Count(),
             })
             .ToListAsync(ct);
 
-        var scoreByCategory = activityScores.ToDictionary(s => s.CategoryId, s => s.Score);
+        var statsByCategory = activityScores.ToDictionary(s => s.CategoryId, s => (s.Score, s.Count));
 
         var baseQuery = dbContext.Categories.Where(c => c.ParentCategoryId == parentCategoryId);
 
@@ -57,11 +59,16 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
             .ToListAsync(ct);
 
         var withScores = categories
-            .Select(x => new
+            .Select(x =>
             {
-                x.Category,
-                x.ListingCount,
-                Score = scoreByCategory.GetValueOrDefault(x.Category.Id),
+                var (score, claimCount) = statsByCategory.GetValueOrDefault(x.Category.Id);
+                return new
+                {
+                    x.Category,
+                    x.ListingCount,
+                    Score = score,
+                    RecentClaimCount = claimCount,
+                };
             });
 
         var sorted = request.SortBy switch
@@ -84,6 +91,7 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
                 x.Category.MinBidIncrement,
                 x.Category.MinStartingBid,
                 x.Score,
+                x.RecentClaimCount,
                 x.ListingCount))
             .ToList();
 

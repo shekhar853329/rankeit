@@ -8,6 +8,7 @@ public sealed record CategoryDto(
     decimal MinBidIncrement,
     decimal MinStartingBid,
     double ActivityScore,
+    int RecentClaimCount,
     int ListingCount);
 
 public sealed record CategoryTreeNodeDto(

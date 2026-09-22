@@ -8,6 +8,7 @@ export interface CategoryDto {
   minBidIncrement: number;
   minStartingBid: number;
   activityScore: number;
+  recentClaimCount: number;
   listingCount: number;
 }
 

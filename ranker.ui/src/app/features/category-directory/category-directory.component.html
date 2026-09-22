@@ -2,9 +2,45 @@
   <header>
     <div>
       <a routerLink="/" class="directory__back">&larr; Back home</a>
-      <h1>Category directory</h1>
+      <h1>Categories</h1>
+      <p class="directory__subtitle">Every category has its own ranking. Pick one to see who leads it.</p>
     </div>
   </header>
+
+  @if (hotCategories().length > 0) {
+    <section class="hot-panel">
+      <div class="hot-panel__heading">
+        <span class="hot-panel__dot"></span>
+        <strong>Most active categories</strong>
+      </div>
+      <p class="hot-panel__subtitle">Where ranks are getting claimed right now - and who is holding the top spot.</p>
+
+      <div class="hot-panel__grid">
+        @for (card of hotCategories(); track card.category.id; let i = $index) {
+          <a class="hot-card" [routerLink]="['/leaderboard', card.category.slug]">
+            <div class="hot-card__top">
+              <span class="hot-card__icon">{{ categoryIcon(card.category.id) }}</span>
+              <span class="hot-card__rank">#{{ i + 1 }} {{ i === 0 ? 'HOTTEST' : '' }}</span>
+            </div>
+            <h3>{{ card.category.name }}</h3>
+            <div class="hot-card__stats">
+              <span>{{ card.category.recentClaimCount }} claims</span>
+              @if (card.topEntries[0]) {
+                <span>{{ timeAgo(card.topEntries[0].lastBidAt) }}</span>
+              }
+            </div>
+            @if (card.topEntries[0]; as leader) {
+              <div class="hot-card__leader">
+                <span class="hot-card__avatar">{{ leader.listingName.charAt(0).toUpperCase() }}</span>
+                <span class="hot-card__leader-name">Leading {{ leader.listingName }}</span>
+                <span class="hot-card__leader-price">{{ leader.currentBidAmount | number: '1.0-2' }}</span>
+              </div>
+            }
+          </a>
+        }
+      </div>
+    </section>
+  }
 
   <div class="directory__controls">
     <input
@@ -26,21 +62,33 @@
   @if (loading()) {
     <p>Loading...</p>
   } @else {
-    <ul class="directory__list">
-      @for (category of filteredCategories; track category.id) {
-        <li class="card">
-          <a [routerLink]="['/leaderboard', category.slug]" class="directory__item">
-            <span class="directory__avatar">{{ category.name.charAt(0).toUpperCase() }}</span>
-            <span class="directory__info">
-              <span class="name">{{ category.name }}</span>
-              <span class="listings">{{ category.listingCount }} listings</span>
-            </span>
-            <span class="badge" title="Trending activity score">{{ category.activityScore | number: '1.1-1' }}</span>
+    <div class="directory__grid">
+      @for (card of filteredCards; track card.category.id) {
+        <div class="category-card card">
+          <a [routerLink]="['/leaderboard', card.category.slug]" class="category-card__header">
+            <span class="category-card__icon">{{ categoryIcon(card.category.id) }}</span>
+            <span class="category-card__name">{{ card.category.name }}</span>
           </a>
-          <a [routerLink]="['/categories', category.slug]" class="directory__subcategories">Sub-categories &rarr;</a>
-        </li>
+
+          <div class="category-card__rows">
+            @for (entry of card.topEntries; track entry.listingId) {
+              <div class="category-card__row">
+                <span class="category-card__rank">#{{ entry.rank }}</span>
+                <span class="category-card__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
+                <span class="category-card__listing-name">{{ entry.listingName }}</span>
+                <span class="category-card__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
+              </div>
+            } @empty {
+              <p class="category-card__empty">No bids yet.</p>
+            }
+          </div>
+
+          <a [routerLink]="['/categories', card.category.slug]" class="category-card__subcategories">
+            Sub-categories &rarr;
+          </a>
+        </div>
       }
-    </ul>
+    </div>
 
     <nav class="directory__pagination">
       <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Prev</button>
