@@ -34,45 +34,48 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
 
         // ActivityScore (rule E2): recency-weighted recent bid count. A bid today counts ~1.0, one from
         // 29 days ago counts ~1/30 - recent activity dominates without ignoring older bids entirely.
-        var activityScores = dbContext.Bids
+        // Materialized on its own (rather than left-joined against Categories in one query) because EF
+        // Core can't translate that combination - a GroupBy/Sum aggregate correlated inside a LEFT JOIN.
+        var activityScores = await dbContext.Bids
             .Where(b => b.CreatedAt >= cutoff)
             .GroupBy(b => b.Listing!.CategoryId)
             .Select(g => new
             {
                 CategoryId = g.Key,
                 Score = g.Sum(b => 1.0 / (1 + EF.Functions.DateDiffDay(b.CreatedAt, now))),
-            });
+            })
+            .ToListAsync(ct);
+
+        var scoreByCategory = activityScores.ToDictionary(s => s.CategoryId, s => s.Score);
 
         var baseQuery = dbContext.Categories.Where(c => c.ParentCategoryId == parentCategoryId);
 
-        var combined =
-            from c in baseQuery
-            join s in activityScores on c.Id equals s.CategoryId into sj
-            from s in sj.DefaultIfEmpty()
-            select new
-            {
-                Category = c,
-                Score = s == null ? 0.0 : s.Score,
-                ListingCount = c.Listings.Count(),
-            };
-
-        combined = request.SortBy switch
-        {
-            CategorySortBy.Trending => combined.OrderByDescending(x => x.Score).ThenBy(x => x.Category.Name),
-            CategorySortBy.Alphabetical => combined.OrderBy(x => x.Category.Name),
-            // No CreatedAt column on Category; Id order is a stable proxy for insertion order.
-            CategorySortBy.Newest => combined.OrderByDescending(x => x.Category.Id),
-            _ => combined.OrderBy(x => x.Category.Name),
-        };
-
         var totalCount = await baseQuery.CountAsync(ct);
 
-        var page_ = await combined
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        var categories = await baseQuery
+            .Select(c => new { Category = c, ListingCount = c.Listings.Count() })
             .ToListAsync(ct);
 
-        var items = page_
+        var withScores = categories
+            .Select(x => new
+            {
+                x.Category,
+                x.ListingCount,
+                Score = scoreByCategory.GetValueOrDefault(x.Category.Id),
+            });
+
+        var sorted = request.SortBy switch
+        {
+            CategorySortBy.Trending => withScores.OrderByDescending(x => x.Score).ThenBy(x => x.Category.Name),
+            CategorySortBy.Alphabetical => withScores.OrderBy(x => x.Category.Name),
+            // No CreatedAt column on Category; Id order is a stable proxy for insertion order.
+            CategorySortBy.Newest => withScores.OrderByDescending(x => x.Category.Id),
+            _ => withScores.OrderBy(x => x.Category.Name),
+        };
+
+        var items = sorted
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new CategoryDto(
                 x.Category.Id,
                 x.Category.Name,
