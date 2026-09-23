@@ -15,4 +15,11 @@ public class ListingsController(ISender sender) : ControllerBase
         var result = await sender.Send(new GetListingDetailQuery(id), ct);
         return result is null ? NotFound() : Ok(result);
     }
+
+    [HttpPost("{id:int}/click")]
+    public async Task<ActionResult<int>> RecordClick(int id, CancellationToken ct)
+    {
+        var count = await sender.Send(new RecordListingClickCommand(id), ct);
+        return count is null ? NotFound() : Ok(count);
+    }
 }

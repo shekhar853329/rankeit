@@ -19,6 +19,9 @@ public class Listing
 
     public DateTime LastBidAt { get; set; }
 
+    /// <summary>Number of times a client has clicked through to this listing's product URL.</summary>
+    public int ClickCount { get; set; }
+
     /// <summary>Used to authenticate re-bids/reclaims by the listing owner.</summary>
     public required string OwnerContactEmail { get; set; }
 

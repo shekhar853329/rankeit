@@ -18,6 +18,8 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
 
         builder.Property(l => l.CurrentBidAmount).HasColumnType("decimal(18,2)");
 
+        builder.Property(l => l.ClickCount).HasDefaultValue(0);
+
         builder.Property(l => l.RowVersion).IsRowVersion();
 
         builder.HasOne(l => l.Category)

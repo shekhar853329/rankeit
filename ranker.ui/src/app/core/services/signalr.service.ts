@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { HUB_URL } from '../config/api-config';
-import { RankUpdatedPayload } from '../models/leaderboard.model';
+import { ListingClickedPayload, RankUpdatedPayload } from '../models/leaderboard.model';
 
 /**
  * Wraps the @microsoft/signalr connection lifecycle and exposes it as RxJS observables so components
@@ -15,12 +15,16 @@ export class SignalrService implements OnDestroy {
 
   private readonly rankUpdatedSubject = new Subject<RankUpdatedPayload>();
   private readonly onlineUsersSubject = new BehaviorSubject<number>(0);
+  private readonly listingClickedSubject = new Subject<ListingClickedPayload>();
 
   /** Emits every "RankUpdated" event received, regardless of which group(s) it came from. */
   readonly rankUpdated$: Observable<RankUpdatedPayload> = this.rankUpdatedSubject.asObservable();
 
   /** Emits the live count of connected clients, pushed by the hub on every connect/disconnect. */
   readonly onlineUsers$: Observable<number> = this.onlineUsersSubject.asObservable();
+
+  /** Emits every "ListingClicked" event, so all viewers see click-through counts update live. */
+  readonly listingClicked$: Observable<ListingClickedPayload> = this.listingClickedSubject.asObservable();
 
   private async ensureConnected(): Promise<void> {
     if (!this.connection) {
@@ -35,6 +39,10 @@ export class SignalrService implements OnDestroy {
 
       this.connection.on('OnlineUsersUpdated', (count: number) => {
         this.onlineUsersSubject.next(count);
+      });
+
+      this.connection.on('ListingClicked', (payload: ListingClickedPayload) => {
+        this.listingClickedSubject.next(payload);
       });
     }
 

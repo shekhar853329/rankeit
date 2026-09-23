@@ -22,7 +22,7 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
         // for keeping the ranking/normalization logic in plain EF Core LINQ instead of raw SQL.
         var listings = await dbContext.Listings
             .AsNoTracking()
-            .Select(l => new { l.Id, l.Name, l.Url, l.CurrentBidAmount, l.FirstBidAt, l.CategoryId })
+            .Select(l => new { l.Id, l.Name, l.Url, l.CurrentBidAmount, l.FirstBidAt, l.CategoryId, l.ClickCount })
             .ToListAsync(ct);
 
         var categories = await dbContext.Categories
@@ -71,7 +71,8 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                 x.Listing.Name,
                 x.Listing.Url,
                 x.Listing.CurrentBidAmount,
-                x.NormalizedScore))
+                x.NormalizedScore,
+                x.Listing.ClickCount))
             .ToList();
 
         return candidates;

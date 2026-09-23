@@ -9,7 +9,8 @@ public sealed record DailyListingEntryDto(
     string CategoryName,
     string CategorySlug,
     decimal CurrentBidAmount,
-    DateTime FirstBidAt);
+    DateTime FirstBidAt,
+    int ClickCount);
 
 /// <summary>All listings that received their first bid on a given day, ranked by CurrentBidAmount DESC.</summary>
 public sealed record DailyListingGroupDto(

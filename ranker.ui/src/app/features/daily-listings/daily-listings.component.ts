@@ -1,8 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
-import { DailyListingGroupDto } from '../../core/models/daily-listing.model';
+import { ListingService } from '../../core/services/listing.service';
+import { SignalrService } from '../../core/services/signalr.service';
+import { DailyListingEntryDto, DailyListingGroupDto } from '../../core/models/daily-listing.model';
 
 const TOP_ENTRIES_PREVIEW = 3;
 
@@ -16,6 +19,9 @@ const TOP_ENTRIES_PREVIEW = 3;
 })
 export class DailyListingsComponent implements OnInit {
   private readonly leaderboardService = inject(LeaderboardService);
+  private readonly listingService = inject(ListingService);
+  private readonly signalr = inject(SignalrService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly groups = signal<DailyListingGroupDto[]>([]);
   readonly expandedDays = signal<ReadonlySet<string>>(new Set());
@@ -24,11 +30,22 @@ export class DailyListingsComponent implements OnInit {
   readonly totalCount = signal(0);
   readonly loading = signal(true);
   readonly loadingMore = signal(false);
+  /** Live click-through counts pushed by the "ListingClicked" hub event, keyed by listingId. */
+  readonly clickCounts = signal<Record<number, number>>({});
 
   readonly previewCount = TOP_ENTRIES_PREVIEW;
 
   ngOnInit(): void {
     this.load(1, false);
+    void this.signalr.joinGlobalGroup();
+
+    this.destroyRef.onDestroy(() => {
+      void this.signalr.leaveGlobalGroup();
+    });
+
+    this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
+      this.clickCounts.update((map) => ({ ...map, [listingId]: clickCount }));
+    });
   }
 
   loadMore(): void {
@@ -57,9 +74,17 @@ export class DailyListingsComponent implements OnInit {
     return this.isExpanded(group.day) ? group.entries : group.entries.slice(0, this.previewCount);
   }
 
-  /** Clicking a listing card opens the product URL/handle that was submitted with the bid. */
-  openListing(url: string): void {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  /** Live-overridden click count for an entry, falling back to the value loaded with the page. */
+  clickCountFor(entry: DailyListingEntryDto): number {
+    return this.clickCounts()[entry.listingId] ?? entry.clickCount;
+  }
+
+  /** Clicking a listing card opens the product URL/handle that was submitted with the bid, and records the click. */
+  openListing(entry: DailyListingEntryDto): void {
+    window.open(entry.listingUrl, '_blank', 'noopener,noreferrer');
+    this.listingService.recordClick(entry.listingId).subscribe((count) => {
+      this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
+    });
   }
 
   timeAgo(iso: string): string {

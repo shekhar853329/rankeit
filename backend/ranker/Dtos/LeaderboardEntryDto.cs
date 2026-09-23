@@ -10,7 +10,8 @@ public sealed record LeaderboardEntryDto(
     string ListingUrl,
     decimal CurrentBidAmount,
     DateTime FirstBidAt,
-    DateTime LastBidAt);
+    DateTime LastBidAt,
+    int ClickCount);
 
 /// <summary>Category context alongside its paginated leaderboard, so callers can place a bid without a second round trip.</summary>
 public sealed record CategoryLeaderboardResponseDto(

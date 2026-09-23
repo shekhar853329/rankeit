@@ -23,8 +23,8 @@
               [class.feed-row--top]="entry.rank === 1"
               role="link"
               tabindex="0"
-              (click)="openListing(entry.listingUrl)"
-              (keyup.enter)="openListing(entry.listingUrl)"
+              (click)="openListing(entry)"
+              (keyup.enter)="openListing(entry)"
             >
               <span class="feed-row__rank">#{{ entry.rank }}</span>
               <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
@@ -34,6 +34,7 @@
                   <span class="badge">{{ entry.categoryName }}</span>
                   <span class="feed-row__domain">{{ entry.listingUrl }}</span>
                   <span class="feed-row__time">{{ timeAgo(entry.firstBidAt) }}</span>
+                  <span class="feed-row__clicks">{{ clickCountFor(entry) | number }} clicks</span>
                   <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">see details</a>
                 </span>
               </span>

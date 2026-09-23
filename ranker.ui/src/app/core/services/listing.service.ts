@@ -11,4 +11,9 @@ export class ListingService {
   getListingDetail(listingId: number): Observable<ListingDetailDto> {
     return this.http.get<ListingDetailDto>(`${API_BASE_URL}/api/listings/${listingId}`);
   }
+
+  /** Records a click-through to the listing's product URL; the hub broadcasts the new count live. */
+  recordClick(listingId: number): Observable<number> {
+    return this.http.post<number>(`${API_BASE_URL}/api/listings/${listingId}/click`, {});
+  }
 }

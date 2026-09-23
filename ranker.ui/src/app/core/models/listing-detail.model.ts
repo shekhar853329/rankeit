@@ -13,5 +13,6 @@ export interface ListingDetailDto {
   currentBidAmount: number;
   firstBidAt: string;
   lastBidAt: string;
+  clickCount: number;
   bids: BidHistoryEntryDto[];
 }

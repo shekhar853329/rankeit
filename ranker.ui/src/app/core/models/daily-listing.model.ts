@@ -9,6 +9,7 @@ export interface DailyListingEntryDto {
   categorySlug: string;
   currentBidAmount: number;
   firstBidAt: string;
+  clickCount: number;
 }
 
 export interface DailyListingGroupDto {

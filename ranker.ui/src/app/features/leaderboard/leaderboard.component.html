@@ -19,8 +19,8 @@
           [class.feed-row--top]="entry.rank === 1"
           role="link"
           tabindex="0"
-          (click)="openListing(entry.listingUrl)"
-          (keyup.enter)="openListing(entry.listingUrl)"
+          (click)="openListing(entry)"
+          (keyup.enter)="openListing(entry)"
         >
           <span class="feed-row__rank">#{{ entry.rank }}</span>
           <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
@@ -29,7 +29,7 @@
               {{ entry.listingName }}
             </a>
             <span class="feed-row__meta">
-              First bid {{ entry.firstBidAt | date: 'mediumDate' }} ·
+              First bid {{ entry.firstBidAt | date: 'mediumDate' }} · {{ clickCountFor(entry) | number }} clicks ·
               <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">see details</a>
             </span>
           </span>

@@ -8,6 +8,7 @@ import { CategoryLeaderboardResponseDto, LeaderboardEntryDto } from '../../core/
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { BidService } from '../../core/services/bid.service';
 import { SignalrService } from '../../core/services/signalr.service';
+import { ListingService } from '../../core/services/listing.service';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
@@ -23,6 +24,7 @@ export class LeaderboardComponent implements OnInit {
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly bidService = inject(BidService);
   private readonly signalr = inject(SignalrService);
+  private readonly listingService = inject(ListingService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -38,6 +40,8 @@ export class LeaderboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly submitting = signal(false);
+  /** Live click-through counts pushed by the "ListingClicked" hub event, keyed by listingId. */
+  readonly clickCounts = signal<Record<number, number>>({});
 
   // Bid form state.
   readonly bidListingId = signal<number | null>(null);
@@ -93,6 +97,10 @@ export class LeaderboardComponent implements OnInit {
       }
     });
 
+    this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
+      this.clickCounts.update((map) => ({ ...map, [listingId]: clickCount }));
+    });
+
     this.destroyRef.onDestroy(() => {
       void this.signalr.leaveCategoryGroup(this.categorySlug());
     });
@@ -127,9 +135,17 @@ export class LeaderboardComponent implements OnInit {
     this.bidListingUrl.set(entry.listingUrl);
   }
 
-  /** Clicking a listing card opens the product URL/handle that was submitted with the bid. */
-  openListing(url: string): void {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  /** Live-overridden click count for an entry, falling back to the value loaded with the page. */
+  clickCountFor(entry: LeaderboardEntryDto): number {
+    return this.clickCounts()[entry.listingId] ?? entry.clickCount;
+  }
+
+  /** Clicking a listing card opens the product URL/handle that was submitted with the bid, and records the click. */
+  openListing(entry: LeaderboardEntryDto): void {
+    window.open(entry.listingUrl, '_blank', 'noopener,noreferrer');
+    this.listingService.recordClick(entry.listingId).subscribe((count) => {
+      this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
+    });
   }
 
   startNewListing(): void {

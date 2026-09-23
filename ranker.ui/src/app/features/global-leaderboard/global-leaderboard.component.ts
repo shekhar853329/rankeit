@@ -8,6 +8,7 @@ import { CategoryDto } from '../../core/models/category.model';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { CategoryService } from '../../core/services/category.service';
 import { SignalrService } from '../../core/services/signalr.service';
+import { ListingService } from '../../core/services/listing.service';
 import { ToastService } from '../../core/services/toast.service';
 import { CategoryTabsComponent } from '../../shared/category-tabs/category-tabs.component';
 
@@ -19,6 +20,7 @@ interface FeedRow {
   currentBidAmount: number;
   categoryName: string;
   categorySlug: string;
+  clickCount: number;
 }
 
 @Component({
@@ -33,6 +35,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly categoryService = inject(CategoryService);
   private readonly signalr = inject(SignalrService);
+  private readonly listingService = inject(ListingService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
@@ -48,6 +51,8 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly globalEntries = signal<GlobalLeaderboardEntryDto[]>([]);
   readonly categoryData = signal<CategoryLeaderboardResponseDto | null>(null);
+  /** Live click-through counts pushed by the "ListingClicked" hub event, keyed by listingId; overrides the loaded DTO's count. */
+  readonly clickCounts = signal<Record<number, number>>({});
 
   /** Category the sidebar claim card targets - independent of selectedSlug so it never changes the main feed's filter. */
   readonly claimSlug = signal<string | null>(null);
@@ -58,6 +63,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly targetRank = signal(1);
 
   readonly rows = computed<FeedRow[]>(() => {
+    const clickOverrides = this.clickCounts();
     if (this.selectedSlug() === null) {
       return this.globalEntries().map((e) => ({
         rank: e.rank,
@@ -67,6 +73,7 @@ export class GlobalLeaderboardComponent implements OnInit {
         currentBidAmount: e.currentBidAmount,
         categoryName: e.categoryName,
         categorySlug: e.categorySlug,
+        clickCount: clickOverrides[e.listingId] ?? e.clickCount,
       }));
     }
 
@@ -82,6 +89,7 @@ export class GlobalLeaderboardComponent implements OnInit {
       currentBidAmount: e.currentBidAmount,
       categoryName: data.categoryName,
       categorySlug: data.categorySlug,
+      clickCount: clickOverrides[e.listingId] ?? e.clickCount,
     }));
   });
 
@@ -125,6 +133,10 @@ export class GlobalLeaderboardComponent implements OnInit {
       } else if (slug !== null && payload.categorySlug === slug) {
         this.loadCategory(slug);
       }
+    });
+
+    this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
+      this.clickCounts.update((map) => ({ ...map, [listingId]: clickCount }));
     });
   }
 
@@ -197,9 +209,12 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  /** Clicking a bidder card opens the product URL/handle that was submitted with the bid. */
-  openListing(url: string): void {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  /** Clicking a bidder card opens the product URL/handle that was submitted with the bid, and records the click. */
+  openListing(row: FeedRow): void {
+    window.open(row.listingUrl, '_blank', 'noopener,noreferrer');
+    this.listingService.recordClick(row.listingId).subscribe((count) => {
+      this.clickCounts.update((map) => ({ ...map, [row.listingId]: count }));
+    });
   }
 
   private incrementForCategory(slug: string | null): number {

@@ -20,6 +20,7 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
                 l.CurrentBidAmount,
                 l.FirstBidAt,
                 l.LastBidAt,
+                l.ClickCount,
                 CategoryName = l.Category!.Name,
                 CategorySlug = l.Category!.Slug,
             })
@@ -50,6 +51,7 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
             listing.CurrentBidAmount,
             listing.FirstBidAt,
             listing.LastBidAt,
+            listing.ClickCount,
             bidHistory);
     }
 

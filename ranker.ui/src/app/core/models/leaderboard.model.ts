@@ -8,6 +8,7 @@ export interface LeaderboardEntryDto {
   currentBidAmount: number;
   firstBidAt: string;
   lastBidAt: string;
+  clickCount: number;
 }
 
 export interface CategoryLeaderboardResponseDto {
@@ -29,6 +30,13 @@ export interface GlobalLeaderboardEntryDto {
   listingUrl: string;
   currentBidAmount: number;
   normalizedScore: number;
+  clickCount: number;
+}
+
+/** Mirrors Ranker.Hubs.ListingClickedPayload broadcast over the "ListingClicked" SignalR event. */
+export interface ListingClickedPayload {
+  listingId: number;
+  clickCount: number;
 }
 
 /** Mirrors Ranker.Hubs.RankUpdatedPayload broadcast over the "RankUpdated" SignalR event. */

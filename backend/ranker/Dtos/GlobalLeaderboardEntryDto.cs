@@ -13,4 +13,5 @@ public sealed record GlobalLeaderboardEntryDto(
     string ListingName,
     string ListingUrl,
     decimal CurrentBidAmount,
-    decimal NormalizedScore);
+    decimal NormalizedScore,
+    int ClickCount);

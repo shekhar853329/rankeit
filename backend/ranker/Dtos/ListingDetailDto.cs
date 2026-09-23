@@ -16,4 +16,5 @@ public sealed record ListingDetailDto(
     decimal CurrentBidAmount,
     DateTime FirstBidAt,
     DateTime LastBidAt,
+    int ClickCount,
     IReadOnlyList<BidHistoryEntryDto> Bids);
