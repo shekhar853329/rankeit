@@ -57,6 +57,11 @@ export class DailyListingsComponent implements OnInit {
     return this.isExpanded(group.day) ? group.entries : group.entries.slice(0, this.previewCount);
   }
 
+  /** Clicking a listing card opens the product URL/handle that was submitted with the bid. */
+  openListing(url: string): void {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
   timeAgo(iso: string): string {
     const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
     if (seconds < 60) {

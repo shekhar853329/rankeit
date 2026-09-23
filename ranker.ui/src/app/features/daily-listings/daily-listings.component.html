@@ -18,10 +18,13 @@
 
         <div class="day-group__rows">
           @for (entry of visibleEntries(group); track entry.listingId) {
-            <a
+            <div
               class="feed-row"
               [class.feed-row--top]="entry.rank === 1"
-              [routerLink]="['/leaderboard', entry.categorySlug]"
+              role="link"
+              tabindex="0"
+              (click)="openListing(entry.listingUrl)"
+              (keyup.enter)="openListing(entry.listingUrl)"
             >
               <span class="feed-row__rank">#{{ entry.rank }}</span>
               <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
@@ -31,10 +34,11 @@
                   <span class="badge">{{ entry.categoryName }}</span>
                   <span class="feed-row__domain">{{ entry.listingUrl }}</span>
                   <span class="feed-row__time">{{ timeAgo(entry.firstBidAt) }}</span>
+                  <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">see details</a>
                 </span>
               </span>
               <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
-            </a>
+            </div>
           }
         </div>
 

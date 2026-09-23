@@ -1,0 +1,59 @@
+<section class="listing-detail">
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else if (listing(); as l) {
+    <a [routerLink]="['/leaderboard', l.categorySlug]" class="listing-detail__back">&larr; Back to {{ l.categoryName }}</a>
+
+    <header class="listing-detail__header card">
+      <div>
+        <span class="badge">{{ l.categoryName }}</span>
+        <h1>{{ l.listingName }}</h1>
+        <a [href]="l.listingUrl" target="_blank" rel="noopener" class="listing-detail__url">{{ l.listingUrl }}</a>
+      </div>
+      <div class="listing-detail__price">{{ l.currentBidAmount | number: '1.0-2' }}</div>
+    </header>
+
+    <div class="listing-detail__meta card">
+      <div>
+        <span class="listing-detail__meta-label">First bid</span>
+        <span>{{ l.firstBidAt | date: 'medium' }}</span>
+      </div>
+      <div>
+        <span class="listing-detail__meta-label">Last bid</span>
+        <span>{{ l.lastBidAt | date: 'medium' }}</span>
+      </div>
+      <div>
+        <span class="listing-detail__meta-label">Total bids</span>
+        <span>{{ l.bids.length }}</span>
+      </div>
+    </div>
+
+    <section class="listing-detail__history card">
+      <h2>Bid history</h2>
+      @if (l.bids.length === 0) {
+        <p class="listing-detail__empty">No bids recorded.</p>
+      } @else {
+        <table class="listing-detail__table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Payment reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bid of l.bids; track bid.createdAt) {
+              <tr>
+                <td>{{ bid.createdAt | date: 'medium' }}</td>
+                <td>{{ bid.amount | number: '1.0-2' }}</td>
+                <td>{{ bid.paymentReferenceMasked }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  } @else {
+    <p class="listing-detail__empty">Listing not found.</p>
+  }
+</section>

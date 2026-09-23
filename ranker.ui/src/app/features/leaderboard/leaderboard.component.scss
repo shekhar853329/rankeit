@@ -41,6 +41,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0.9rem 1.1rem;
+  cursor: pointer;
 
   &--top {
     border-color: var(--accent);
@@ -83,6 +84,16 @@
   &__meta {
     color: var(--text-muted);
     font-size: 0.8rem;
+  }
+
+  &__details {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &__price {

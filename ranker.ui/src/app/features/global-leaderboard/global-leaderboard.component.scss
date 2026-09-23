@@ -12,6 +12,29 @@
 
     h1 {
       font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+  }
+
+  &__step {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--accent);
+      color: var(--accent-contrast);
     }
   }
 
@@ -30,9 +53,23 @@
     flex-direction: column;
     gap: 0.75rem;
 
-    input {
+    input,
+    select {
       width: 100%;
     }
+  }
+
+  &__category-select {
+    cursor: pointer;
+  }
+
+  &__browse-link {
+    display: block;
+    margin-top: 1rem;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
   }
 }
 
@@ -60,6 +97,35 @@
   }
 }
 
+.feed-row-wrap {
+  position: relative;
+}
+
+.feed-row__claim-overlay {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+
+  .feed-row-wrap:hover & {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 .feed-row {
   display: flex;
   align-items: center;
@@ -67,6 +133,7 @@
   padding: 0.9rem 1.1rem;
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
   transition: transform 0.15s ease;
 
   &:hover {
@@ -121,6 +188,17 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &__details {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &__price {

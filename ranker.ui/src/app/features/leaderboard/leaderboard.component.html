@@ -14,17 +14,27 @@
   } @else {
     <section class="feed">
       @for (entry of entries(); track entry.listingId) {
-        <div class="feed-row card" [class.feed-row--top]="entry.rank === 1">
+        <div
+          class="feed-row card"
+          [class.feed-row--top]="entry.rank === 1"
+          role="link"
+          tabindex="0"
+          (click)="openListing(entry.listingUrl)"
+          (keyup.enter)="openListing(entry.listingUrl)"
+        >
           <span class="feed-row__rank">#{{ entry.rank }}</span>
           <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
           <span class="feed-row__info">
-            <a class="feed-row__title" [href]="entry.listingUrl" target="_blank" rel="noopener">
+            <a class="feed-row__title" [href]="entry.listingUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
               {{ entry.listingName }}
             </a>
-            <span class="feed-row__meta">First bid {{ entry.firstBidAt | date: 'mediumDate' }}</span>
+            <span class="feed-row__meta">
+              First bid {{ entry.firstBidAt | date: 'mediumDate' }} ·
+              <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">see details</a>
+            </span>
           </span>
           <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
-          <button type="button" class="btn" (click)="selectListingToRebid(entry)">Reclaim / raise</button>
+          <button type="button" class="btn" (click)="selectListingToRebid(entry); $event.stopPropagation()">Reclaim / raise</button>
         </div>
       }
     </section>

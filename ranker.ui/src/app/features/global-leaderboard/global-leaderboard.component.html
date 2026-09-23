@@ -10,47 +10,73 @@
       <p class="feed__empty">No bids yet - be the first to claim a spot.</p>
     } @else {
       @for (row of rows(); track row.listingId) {
-        <a class="feed-row card" [class.feed-row--top]="row.rank === 1" [routerLink]="['/leaderboard', row.categorySlug]">
-          <span class="feed-row__rank">#{{ row.rank }}</span>
-          <span class="feed-row__avatar">{{ row.listingName.charAt(0).toUpperCase() }}</span>
-          <span class="feed-row__info">
-            <span class="feed-row__title">{{ row.listingName }}</span>
-            <span class="feed-row__meta">
-              <span class="badge">{{ row.categoryName }}</span>
-              <span class="feed-row__domain">{{ row.listingUrl }}</span>
+        <div class="feed-row-wrap">
+          <button type="button" class="feed-row__claim-overlay" (click)="claimPosition(row, $event)">
+            Claim this position
+          </button>
+          <div
+            class="feed-row card"
+            [class.feed-row--top]="row.rank === 1"
+            role="link"
+            tabindex="0"
+            (click)="openListing(row.listingUrl)"
+            (keyup.enter)="openListing(row.listingUrl)"
+          >
+            <span class="feed-row__rank">#{{ row.rank }}</span>
+            <span class="feed-row__avatar">{{ row.listingName.charAt(0).toUpperCase() }}</span>
+            <span class="feed-row__info">
+              <span class="feed-row__title">{{ row.listingName }}</span>
+              <span class="feed-row__meta">
+                <span class="badge">{{ row.categoryName }}</span>
+                <span class="feed-row__domain">{{ row.listingUrl }}</span>
+                <a class="feed-row__details" [routerLink]="['/listings', row.listingId]" (click)="$event.stopPropagation()">see details</a>
+              </span>
             </span>
-          </span>
-          <span class="feed-row__price">{{ row.currentBidAmount | number: '1.0-2' }}</span>
-        </a>
+            <span class="feed-row__price">{{ row.currentBidAmount | number: '1.0-2' }}</span>
+          </div>
+        </div>
       }
     }
   </section>
 
   <aside class="sidebar-stack">
     <div class="hero__claim card">
-      @if (selectedSlug() === null) {
+      @if (claimSlug() === null) {
         <h1>Discover today's top bidders</h1>
-        <p class="hero__subtitle">Pick a category above to see what it costs to claim the #1 spot.</p>
-        <a routerLink="/categories" class="btn btn-primary">Explore all categories</a>
+        <p class="hero__subtitle">Choose a category below to see what it costs to claim the #1 spot.</p>
       } @else {
-        <h1>Claim #1 for <span class="hero__price">{{ claimPrice() | number: '1.0-2' }}</span></h1>
-        <p class="hero__subtitle">in {{ categoryData()?.categoryName }}</p>
-        <div class="hero__form">
-          <input
-            type="url"
-            placeholder="Your product URL or @handle"
-            [ngModel]="heroUrl()"
-            (ngModelChange)="heroUrl.set($event)"
-          />
-          <a
-            class="btn btn-primary"
-            [routerLink]="['/leaderboard', selectedSlug()]"
-            [queryParams]="{ url: heroUrl() || null }"
-          >
-            Claim rank
-          </a>
-        </div>
+        <h1>
+          Claim #{{ targetRank() }} for
+          <button type="button" class="hero__step" (click)="decrementClaimAmount()" aria-label="Decrease amount">−</button>
+          <span class="hero__price">{{ effectiveClaimAmount() | number: '1.0-2' }}</span>
+          <button type="button" class="hero__step" (click)="incrementClaimAmount()" aria-label="Increase amount">+</button>
+        </h1>
+        <p class="hero__subtitle">in {{ claimCategoryData()?.categoryName }}</p>
       }
+
+      <div class="hero__form">
+        <input
+          type="url"
+          placeholder="Your product URL or @handle"
+          [ngModel]="heroUrl()"
+          (ngModelChange)="heroUrl.set($event)"
+        />
+
+        <select
+          class="hero__category-select"
+          [ngModel]="claimSlug()"
+          (ngModelChange)="selectClaimCategory($event)"
+        >
+          <option [ngValue]="null">Choose a category</option>
+          @for (category of allCategories(); track category.id) {
+            <option [ngValue]="category.slug">{{ category.name }}</option>
+          }
+        </select>
+
+        <button type="button" class="btn btn-primary" (click)="claimRank()">Claim rank</button>
+      </div>
+
+      <a routerLink="/categories" class="hero__browse-link">Explore all categories →</a>
     </div>
 
     <div class="sidebar card">

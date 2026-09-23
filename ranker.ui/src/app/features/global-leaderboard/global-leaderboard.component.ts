@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { CategoryService } from '../../core/services/category.service';
 import { SignalrService } from '../../core/services/signalr.service';
+import { ToastService } from '../../core/services/toast.service';
 import { CategoryTabsComponent } from '../../shared/category-tabs/category-tabs.component';
 
 interface FeedRow {
@@ -33,10 +34,13 @@ export class GlobalLeaderboardComponent implements OnInit {
   private readonly categoryService = inject(CategoryService);
   private readonly signalr = inject(SignalrService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   private joinedCategoryGroup: string | null = null;
 
   readonly tabs = signal<CategoryDto[]>([]);
+  readonly allCategories = signal<CategoryDto[]>([]);
   readonly trendingCategories = signal<CategoryDto[]>([]);
   readonly selectedSlug = signal<string | null>(null);
   readonly heroUrl = signal('');
@@ -44,6 +48,14 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly globalEntries = signal<GlobalLeaderboardEntryDto[]>([]);
   readonly categoryData = signal<CategoryLeaderboardResponseDto | null>(null);
+
+  /** Category the sidebar claim card targets - independent of selectedSlug so it never changes the main feed's filter. */
+  readonly claimSlug = signal<string | null>(null);
+  readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
+  /** Manually-picked target bid amount (set by hovering "Claim this position" on a feed row); null falls back to claimPrice(). */
+  readonly claimAmount = signal<number | null>(null);
+  /** Rank the current claim amount would take; defaults to #1 until a specific row is targeted. */
+  readonly targetRank = signal(1);
 
   readonly rows = computed<FeedRow[]>(() => {
     if (this.selectedSlug() === null) {
@@ -73,20 +85,27 @@ export class GlobalLeaderboardComponent implements OnInit {
     }));
   });
 
-  /** Price to become #1 in the selected category; null in "All" mode where no single price applies. */
+  /** Price to become #1 in the claim card's category; null when no category is targeted yet. */
   readonly claimPrice = computed<number | null>(() => {
-    const data = this.categoryData();
-    if (this.selectedSlug() === null || !data) {
+    const data = this.claimCategoryData();
+    if (this.claimSlug() === null || !data) {
       return null;
     }
     const currentTop = data.leaderboard.items[0]?.currentBidAmount;
     return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
   });
 
+  /** claimAmount() when a specific row was targeted, otherwise the default #1 price. */
+  readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
+
   ngOnInit(): void {
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 8 }).subscribe((result) => {
       this.tabs.set(result.items);
       this.trendingCategories.set(result.items.slice(0, 6));
+    });
+
+    this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
+      this.allCategories.set(result.items);
     });
 
     this.loadSelection();
@@ -124,6 +143,77 @@ export class GlobalLeaderboardComponent implements OnInit {
       this.joinedCategoryGroup = slug;
       void this.signalr.joinCategoryGroup(slug);
     }
+  }
+
+  /** Changes which category the sidebar claim card targets, without touching the main feed's filter. */
+  selectClaimCategory(slug: string | null): void {
+    if (slug === this.claimSlug()) {
+      return;
+    }
+    this.claimSlug.set(slug);
+    this.claimAmount.set(null);
+    this.targetRank.set(1);
+
+    if (!slug) {
+      this.claimCategoryData.set(null);
+      return;
+    }
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20).subscribe((data) => this.claimCategoryData.set(data));
+  }
+
+  /** Hovering a feed row reveals a "Claim this position" button; clicking it targets that row's rank/amount
+   *  in the claim card only - it never changes the main feed's category filter. */
+  claimPosition(row: FeedRow, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const increment = this.incrementForCategory(row.categorySlug);
+    this.selectClaimCategory(row.categorySlug);
+    this.claimAmount.set(row.currentBidAmount + increment);
+    this.targetRank.set(row.rank);
+  }
+
+  incrementClaimAmount(): void {
+    const step = this.incrementForCategory(this.claimSlug());
+    const current = this.effectiveClaimAmount() ?? 0;
+    this.claimAmount.set(current + step);
+  }
+
+  decrementClaimAmount(): void {
+    const step = this.incrementForCategory(this.claimSlug());
+    const floor = this.claimPrice() ?? 0;
+    const current = this.effectiveClaimAmount() ?? floor;
+    this.claimAmount.set(Math.max(current - step, floor));
+  }
+
+  claimRank(): void {
+    const slug = this.claimSlug();
+    if (!slug) {
+      this.toast.show('Choose a category first', 'info');
+      return;
+    }
+    void this.router.navigate(['/leaderboard', slug], {
+      queryParams: { url: this.heroUrl() || null, amount: this.effectiveClaimAmount() },
+    });
+  }
+
+  /** Clicking a bidder card opens the product URL/handle that was submitted with the bid. */
+  openListing(url: string): void {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  private incrementForCategory(slug: string | null): number {
+    if (!slug) {
+      return 0;
+    }
+    if (this.claimSlug() === slug) {
+      const data = this.claimCategoryData();
+      if (data) {
+        return data.minBidIncrement;
+      }
+    }
+    const category = this.allCategories().find((c) => c.slug === slug) ?? this.tabs().find((c) => c.slug === slug);
+    return category?.minBidIncrement ?? 0;
   }
 
   private loadSelection(): void {

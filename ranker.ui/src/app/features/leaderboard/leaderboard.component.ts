@@ -53,6 +53,10 @@ export class LeaderboardComponent implements OnInit {
     if (prefillUrl) {
       this.bidListingUrl.set(prefillUrl);
     }
+    const prefillAmount = Number(this.route.snapshot.queryParamMap.get('amount'));
+    if (Number.isFinite(prefillAmount) && prefillAmount > 0) {
+      this.bidTargetAmount.set(prefillAmount);
+    }
 
     this.route.paramMap
       .pipe(
@@ -121,6 +125,11 @@ export class LeaderboardComponent implements OnInit {
     this.bidListingId.set(entry.listingId);
     this.bidListingName.set(entry.listingName);
     this.bidListingUrl.set(entry.listingUrl);
+  }
+
+  /** Clicking a listing card opens the product URL/handle that was submitted with the bid. */
+  openListing(url: string): void {
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   startNewListing(): void {
