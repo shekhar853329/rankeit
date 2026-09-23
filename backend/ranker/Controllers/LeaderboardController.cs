@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Ranker.Application.Leaderboards;
+using Ranker.Common;
 using Ranker.Dtos;
 
 namespace Ranker.Controllers;
@@ -25,4 +26,11 @@ public class LeaderboardController(ISender sender) : ControllerBase
         [FromQuery] int topN = 20,
         CancellationToken ct = default) =>
         Ok(await sender.Send(new GetGlobalLeaderboardQuery(topN), ct));
+
+    [HttpGet("daily")]
+    public async Task<ActionResult<PagedResult<DailyListingGroupDto>>> GetDailyListings(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 5,
+        CancellationToken ct = default) =>
+        Ok(await sender.Send(new GetDailyListingsQuery(page, pageSize), ct));
 }

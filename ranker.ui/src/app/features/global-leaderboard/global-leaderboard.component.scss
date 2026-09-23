@@ -1,5 +1,5 @@
 .hero {
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 1.5rem 1.5rem 0;
   display: flex;
@@ -7,8 +7,12 @@
   gap: 1.5rem;
 
   &__claim {
-    padding: 2rem;
+    padding: 1.5rem;
     text-align: center;
+
+    h1 {
+      font-size: 1.4rem;
+    }
   }
 
   &__subtitle {
@@ -23,18 +27,17 @@
   &__form {
     margin-top: 1.25rem;
     display: flex;
+    flex-direction: column;
     gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
 
     input {
-      min-width: 320px;
+      width: 100%;
     }
   }
 }
 
 .layout {
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 1.5rem;
   display: grid;
@@ -125,6 +128,12 @@
     color: var(--accent);
     white-space: nowrap;
   }
+}
+
+.sidebar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .sidebar {

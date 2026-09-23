@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { HUB_URL } from '../config/api-config';
 import { RankUpdatedPayload } from '../models/leaderboard.model';
 
@@ -14,9 +14,13 @@ export class SignalrService implements OnDestroy {
   private startPromise: Promise<void> | null = null;
 
   private readonly rankUpdatedSubject = new Subject<RankUpdatedPayload>();
+  private readonly onlineUsersSubject = new BehaviorSubject<number>(0);
 
   /** Emits every "RankUpdated" event received, regardless of which group(s) it came from. */
   readonly rankUpdated$: Observable<RankUpdatedPayload> = this.rankUpdatedSubject.asObservable();
+
+  /** Emits the live count of connected clients, pushed by the hub on every connect/disconnect. */
+  readonly onlineUsers$: Observable<number> = this.onlineUsersSubject.asObservable();
 
   private async ensureConnected(): Promise<void> {
     if (!this.connection) {
@@ -28,6 +32,10 @@ export class SignalrService implements OnDestroy {
       this.connection.on('RankUpdated', (payload: RankUpdatedPayload) => {
         this.rankUpdatedSubject.next(payload);
       });
+
+      this.connection.on('OnlineUsersUpdated', (count: number) => {
+        this.onlineUsersSubject.next(count);
+      });
     }
 
     if (!this.startPromise) {
@@ -38,6 +46,11 @@ export class SignalrService implements OnDestroy {
     }
 
     return this.startPromise;
+  }
+
+  /** Opens the hub connection if it isn't already open, without joining any group. */
+  async connect(): Promise<void> {
+    await this.ensureConnected();
   }
 
   async joinCategoryGroup(categorySlug: string): Promise<void> {

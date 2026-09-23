@@ -7,7 +7,15 @@
   <nav class="site-header__nav">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
     <a routerLink="/categories" routerLinkActive="active">Categories</a>
+    <a routerLink="/daily" routerLinkActive="active">Day wise listing</a>
+    <a routerLink="/rules" routerLinkActive="active">Rules</a>
+    <a routerLink="/contact" routerLinkActive="active">Contact</a>
   </nav>
+
+  <span class="site-header__online" title="Users currently online">
+    <span class="site-header__online-dot"></span>
+    {{ onlineUsers() }} online
+  </span>
 
   <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
     {{ theme.dark() ? '☀️' : '🌙' }}

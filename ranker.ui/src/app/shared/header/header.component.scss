@@ -3,9 +3,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg);
 
   &__brand {
     display: flex;
@@ -20,9 +22,32 @@
     color: var(--accent);
   }
 
+  &__online {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  &__online-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #2fb862;
+    box-shadow: 0 0 0 3px rgba(47, 184, 98, 0.2);
+  }
+
   &__nav {
     display: flex;
-    gap: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1.25rem;
     flex: 1;
     font-weight: 600;
     font-size: 0.9rem;

@@ -25,6 +25,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
 builder.Services.AddScoped<IBidRepository, BidRepository>();
 builder.Services.AddSingleton<GlobalLeaderboardCache>();
+builder.Services.AddSingleton<OnlineUsersTracker>();
 
 builder.Services.AddCors(options => options.AddPolicy(AngularDevCorsPolicy, policy =>
     policy.WithOrigins("http://localhost:4200")
@@ -33,6 +34,13 @@ builder.Services.AddCors(options => options.AddPolicy(AngularDevCorsPolicy, poli
         .AllowCredentials()));
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<RankerDbContext>();
+    await dbContext.Database.MigrateAsync();
+    await DbSeeder.SeedAsync(dbContext);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

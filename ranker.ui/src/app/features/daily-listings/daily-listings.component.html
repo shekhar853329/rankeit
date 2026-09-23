@@ -1,0 +1,55 @@
+<section class="daily">
+  <header class="daily__header">
+    <h1>Day wise listing</h1>
+    <p class="daily__subtitle">Every listing, ranked by bid amount within the day it first went live.</p>
+  </header>
+
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else if (groups().length === 0) {
+    <p class="daily__empty">No listings yet.</p>
+  } @else {
+    @for (group of groups(); track group.day) {
+      <section class="day-group card">
+        <header class="day-group__header">
+          <h2>{{ group.day | date: 'MMMM d, y' }}</h2>
+          <span class="badge">{{ group.totalCount }} listing{{ group.totalCount === 1 ? '' : 's' }}</span>
+        </header>
+
+        <div class="day-group__rows">
+          @for (entry of visibleEntries(group); track entry.listingId) {
+            <a
+              class="feed-row"
+              [class.feed-row--top]="entry.rank === 1"
+              [routerLink]="['/leaderboard', entry.categorySlug]"
+            >
+              <span class="feed-row__rank">#{{ entry.rank }}</span>
+              <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
+              <span class="feed-row__info">
+                <span class="feed-row__title">{{ entry.listingName }}</span>
+                <span class="feed-row__meta">
+                  <span class="badge">{{ entry.categoryName }}</span>
+                  <span class="feed-row__domain">{{ entry.listingUrl }}</span>
+                  <span class="feed-row__time">{{ timeAgo(entry.firstBidAt) }}</span>
+                </span>
+              </span>
+              <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
+            </a>
+          }
+        </div>
+
+        @if (group.entries.length > previewCount) {
+          <button type="button" class="btn day-group__toggle" (click)="toggleExpand(group.day)">
+            {{ isExpanded(group.day) ? 'Show top ranks' : 'Show all ranks' }}
+          </button>
+        }
+      </section>
+    }
+
+    @if (hasMore()) {
+      <button type="button" class="btn btn-primary daily__load-more" [disabled]="loadingMore()" (click)="loadMore()">
+        {{ loadingMore() ? 'Loading...' : 'Load more days' }}
+      </button>
+    }
+  }
+</section>
