@@ -16,6 +16,7 @@ export class SignalrService implements OnDestroy {
   private readonly rankUpdatedSubject = new Subject<RankUpdatedPayload>();
   private readonly onlineUsersSubject = new BehaviorSubject<number>(0);
   private readonly listingClickedSubject = new Subject<ListingClickedPayload>();
+  private readonly visitsTodaySubject = new BehaviorSubject<number | null>(null);
 
   /** Emits every "RankUpdated" event received, regardless of which group(s) it came from. */
   readonly rankUpdated$: Observable<RankUpdatedPayload> = this.rankUpdatedSubject.asObservable();
@@ -25,6 +26,9 @@ export class SignalrService implements OnDestroy {
 
   /** Emits every "ListingClicked" event, so all viewers see click-through counts update live. */
   readonly listingClicked$: Observable<ListingClickedPayload> = this.listingClickedSubject.asObservable();
+
+  /** Emits today's visit count whenever any client (any tab/browser) increments it. */
+  readonly visitsToday$: Observable<number | null> = this.visitsTodaySubject.asObservable();
 
   private async ensureConnected(): Promise<void> {
     if (!this.connection) {
@@ -43,6 +47,10 @@ export class SignalrService implements OnDestroy {
 
       this.connection.on('ListingClicked', (payload: ListingClickedPayload) => {
         this.listingClickedSubject.next(payload);
+      });
+
+      this.connection.on('VisitsTodayUpdated', (count: number) => {
+        this.visitsTodaySubject.next(count);
       });
     }
 

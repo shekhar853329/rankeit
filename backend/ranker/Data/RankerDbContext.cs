@@ -13,6 +13,8 @@ public class RankerDbContext(DbContextOptions<RankerDbContext> options) : DbCont
 
     public DbSet<BidReconciliation> BidReconciliations => Set<BidReconciliation>();
 
+    public DbSet<DailyVisitCount> DailyVisitCounts => Set<DailyVisitCount>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(RankerDbContext).Assembly);

@@ -17,6 +17,12 @@
     {{ onlineUsers() }} online
   </span>
 
+  @if (visitsToday() !== null) {
+    <span class="site-header__visits" title="Unique visitors today">
+      👁 {{ visitsToday() }} today
+    </span>
+  }
+
   <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
     {{ theme.dark() ? '☀️' : '🌙' }}
   </button>
