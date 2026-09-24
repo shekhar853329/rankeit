@@ -1,7 +1,7 @@
 <div class="hero">
   <div class="hero__inner">
     <span class="hero__live-dot" aria-hidden="true"></span>
-    <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real bids.</span></h1>
+    <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real claims.</span></h1>
     <span class="hero__separator" aria-hidden="true"></span>
     <span class="hero__category">{{ categoryName() || categorySlug() }}</span>
     <span class="badge">{{ totalCount() }} listings</span>
@@ -50,7 +50,7 @@
     } @else if (notFound()) {
       <p class="feed__empty">Category not found.</p>
     } @else if (entries().length === 0) {
-      <p class="feed__empty">No bids yet — be the first to claim a spot.</p>
+      <p class="feed__empty">No listings yet — be the first to claim a spot.</p>
     } @else {
       @for (entry of entries(); track entry.listingId) {
         <div class="feed-row-wrap">
@@ -79,7 +79,7 @@
                 {{ entry.listingName }}
               </a>
               <span class="feed-row__meta">
-                First bid {{ entry.firstBidAt | date: 'mediumDate' }}
+                First claimed {{ entry.firstBidAt | date: 'mediumDate' }}
                 · <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">details</a>
                 · {{ clickCountFor(entry) | number }} clicks
               </span>
@@ -110,7 +110,7 @@
         <div class="spotlight-card__name">{{ entries()[0].listingName }}</div>
         <div class="spotlight-card__url">{{ entries()[0].listingUrl }}</div>
         <div class="spotlight-card__price">₹{{ entries()[0].currentBidAmount | number: '1.0-2' }}</div>
-        <div class="spotlight-card__label">Top Bidder — {{ categoryName() }}</div>
+        <div class="spotlight-card__label">Top Ranker — {{ categoryName() }}</div>
       </div>
     }
 
@@ -129,7 +129,7 @@
             </li>
           }
         </ol>
-        <p class="sidebar__note">Ranks recalculate instantly by bid amount.</p>
+        <p class="sidebar__note">Ranks recalculate instantly by claim amount.</p>
       </div>
     }
 

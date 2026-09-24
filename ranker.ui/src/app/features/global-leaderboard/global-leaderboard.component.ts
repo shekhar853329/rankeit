@@ -140,8 +140,24 @@ export class GlobalLeaderboardComponent implements OnInit {
     return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
   });
 
-  /** claimAmount() when a specific row was targeted, otherwise the default #1 price. */
-  readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
+  /**
+   * Fallback price derived from the global feed's current #1 entry when no category
+   * has been selected yet. Avoids showing ₹0 on initial page load.
+   */
+  readonly globalDefaultPrice = computed<number | null>(() => {
+    const top = this.rows()[0];
+    if (!top) return null;
+    // Use the category's minBidIncrement if available, else a safe default of 1
+    const category = this.allCategories().find((c) => c.slug === top.categorySlug)
+      ?? this.tabs().find((c) => c.slug === top.categorySlug);
+    const increment = category?.minBidIncrement ?? 1;
+    return top.currentBidAmount + increment;
+  });
+
+  /** claimAmount() when a specific row was targeted, otherwise the category price, otherwise the global #1 price. */
+  readonly effectiveClaimAmount = computed<number | null>(() =>
+    this.claimAmount() ?? this.claimPrice() ?? this.globalDefaultPrice()
+  );
 
   ngOnInit(): void {
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 8 }).subscribe((result) => {

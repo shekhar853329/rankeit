@@ -2,7 +2,7 @@
   <div class="hero__inner">
     <div class="hero__headline-block">
       <span class="hero__live-dot" aria-hidden="true"></span>
-      <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real bids.</span></h1>
+      <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real claims.</span></h1>
       <div class="hero__tabs">
         <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
       </div>
@@ -59,7 +59,7 @@
         }
       </div>
     } @else if (rows().length === 0) {
-      <p class="feed__empty">No bids yet — be the first to claim a spot.</p>
+      <p class="feed__empty">No listings yet — be the first to claim a spot.</p>
     } @else {
       @for (row of rows(); track row.listingId) {
         <div class="feed-row-wrap">
@@ -107,11 +107,12 @@
     <!-- Top bidder spotlight card -->
     @if (rows().length > 0) {
       <div class="spotlight-card card">
+        <div class="spotlight-card__stars">✦ ✦ ✦</div>
         <span class="spotlight-card__crown">👑</span>
         <div class="spotlight-card__name">{{ rows()[0].listingName }}</div>
         <div class="spotlight-card__url">{{ rows()[0].listingUrl }}</div>
         <div class="spotlight-card__price">₹{{ rows()[0].currentBidAmount | number: '1.0-2' }}</div>
-        <div class="spotlight-card__label">Top Global Bidder</div>
+        <div class="spotlight-card__label">✦ Top Global Ranker ✦</div>
       </div>
     }
 
@@ -130,7 +131,7 @@
             </li>
           }
         </ol>
-        <p class="sidebar__note">Ranks recalculate instantly by bid amount.</p>
+        <p class="sidebar__note">Ranks recalculate instantly by claim amount.</p>
       </div>
     }
 

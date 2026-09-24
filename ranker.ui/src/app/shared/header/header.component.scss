@@ -113,21 +113,20 @@
     }
   }
 
-  /* ── Actions (visits + online + toggle) ── */
+  /* ── Actions (theme toggle only) ── */
   &__actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-shrink: 0;
-    margin-left: 0.5rem;
   }
 
-  &__online,
-  &__visits {
+  /* ── Merged stats pill (online · visited) ── */
+  &__stats {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.28rem 0.65rem;
+    padding: 0.28rem 0.75rem;
     border-radius: var(--radius-pill);
     border: 1px solid var(--border);
     background: var(--surface-subtle);
@@ -135,14 +134,31 @@
     font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
+    flex-shrink: 0;
 
     @media (max-width: 700px) { display: none; }
+  }
+
+  &__stats-online,
+  &__stats-visits {
+    color: var(--text-muted);
+  }
+
+  /* thin vertical divider between the two stats */
+  &__stats-sep {
+    display: inline-block;
+    width: 1px;
+    height: 0.85em;
+    background: var(--border-strong);
+    border-radius: 1px;
+    opacity: 0.6;
+    flex-shrink: 0;
   }
 
   &__online-dot {
     width: 0.45rem;
     height: 0.45rem;
-    border-radius: 50%;
+    border-radius: 0;
     background: #10b981;
     flex-shrink: 0;
     animation: pulse-dot 2.4s ease-in-out infinite;

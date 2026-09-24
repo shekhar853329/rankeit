@@ -14,7 +14,7 @@
         <div>
           <h2 class="modal-panel__title" id="claim-modal-title">{{ title() }}</h2>
           <p class="modal-panel__subtitle">
-            Min starting bid: <strong>{{ payload.minStartingBid | number: '1.2-2' }}</strong>
+            Min starting price: <strong>{{ payload.minStartingBid | number: '1.2-2' }}</strong>
             &nbsp;·&nbsp; Min increment: <strong>{{ payload.minBidIncrement | number: '1.2-2' }}</strong>
           </p>
         </div>
@@ -43,7 +43,7 @@
 
       <!-- Mode toggle -->
       <button type="button" class="pill" (click)="switchMode()" [disabled]="submitting()">
-        {{ isRebid() ? '+ Start a new listing instead' : '↩ Rebid on an existing listing' }}
+        {{ isRebid() ? '+ Start a new listing instead' : '↩ Re-claim an existing listing' }}
       </button>
 
       <!-- New listing fields -->

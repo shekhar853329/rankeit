@@ -6,7 +6,17 @@
       <span class="site-header__brand-name">RankIt</span>
     </a>
 
-    <span class="site-header__tagline">Rank, bid, and grow your presence — <em>in one place.</em></span>
+    <span class="site-header__tagline">Rank, claim, and grow your presence — <em>in one place.</em></span>
+
+    <!-- ── Merged stats pill (left of nav) ── -->
+    <div class="site-header__stats">
+      <span class="site-header__online-dot" aria-hidden="true"></span>
+      <span class="site-header__stats-online" title="Users currently online">{{ onlineUsers() }} online</span>
+      @if (visitsToday() !== null) {
+        <span class="site-header__stats-sep" aria-hidden="true"></span>
+        <span class="site-header__stats-visits" title="Unique visitors today">👁 {{ visitsToday() }} visited</span>
+      }
+    </div>
 
     <nav class="site-header__nav">
       <a routerLink="/categories" routerLinkActive="active">Categories</a>
@@ -16,15 +26,6 @@
     </nav>
 
     <div class="site-header__actions">
-      @if (visitsToday() !== null) {
-        <span class="site-header__visits" title="Unique visitors today">
-          👁 {{ visitsToday() }} today
-        </span>
-      }
-      <span class="site-header__online" title="Users currently online">
-        <span class="site-header__online-dot"></span>
-        {{ onlineUsers() }} online
-      </span>
       <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
         {{ theme.dark() ? '☀️' : '🌙' }}
       </button>
