@@ -10,6 +10,24 @@
   </div>
 </section>
 
+<!-- ── Stats bar: Top 3 Bidders Today ──────────────────────── -->
+@if (top3Bidders().length > 0) {
+  <div class="stats-bar">
+    <div class="stats-bar__inner">
+      <div class="stats-bar__group">
+        <span class="stats-bar__label">⚡ Today's Top Bids</span>
+        @for (bidder of top3Bidders(); track bidder.listingId; let i = $index) {
+          <span class="stats-bar__bidder">
+            <span class="stats-bar__bidder-medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+            <span class="stats-bar__bidder-name">{{ bidder.listingName }}</span>
+            <span class="stats-bar__bidder-amount">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
+          </span>
+        }
+      </div>
+    </div>
+  </div>
+}
+
 <div class="layout">
   <!-- ── Feed ── -->
   <section class="feed">

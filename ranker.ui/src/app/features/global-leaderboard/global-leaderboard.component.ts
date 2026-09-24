@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
+import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { CategoryService } from '../../core/services/category.service';
 import { SignalrService } from '../../core/services/signalr.service';
@@ -85,7 +86,8 @@ export class GlobalLeaderboardComponent implements OnInit {
   /** Live click-through counts pushed by the "ListingClicked" hub event, keyed by listingId; overrides the loaded DTO's count. */
   readonly clickCounts = signal<Record<number, number>>({});
 
-  /** Category the sidebar claim card targets - independent of selectedSlug so it never changes the main feed's filter. */
+  /** Top-3 bidders of today pulled from the daily listings endpoint. */
+  readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
   readonly claimSlug = signal<string | null>(null);
   readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
   /** Manually-picked target bid amount (set by hovering "Claim this position" on a feed row); null falls back to claimPrice(). */
@@ -141,6 +143,12 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 8 }).subscribe((result) => {
       this.tabs.set(result.items);
       this.trendingCategories.set(result.items.slice(0, 6));
+    });
+
+    // Load top-3 bidders of today
+    this.leaderboardService.getDailyListings(1, 3).subscribe((result) => {
+      const today = result.items[0];
+      if (today) this.top3Bidders.set(today.entries.slice(0, 3));
     });
 
     this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
