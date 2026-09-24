@@ -24,13 +24,15 @@
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-modal);
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   padding: 1.75rem;
   animation: panelIn 0.2s ease both;
   position: relative;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
 }
 
 @keyframes panelIn {
@@ -54,8 +56,11 @@
 }
 
 .modal-panel__subtitle {
-  font-size: 0.875rem;
+  font-size: 0.84rem;
   color: var(--text-muted);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
   line-height: 1.5;
   margin: 0;
 }
@@ -74,9 +79,14 @@
   justify-content: center;
   transition: border-color 0.15s ease, color 0.15s ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: var(--error);
     color: var(--error);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
 
@@ -124,17 +134,44 @@
   color: var(--text-muted);
 }
 
-/* ── Description ──────────────────────────────────────────── */
-.modal-panel__description {
-  font-size: 0.875rem;
+/* ── Mode toggle pill ─────────────────────────────────────── */
+.pill {
+  align-self: flex-start;
+  padding: 0.3rem 0.8rem;
+  background: var(--surface-subtle);
+  border: 1.5px solid var(--border);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Form labels ──────────────────────────────────────────── */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--text-muted);
-  line-height: 1.6;
-  margin: 0;
+
+  input { margin: 0; }
 }
 
 /* ── Terms checkbox ───────────────────────────────────────── */
 .modal-panel__terms {
-  display: flex;
+  flex-direction: row;
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
@@ -143,6 +180,7 @@
   font-size: 0.875rem;
   color: var(--text);
   line-height: 1.5;
+  font-weight: 400;
   transition: border-color 0.15s ease;
 
   &:hover {
@@ -156,8 +194,6 @@
     margin-top: 0.15rem;
     accent-color: var(--accent);
     cursor: pointer;
-    /* override global input styles */
-    width: 1rem;
     padding: 0;
   }
 }
@@ -169,7 +205,7 @@
   gap: 0.4rem;
   font-size: 0.8rem;
   color: var(--text-faint);
-  margin-top: -0.5rem;
+  margin-top: -0.25rem;
 }
 
 .modal-panel__link {
@@ -190,7 +226,8 @@
   flex-wrap: wrap;
   margin-top: 0.25rem;
 
-  .btn-primary:disabled {
+  .btn-primary:disabled,
+  .btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     transform: none;

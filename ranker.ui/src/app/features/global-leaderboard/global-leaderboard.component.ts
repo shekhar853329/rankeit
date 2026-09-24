@@ -236,16 +236,25 @@ export class GlobalLeaderboardComponent implements OnInit {
       return;
     }
     const data = this.claimCategoryData();
+    if (!data) {
+      // No category data yet — navigate directly so the leaderboard page can open the modal
+      void this.router.navigate(['/leaderboard', slug]);
+      return;
+    }
     const amount = this.effectiveClaimAmount() ?? 0;
     const url = this.heroUrl();
     this.modalService.openClaimModal({
       rank: this.targetRank(),
-      categoryName: data?.categoryName ?? slug,
+      categoryName: data.categoryName,
       amount,
-      onConfirm: () => {
-        void this.router.navigate(['/leaderboard', slug], {
-          queryParams: { url: url || null, amount },
-        });
+      categoryId: data.categoryId,
+      minStartingBid: data.minStartingBid,
+      minBidIncrement: data.minBidIncrement,
+      listingId: null,
+      listingName: '',
+      listingUrl: url,
+      onSuccess: () => {
+        void this.router.navigate(['/leaderboard', slug]);
       },
     });
   }

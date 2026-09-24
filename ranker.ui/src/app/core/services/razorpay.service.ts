@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../config/api-config';
@@ -23,7 +23,7 @@ export class RazorpayService {
   private readonly http = inject(HttpClient);
 
   /** KEY_ID only — safe to expose in the browser. Never send KeySecret to the frontend. */
-  private readonly keyId = 'rzp_test_Tfq0iv9Bla07Du';
+  private readonly keyId = 'rzp_test_TfvXLpvBDwUWWX';
 
   // ── HTTP helpers ─────────────────────────────────────────────────────────
 
@@ -64,32 +64,49 @@ export class RazorpayService {
     }
 
     // Step 1: create backend order
-    const order = await firstValueFrom(
-      this.createOrder({
-        amountInPaise,
-        currency: 'INR',
-        receipt: `bid_${Date.now()}`,
-      }),
-    );
+    let order: CreateOrderResponse;
+    try {
+      order = await firstValueFrom(
+        this.createOrder({
+          amountInPaise,
+          currency: 'INR',
+          receipt: `bid_${Date.now()}`,
+        }),
+      );
+    } catch (err) {
+      throw new Error(this.describeHttpError(err, 'Could not create payment order.'));
+    }
 
-    // Step 2: open modal and wait for success / dismiss / failure
-    const paymentResult = await this.openModal({
-      keyId: this.keyId,
-      orderId: order.orderId,
-      amount: order.amount,
-      currency: order.currency,
-      email: params.email,
-      description: params.description ?? 'Bid payment',
-    });
+    // Step 2: open Razorpay modal and wait for success / dismiss / failure
+    let paymentResult: RazorpaySuccessResponse;
+    try {
+      paymentResult = await this.openModal({
+        keyId: this.keyId,
+        orderId: order.orderId,
+        amount: order.amount,
+        currency: order.currency,
+        email: params.email,
+        description: params.description ?? 'Bid payment',
+      });
+    } catch (err) {
+      // Re-throw as-is — openModal already produces friendly Error messages
+      // (cancelled, payment.failed description, etc.)
+      throw err instanceof Error ? err : new Error('Payment was not completed.');
+    }
 
     // Step 3: verify signature server-side
-    const verification = await firstValueFrom(
-      this.verifyPayment({
-        razorpayOrderId: paymentResult.razorpay_order_id,
-        razorpayPaymentId: paymentResult.razorpay_payment_id,
-        razorpaySignature: paymentResult.razorpay_signature,
-      }),
-    );
+    let verification: VerifyPaymentResponse;
+    try {
+      verification = await firstValueFrom(
+        this.verifyPayment({
+          razorpayOrderId: paymentResult.razorpay_order_id,
+          razorpayPaymentId: paymentResult.razorpay_payment_id,
+          razorpaySignature: paymentResult.razorpay_signature,
+        }),
+      );
+    } catch (err) {
+      throw new Error(this.describeHttpError(err, 'Payment verification failed.'));
+    }
 
     if (!verification.verified) {
       throw new Error('Payment signature verification failed. Please contact support.');
@@ -101,6 +118,26 @@ export class RazorpayService {
       razorpaySignature: paymentResult.razorpay_signature,
       amountInRupees: params.amountInRupees,
     };
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  /**
+   * Extracts a human-readable message from an HttpErrorResponse.
+   * Falls back to `fallback` when no server message is available.
+   */
+  private describeHttpError(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      // Try the structured error body our backend returns: { error: string, detail?: string }
+      const body = err.error as Record<string, string> | null;
+      if (body?.['error']) {
+        return body['detail'] ? `${body['error']} ${body['detail']}` : body['error'];
+      }
+      if (err.status === 401) return 'Payment gateway authentication failed. Please contact support.';
+      if (err.status === 0)   return 'Could not reach the server. Check your connection.';
+      return `${fallback} (${err.status})`;
+    }
+    return err instanceof Error ? err.message : fallback;
   }
 
   // ── Private: modal wrapper ────────────────────────────────────────────────

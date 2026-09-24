@@ -164,17 +164,23 @@ export class LeaderboardComponent implements OnInit {
   }
 
   /**
-   * Sidebar "Claim rank" — opens the confirm-claim modal first (ToS agreement),
-   * then on confirm opens the bid form modal pre-filled with the amount and URL.
+   * Sidebar "Claim rank" — opens the single combined modal (ToS + listing form + checkout).
    */
   initiateClaim(): void {
+    const categoryId = this.categoryId();
+    if (categoryId === null) return;
     const amount = this.effectiveClaimAmount() ?? 0;
-    const url = this.sidebarUrl();
     this.modalService.openClaimModal({
       rank: this.targetRank(),
       categoryName: this.categoryName(),
       amount,
-      onConfirm: () => this.openBidModal({ prefillAmount: amount, prefillUrl: url }),
+      categoryId,
+      minStartingBid: this.minStartingBid(),
+      minBidIncrement: this.minBidIncrement(),
+      listingId: null,
+      listingName: '',
+      listingUrl: this.sidebarUrl(),
+      onSuccess: () => this.refresh(),
     });
   }
 
@@ -191,10 +197,12 @@ export class LeaderboardComponent implements OnInit {
     });
   }
 
-  /** "Claim this position" overlay — confirm ToS first, then open bid form pre-filled for this listing. */
+  /** "Claim this position" overlay — opens the single combined modal pre-filled for this listing. */
   claimPositionBid(entry: LeaderboardEntryDto, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
+    const categoryId = this.categoryId();
+    if (categoryId === null) return;
     const amount = entry.currentBidAmount + this.minBidIncrement();
     this.claimAmount.set(amount);
     this.targetRank.set(entry.rank);
@@ -202,36 +210,12 @@ export class LeaderboardComponent implements OnInit {
       rank: entry.rank,
       categoryName: this.categoryName(),
       amount,
-      onConfirm: () => this.openBidModal({
-        listingId: entry.listingId,
-        listingName: entry.listingName,
-        listingUrl: entry.listingUrl,
-        prefillAmount: amount,
-      }),
-    });
-  }
-
-  // ── Shared modal opener ────────────────────────────────────
-
-  private openBidModal(opts: {
-    listingId?: number;
-    listingName?: string;
-    listingUrl?: string;
-    prefillAmount?: number;
-    prefillUrl?: string;
-  } = {}): void {
-    const categoryId = this.categoryId();
-    if (categoryId === null) return;
-
-    this.modalService.openBidFormModal({
       categoryId,
-      categoryName: this.categoryName(),
       minStartingBid: this.minStartingBid(),
       minBidIncrement: this.minBidIncrement(),
-      listingId: opts.listingId ?? null,
-      listingName: opts.listingName ?? '',
-      listingUrl: opts.listingUrl ?? opts.prefillUrl ?? '',
-      prefillAmount: opts.prefillAmount ?? null,
+      listingId: entry.listingId,
+      listingName: entry.listingName,
+      listingUrl: entry.listingUrl,
       onSuccess: () => this.refresh(),
     });
   }
