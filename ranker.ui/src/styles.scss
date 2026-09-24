@@ -1,107 +1,122 @@
 /* ============================================================
-   RankIt – Global Design System
+   RankIt – Global Design System  (Modern Corporate Teal)
    ============================================================ */
 
-/* Google Fonts are loaded in index.html */
-
-/* ── Design Tokens ─────────────────────────────────────────── */
+/* ── Design Tokens – Light Mode ────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg: #f4f6fb;
-  --surface: #ffffff;
-  --surface-raised: #ffffff;
-  --surface-subtle: #f8faff;
+  --bg: #FFFFFF;
+  --surface: #F7F7F5;
+  --surface-raised: #FFFFFF;
+  --surface-subtle: #F0F2EF;
 
   /* Borders */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border: #E2E4E1;
+  --border-strong: #C8CAC6;
 
   /* Text */
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --text-faint: #94a3b8;
+  --text: #222222;
+  --text-muted: #5C6660;
+  --text-faint: #9CACA5;
 
-  /* Accent (vibrant indigo-violet) */
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-soft: #eef2ff;
-  --accent-contrast: #ffffff;
+  /* Primary teal */
+  --accent: #0B4F4A;
+  --accent-hover: #083B37;
+  --accent-soft: #E6F0EF;
+  --accent-contrast: #FFFFFF;
 
-  /* Secondary accent (warm amber) */
-  --amber: #f59e0b;
-  --amber-soft: #fef3c7;
+  /* Secondary teal */
+  --secondary: #2E7D74;
 
-  /* Success / status */
-  --success: #10b981;
-  --error: #ef4444;
+  /* Amber accent */
+  --amber: #E8A33D;
+  --amber-soft: #FDF3E3;
+
+  /* Success / Warning / Error */
+  --success: #3A8A5C;
+  --warning: #C88A1F;
+  --error: #B3402F;
 
   /* Gold / medals */
-  --gold: #f59e0b;
-  --silver: #94a3b8;
-  --bronze: #cd7f32;
+  --gold: #E8A33D;
+  --silver: #5C6660;
+  --bronze: #8B5A2B;
 
   /* Gradients */
-  --gradient-hero: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
-  --gradient-accent-soft: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
-  --gradient-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --gradient-hero: linear-gradient(135deg, #0B4F4A 0%, #2E7D74 60%, #3FA394 100%);
+  --gradient-accent-soft: linear-gradient(135deg, #E6F0EF 0%, #F0F7F6 100%);
+  --gradient-gold: linear-gradient(135deg, #E8A33D 0%, #C88A1F 100%);
 
-  /* Radii */
-  --radius-xl: 24px;
-  --radius-lg: 16px;
-  --radius-md: 10px;
-  --radius-sm: 6px;
-  --radius-pill: 999px;
+  /* Radii – all sharp */
+  --radius-xl: 0px;
+  --radius-lg: 0px;
+  --radius-md: 0px;
+  --radius-sm: 0px;
+  --radius-pill: 0px;
 
   /* Shadows */
-  --shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-card: 0 4px 16px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.04);
-  --shadow-card-hover: 0 8px 28px rgba(99, 102, 241, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
-  --shadow-modal: 0 20px 60px rgba(15, 23, 42, 0.18);
-  --shadow-accent: 0 4px 16px rgba(99, 102, 241, 0.35);
+  --shadow-xs: 0 1px 3px rgba(11, 79, 74, 0.08), 0 1px 2px rgba(34, 34, 34, 0.05);
+  --shadow-card: 0 4px 16px rgba(11, 79, 74, 0.1), 0 1px 4px rgba(34, 34, 34, 0.06);
+  --shadow-card-hover: 0 8px 28px rgba(11, 79, 74, 0.18), 0 2px 8px rgba(34, 34, 34, 0.08);
+  --shadow-modal: 0 20px 60px rgba(11, 79, 74, 0.2);
+  --shadow-accent: 0 4px 16px rgba(11, 79, 74, 0.3);
 
-  /* Header height (used by app-main offset) */
+  /* Header height */
   --header-height: 64px;
 
   color-scheme: light;
 }
 
+/* ── Design Tokens – Dark Mode ─────────────────────────────── */
 :root.dark {
-  --bg: #0b0f1a;
-  --surface: #131929;
-  --surface-raised: #1a2236;
-  --surface-subtle: #0f1525;
+  /* Backgrounds */
+  --bg: #0A1614;
+  --surface: #132420;
+  --surface-raised: #1A2E2A;
+  --surface-subtle: #0D1C19;
 
-  --border: #1e2d45;
-  --border-strong: #2a3d5a;
+  /* Borders */
+  --border: #233330;
+  --border-strong: #344E4A;
 
-  --text: #e8edf7;
-  --text-muted: #7c8db0;
-  --text-faint: #4b5f82;
+  /* Text */
+  --text: #EDEFEC;
+  --text-muted: #9CACA5;
+  --text-faint: #4A5E59;
 
-  --accent: #818cf8;
-  --accent-hover: #a5b4fc;
-  --accent-soft: #1e2545;
-  --accent-contrast: #0b0f1a;
+  /* Primary teal (lifted for dark bg contrast) */
+  --accent: #3FA394;
+  --accent-hover: #54B8A8;
+  --accent-soft: #0F2422;
+  --accent-contrast: #0A1614;
 
-  --amber: #fbbf24;
-  --amber-soft: #2d2206;
+  /* Secondary teal */
+  --secondary: #7FA39A;
 
-  --success: #34d399;
-  --error: #f87171;
+  /* Amber accent */
+  --amber: #F0B85C;
+  --amber-soft: #231A08;
 
-  --gold: #fbbf24;
-  --silver: #7c8db0;
-  --bronze: #d97706;
+  /* Success / Warning / Error */
+  --success: #57B481;
+  --warning: #E6B34D;
+  --error: #E37766;
 
-  --gradient-hero: linear-gradient(135deg, #3730a3 0%, #5b21b6 50%, #6d28d9 100%);
-  --gradient-accent-soft: linear-gradient(135deg, #1e2545 0%, #231e40 100%);
-  --gradient-gold: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  /* Gold / medals */
+  --gold: #F0B85C;
+  --silver: #9CACA5;
+  --bronze: #C17A3A;
 
-  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
-  --shadow-card-hover: 0 8px 28px rgba(129, 140, 248, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.6);
-  --shadow-accent: 0 4px 16px rgba(129, 140, 248, 0.4);
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, #0B3330 0%, #2A6B62 60%, #3FA394 100%);
+  --gradient-accent-soft: linear-gradient(135deg, #0F2422 0%, #132E2A 100%);
+  --gradient-gold: linear-gradient(135deg, #F0B85C 0%, #C88A1F 100%);
+
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 28px rgba(63, 163, 148, 0.2), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.75);
+  --shadow-accent: 0 4px 16px rgba(63, 163, 148, 0.4);
 
   color-scheme: dark;
 }
@@ -122,8 +137,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', 'Roboto', 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  font-size: 1rem;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -139,9 +154,9 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: 'Sora', 'Inter', 'Roboto', system-ui, sans-serif;
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   line-height: 1.2;
   margin: 0;
 }
@@ -292,7 +307,7 @@ p {
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border-radius: 50%;
+  border-radius: 0;
   font-size: 0.8rem;
   font-weight: 800;
   flex-shrink: 0;

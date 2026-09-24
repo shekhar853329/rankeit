@@ -38,7 +38,7 @@
   &__live-dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
+    border-radius: 0;
     background: var(--success);
     flex-shrink: 0;
     animation: livePulse 2s ease-in-out infinite;
@@ -178,7 +178,7 @@
     justify-content: center;
     width: 2rem;
     height: 2rem;
-    border-radius: 50%;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 800;
     flex-shrink: 0;
@@ -308,7 +308,7 @@
     right: -40px;
     width: 140px;
     height: 140px;
-    border-radius: 50%;
+    border-radius: 0;
     background: var(--gradient-accent-soft);
     pointer-events: none;
   }
@@ -339,7 +339,7 @@
 .hero__step {
   width: 1.65rem;
   height: 1.65rem;
-  border-radius: 50%;
+  border-radius: 0;
   border: none;
   background: var(--accent-soft);
   color: var(--accent);
