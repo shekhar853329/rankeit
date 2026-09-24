@@ -1,23 +1,23 @@
 /* ============================================================
-   RankIt – Global Design System  (Modern Corporate Teal)
+   RankIt – Global Design System  (Warm Cream)
    ============================================================ */
 
 /* ── Design Tokens – Light Mode ────────────────────────────── */
 :root {
-  /* Backgrounds */
-  --bg: #FFFFFF;
-  --surface: #F7F7F5;
+  /* Backgrounds — warm cream palette */
+  --bg: #F5F3EE;
+  --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
-  --surface-subtle: #F0F2EF;
+  --surface-subtle: #F0EDE6;
 
   /* Borders */
-  --border: #E2E4E1;
-  --border-strong: #C8CAC6;
+  --border: #E8E4DC;
+  --border-strong: #D0CABF;
 
   /* Text */
-  --text: #222222;
-  --text-muted: #5C6660;
-  --text-faint: #9CACA5;
+  --text: #1A1A1A;
+  --text-muted: #6B6560;
+  --text-faint: #A8A09A;
 
   /* Primary teal */
   --accent: #0B4F4A;
@@ -29,7 +29,7 @@
   --secondary: #2E7D74;
 
   /* Amber accent */
-  --amber: #E8A33D;
+  --amber: #D4891A;
   --amber-soft: #FDF3E3;
 
   /* Success / Warning / Error */
@@ -38,31 +38,31 @@
   --error: #B3402F;
 
   /* Gold / medals */
-  --gold: #E8A33D;
-  --silver: #5C6660;
+  --gold: #D4891A;
+  --silver: #7A8A99;
   --bronze: #8B5A2B;
 
   /* Gradients */
   --gradient-hero: linear-gradient(135deg, #0B4F4A 0%, #2E7D74 60%, #3FA394 100%);
   --gradient-accent-soft: linear-gradient(135deg, #E6F0EF 0%, #F0F7F6 100%);
-  --gradient-gold: linear-gradient(135deg, #E8A33D 0%, #C88A1F 100%);
+  --gradient-gold: linear-gradient(135deg, #D4891A 0%, #B8720E 100%);
 
-  /* Radii – all sharp */
-  --radius-xl: 0px;
-  --radius-lg: 0px;
-  --radius-md: 0px;
-  --radius-sm: 0px;
-  --radius-pill: 0px;
+  /* Radii — warm rounded feel */
+  --radius-xl: 16px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 3px rgba(11, 79, 74, 0.08), 0 1px 2px rgba(34, 34, 34, 0.05);
-  --shadow-card: 0 4px 16px rgba(11, 79, 74, 0.1), 0 1px 4px rgba(34, 34, 34, 0.06);
-  --shadow-card-hover: 0 8px 28px rgba(11, 79, 74, 0.18), 0 2px 8px rgba(34, 34, 34, 0.08);
-  --shadow-modal: 0 20px 60px rgba(11, 79, 74, 0.2);
-  --shadow-accent: 0 4px 16px rgba(11, 79, 74, 0.3);
+  /* Shadows — softer, warmer */
+  --shadow-xs: 0 1px 3px rgba(26, 20, 10, 0.06), 0 1px 2px rgba(26, 20, 10, 0.04);
+  --shadow-card: 0 1px 4px rgba(26, 20, 10, 0.07), 0 2px 10px rgba(26, 20, 10, 0.05);
+  --shadow-card-hover: 0 4px 20px rgba(26, 20, 10, 0.12), 0 2px 8px rgba(26, 20, 10, 0.07);
+  --shadow-modal: 0 20px 60px rgba(26, 20, 10, 0.18);
+  --shadow-accent: 0 4px 14px rgba(11, 79, 74, 0.25);
 
   /* Header height */
-  --header-height: 64px;
+  --header-height: 48px;
 
   color-scheme: light;
 }

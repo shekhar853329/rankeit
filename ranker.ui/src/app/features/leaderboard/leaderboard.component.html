@@ -8,24 +8,34 @@
   </div>
 </div>
 
-<!-- ── Stats bar: Top 3 Bidders Today ──────────────────────── -->
-@if (top3Bidders().length > 0) {
-  <div class="stats-bar">
-    <div class="stats-bar__inner">
-      <div class="stats-bar__group">
-        <span class="stats-bar__label">⚡ Today's Top Bids</span>
-        @for (bidder of top3Bidders(); track bidder.listingId; let i = $index) {
-          <span class="stats-bar__bidder">
-            <span class="stats-bar__bidder-medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
-            <span class="stats-bar__bidder-name">{{ bidder.listingName }}</span>
-            <span class="stats-bar__bidder-url">{{ bidder.listingUrl }}</span>
-            <span class="stats-bar__bidder-amount">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
-          </span>
-        }
-      </div>
+<!-- ── Claim hero ─────────────────────────────────────────── -->
+<div class="claim-hero">
+  <div class="claim-hero__inner">
+
+    <div class="claim-hero__headline">
+      Claim&nbsp;<span class="claim-hero__rank">#{{ targetRank() }}</span>&nbsp;for
+      <button type="button" class="claim-hero__step" (click)="decrementClaimAmount()" aria-label="Decrease amount">−</button>
+      <span class="claim-hero__price">₹{{ (effectiveClaimAmount() ?? 0) | number: '1.0-2' }}</span>
+      <button type="button" class="claim-hero__step" (click)="incrementClaimAmount()" aria-label="Increase amount">+</button>
     </div>
+
+    <div class="claim-hero__form">
+      <label class="claim-hero__field">
+        <span class="claim-hero__field-icon">🌐</span>
+        <input
+          type="url"
+          placeholder="Your product URL or @handle"
+          [ngModel]="sidebarUrl()"
+          (ngModelChange)="sidebarUrl.set($event)"
+        />
+      </label>
+      <button type="button" class="claim-hero__btn" (click)="initiateClaim()">
+        Claim rank
+      </button>
+    </div>
+
   </div>
-}
+</div>
 
 <div class="layout">
 
@@ -93,54 +103,35 @@
   <!-- ── Sidebar ── -->
   <aside class="sidebar-stack">
 
-    <!-- Claim card -->
-    <div class="hero__claim card">
-      @if (claimSlug() === null) {
-        <span class="hero__claim__eyebrow">🏆 Get ranked</span>
-        <h2 class="hero__claim__title">Claim the top spot</h2>
-        <p class="hero__subtitle">See what it costs to own #1 in this category.</p>
-      } @else {
-        <span class="hero__claim__eyebrow">⚡ Claiming #{{ targetRank() }}</span>
-        <h2 class="hero__claim__title">
-          <button type="button" class="hero__step" (click)="decrementClaimAmount()" aria-label="Decrease amount">−</button>
-          <span class="hero__price">{{ effectiveClaimAmount() | number: '1.0-2' }}</span>
-          <button type="button" class="hero__step" (click)="incrementClaimAmount()" aria-label="Increase amount">+</button>
-        </h2>
-        <p class="hero__subtitle">in {{ categoryName() }}</p>
-      }
-
-      <div class="hero__form">
-        <input
-          type="url"
-          placeholder="Your product URL or @handle"
-          [ngModel]="sidebarUrl()"
-          (ngModelChange)="sidebarUrl.set($event)"
-        />
-
-        <button type="button" class="btn btn-primary" (click)="initiateClaim()">
-          ⚡ Claim rank
-        </button>
+    <!-- Top bidder spotlight card -->
+    @if (entries().length > 0) {
+      <div class="spotlight-card card">
+        <span class="spotlight-card__crown">👑</span>
+        <div class="spotlight-card__name">{{ entries()[0].listingName }}</div>
+        <div class="spotlight-card__url">{{ entries()[0].listingUrl }}</div>
+        <div class="spotlight-card__price">₹{{ entries()[0].currentBidAmount | number: '1.0-2' }}</div>
+        <div class="spotlight-card__label">Top Bidder — {{ categoryName() }}</div>
       </div>
+    }
 
-      <a routerLink="/categories" class="hero__browse-link">Explore all categories →</a>
-    </div>
-
-    <!-- Trending categories -->
-    <div class="sidebar card">
-      <div class="sidebar__heading">
-        <h2>Trending</h2>
-        <span class="badge badge-amber">🔥 Hot</span>
+    <!-- Today's leaderboard -->
+    @if (top3Bidders().length > 0) {
+      <div class="sidebar card">
+        <div class="sidebar__heading">
+          <h2>Today's Leaderboard</h2>
+        </div>
+        <ol class="sidebar__list">
+          @for (bidder of top3Bidders(); track bidder.listingId; let i = $index) {
+            <li>
+              <span class="sidebar__medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+              <span class="sidebar__item-name">{{ bidder.listingName }}</span>
+              <span class="sidebar__score">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
+            </li>
+          }
+        </ol>
+        <p class="sidebar__note">Ranks recalculate instantly by bid amount.</p>
       </div>
-      <ol class="sidebar__list">
-        @for (category of trendingCategories(); track category.id) {
-          <li>
-            <a [routerLink]="['/leaderboard', category.slug]">{{ category.name }}</a>
-            <span class="sidebar__score">{{ category.activityScore | number: '1.1-1' }}</span>
-          </li>
-        }
-      </ol>
-      <a routerLink="/categories" class="sidebar__see-all">See all categories →</a>
-    </div>
+    }
 
   </aside>
 

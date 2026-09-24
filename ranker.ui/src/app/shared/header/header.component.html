@@ -6,6 +6,8 @@
       <span class="site-header__brand-name">RankIt</span>
     </a>
 
+    <span class="site-header__tagline">Rank, bid, and grow your presence — <em>in one place.</em></span>
+
     <nav class="site-header__nav">
       <a routerLink="/categories" routerLinkActive="active">Categories</a>
       <a routerLink="/daily" routerLinkActive="active">Daily</a>
@@ -13,22 +15,20 @@
       <a routerLink="/contact" routerLinkActive="active">Contact</a>
     </nav>
 
-    <div class="site-header__status">
-      <span class="site-header__online" title="Users currently online">
-        <span class="site-header__online-dot"></span>
-        {{ onlineUsers() }} online
-      </span>
-
+    <div class="site-header__actions">
       @if (visitsToday() !== null) {
         <span class="site-header__visits" title="Unique visitors today">
           👁 {{ visitsToday() }} today
         </span>
       }
+      <span class="site-header__online" title="Users currently online">
+        <span class="site-header__online-dot"></span>
+        {{ onlineUsers() }} online
+      </span>
+      <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
+        {{ theme.dark() ? '☀️' : '🌙' }}
+      </button>
     </div>
-
-    <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
-      {{ theme.dark() ? '☀️' : '🌙' }}
-    </button>
 
   </div>
 </header>
