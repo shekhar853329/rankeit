@@ -1,9 +1,5 @@
 <section class="directory">
   <header>
-    <a routerLink="/" class="directory__back">← Back home</a>
-    <div class="directory__title-row">
-      <h1>Categories</h1>
-    </div>
     <p class="directory__subtitle">Every category has its own ranking. Pick one to see who leads it.</p>
   </header>
 
@@ -90,13 +86,8 @@
             }
           </div>
 
-          <div class="category-card__footer">
-            <a [routerLink]="['/categories', card.category.slug]" class="category-card__subcategories">
-              Sub-categories →
-            </a>
-          </div>
         </div>
-      }
+              }
     </div>
 
     <nav class="directory__pagination">

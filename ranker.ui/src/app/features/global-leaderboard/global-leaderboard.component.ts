@@ -10,6 +10,7 @@ import { CategoryService } from '../../core/services/category.service';
 import { SignalrService } from '../../core/services/signalr.service';
 import { ListingService } from '../../core/services/listing.service';
 import { ToastService } from '../../core/services/toast.service';
+import { ModalService } from '../../core/services/modal.service';
 import { CategoryTabsComponent } from '../../shared/category-tabs/category-tabs.component';
 
 interface FeedRow {
@@ -39,6 +40,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly modalService = inject(ModalService);
 
   private joinedCategoryGroup: string | null = null;
 
@@ -233,8 +235,18 @@ export class GlobalLeaderboardComponent implements OnInit {
       this.toast.show('Choose a category first', 'info');
       return;
     }
-    void this.router.navigate(['/leaderboard', slug], {
-      queryParams: { url: this.heroUrl() || null, amount: this.effectiveClaimAmount() },
+    const data = this.claimCategoryData();
+    const amount = this.effectiveClaimAmount() ?? 0;
+    const url = this.heroUrl();
+    this.modalService.openClaimModal({
+      rank: this.targetRank(),
+      categoryName: data?.categoryName ?? slug,
+      amount,
+      onConfirm: () => {
+        void this.router.navigate(['/leaderboard', slug], {
+          queryParams: { url: url || null, amount },
+        });
+      },
     });
   }
 

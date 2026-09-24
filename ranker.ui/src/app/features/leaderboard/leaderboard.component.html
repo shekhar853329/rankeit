@@ -1,114 +1,175 @@
-<section class="leaderboard">
-  <header class="leaderboard__header">
-    <div>
-      <a routerLink="/" class="leaderboard__back">← Back home</a>
-      <h1 class="leaderboard__title">{{ categoryName() || categorySlug() }}</h1>
-    </div>
+<div class="hero">
+  <div class="hero__inner">
+    <h1 class="hero__headline">{{ categoryName() || categorySlug() }}</h1>
     <span class="badge">{{ totalCount() }} listings</span>
-  </header>
+  </div>
+</div>
 
-  @if (loading()) {
-    <p class="leaderboard__empty">Loading...</p>
-  } @else if (notFound()) {
-    <p class="leaderboard__empty">Category not found.</p>
-  } @else {
-    <section class="feed">
+<div class="layout">
+
+  <!-- ── Feed ── -->
+  <section class="feed">
+    @if (loading()) {
+      <div class="feed__loading">
+        @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="skeleton skeleton-row"></div>
+        }
+      </div>
+    } @else if (notFound()) {
+      <p class="feed__empty">Category not found.</p>
+    } @else if (entries().length === 0) {
+      <p class="feed__empty">No bids yet — be the first to claim a spot.</p>
+    } @else {
       @for (entry of entries(); track entry.listingId) {
-        <div
-          class="feed-row card"
-          [class.feed-row--top]="entry.rank === 1"
-          role="link"
-          tabindex="0"
-          (click)="openListing(entry)"
-          (keyup.enter)="openListing(entry)"
-        >
-          <!-- Rank medal -->
-          <span class="feed-row__rank">
-            @if (entry.rank === 1) { 🥇 }
-            @else if (entry.rank === 2) { 🥈 }
-            @else if (entry.rank === 3) { 🥉 }
-            @else { {{ entry.rank }} }
-          </span>
-
-          <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
-
-          <span class="feed-row__info">
-            <a class="feed-row__title" [href]="entry.listingUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
-              {{ entry.listingName }}
-            </a>
-            <span class="feed-row__meta">
-              First bid {{ entry.firstBidAt | date: 'mediumDate' }}
-              · <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">details</a>
-              · {{ clickCountFor(entry) | number }} clicks
+        <div class="feed-row-wrap">
+          <button type="button" class="feed-row__claim-overlay" (click)="claimPosition(entry, $event)">
+            ⚡ Claim this position
+          </button>
+          <div
+            class="feed-row card"
+            [class.feed-row--top]="entry.rank === 1"
+            role="link"
+            tabindex="0"
+            (click)="openListing(entry)"
+            (keyup.enter)="openListing(entry)"
+          >
+            <span class="feed-row__rank">
+              @if (entry.rank === 1) { 🥇 }
+              @else if (entry.rank === 2) { 🥈 }
+              @else if (entry.rank === 3) { 🥉 }
+              @else { {{ entry.rank }} }
             </span>
-          </span>
 
-          <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
+            <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
 
-          <div class="feed-row__actions">
-            <button type="button" class="btn btn-sm" (click)="selectListingToRebid(entry); $event.stopPropagation()">
-              Reclaim ↑
-            </button>
+            <span class="feed-row__info">
+              <a class="feed-row__title" [href]="entry.listingUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
+                {{ entry.listingName }}
+              </a>
+              <span class="feed-row__meta">
+                First bid {{ entry.firstBidAt | date: 'mediumDate' }}
+                · <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">details</a>
+                · {{ clickCountFor(entry) | number }} clicks
+              </span>
+            </span>
+
+            <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
           </div>
         </div>
       }
-    </section>
 
-    <nav class="leaderboard__pagination">
-      <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">← Prev</button>
-      <span>Page {{ page() }} · {{ totalCount() }} listings</span>
-      <button type="button" class="btn" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
-        Next →
-      </button>
-    </nav>
+      <nav class="feed__pagination">
+        <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">← Prev</button>
+        <span>Page {{ page() }} · {{ totalCount() }} listings</span>
+        <button type="button" class="btn" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
+          Next →
+        </button>
+      </nav>
 
-    <section class="bid-form card">
-      <h2 class="bid-form__title">
-        {{ bidListingId() ? '✏️ Raise bid for "' + bidListingName() + '"' : '🆕 Submit a new listing' }}
-      </h2>
+      <!-- Bid form -->
+      <section class="bid-form card">
+        <h2 class="bid-form__title">
+          {{ bidListingId() ? '✏️ Raise bid for "' + bidListingName() + '"' : '🆕 Submit a new listing' }}
+        </h2>
 
-      <p class="bid-form__rules">
-        Min starting bid: <strong>{{ minStartingBid() | number: '1.2-2' }}</strong>
-        &nbsp;·&nbsp; Min increment over current top: <strong>{{ minBidIncrement() | number: '1.2-2' }}</strong>
-      </p>
+        <p class="bid-form__rules">
+          Min starting bid: <strong>{{ minStartingBid() | number: '1.2-2' }}</strong>
+          &nbsp;·&nbsp; Min increment over current top: <strong>{{ minBidIncrement() | number: '1.2-2' }}</strong>
+        </p>
 
-      <button type="button" class="pill" (click)="startNewListing()">
-        {{ bidListingId() ? '+ Start a new listing instead' : '↩ Rebid on an existing listing' }}
-      </button>
+        <button type="button" class="pill" (click)="startNewListing()">
+          {{ bidListingId() ? '+ Start a new listing instead' : '↩ Rebid on an existing listing' }}
+        </button>
 
-      @if (!bidListingId()) {
+        @if (!bidListingId()) {
+          <label>
+            Listing name
+            <input type="text" [ngModel]="bidListingName()" (ngModelChange)="bidListingName.set($event)" placeholder="e.g. My Awesome Product" />
+          </label>
+          <label>
+            Listing URL
+            <input type="url" [ngModel]="bidListingUrl()" (ngModelChange)="bidListingUrl.set($event)" placeholder="https://..." />
+          </label>
+        }
+
         <label>
-          Listing name
-          <input type="text" [ngModel]="bidListingName()" (ngModelChange)="bidListingName.set($event)" placeholder="e.g. My Awesome Product" />
+          Owner contact email
+          <input type="email" [ngModel]="bidOwnerEmail()" (ngModelChange)="bidOwnerEmail.set($event)" placeholder="you@example.com" />
         </label>
         <label>
-          Listing URL
-          <input type="url" [ngModel]="bidListingUrl()" (ngModelChange)="bidListingUrl.set($event)" placeholder="https://..." />
+          Target bid amount
+          <input type="number" [ngModel]="bidTargetAmount()" (ngModelChange)="bidTargetAmount.set($event)" placeholder="0.00" />
         </label>
+        <label>
+          Payment reference <span style="font-weight: 400; opacity: 0.7">(gateway transaction ID)</span>
+          <input type="text" [ngModel]="bidPaymentReference()" (ngModelChange)="bidPaymentReference.set($event)" placeholder="TXN-..." />
+        </label>
+        <label>
+          Confirmed payment amount
+          <input type="number" [ngModel]="bidConfirmedAmount()" (ngModelChange)="bidConfirmedAmount.set($event)" placeholder="0.00" />
+        </label>
+
+        <div class="bid-form__actions">
+          <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submitBid()">
+            {{ submitting() ? 'Submitting...' : '⚡ Place bid' }}
+          </button>
+        </div>
+      </section>
+    }
+  </section>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar-stack">
+
+    <!-- Claim card -->
+    <div class="hero__claim card">
+      @if (claimSlug() === null) {
+        <span class="hero__claim__eyebrow">🏆 Get ranked</span>
+        <h2 class="hero__claim__title">Claim the top spot</h2>
+        <p class="hero__subtitle">See what it costs to own #1 in this category.</p>
+      } @else {
+        <span class="hero__claim__eyebrow">⚡ Claiming #{{ targetRank() }}</span>
+        <h2 class="hero__claim__title">
+          <button type="button" class="hero__step" (click)="decrementClaimAmount()" aria-label="Decrease amount">−</button>
+          <span class="hero__price">{{ effectiveClaimAmount() | number: '1.0-2' }}</span>
+          <button type="button" class="hero__step" (click)="incrementClaimAmount()" aria-label="Increase amount">+</button>
+        </h2>
+        <p class="hero__subtitle">in {{ categoryName() }}</p>
       }
 
-      <label>
-        Owner contact email
-        <input type="email" [ngModel]="bidOwnerEmail()" (ngModelChange)="bidOwnerEmail.set($event)" placeholder="you@example.com" />
-      </label>
-      <label>
-        Target bid amount
-        <input type="number" [ngModel]="bidTargetAmount()" (ngModelChange)="bidTargetAmount.set($event)" placeholder="0.00" />
-      </label>
-      <label>
-        Payment reference <span style="font-weight: 400; opacity: 0.7">(gateway transaction ID)</span>
-        <input type="text" [ngModel]="bidPaymentReference()" (ngModelChange)="bidPaymentReference.set($event)" placeholder="TXN-..." />
-      </label>
-      <label>
-        Confirmed payment amount
-        <input type="number" [ngModel]="bidConfirmedAmount()" (ngModelChange)="bidConfirmedAmount.set($event)" placeholder="0.00" />
-      </label>
+      <div class="hero__form">
+        <input
+          type="url"
+          placeholder="Your product URL or @handle"
+          [ngModel]="sidebarUrl()"
+          (ngModelChange)="sidebarUrl.set($event)"
+        />
 
-      <div class="bid-form__actions">
-        <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submitBid()">
-          {{ submitting() ? 'Submitting...' : '⚡ Place bid' }}
+        <button type="button" class="btn btn-primary" (click)="initiateClaim()">
+          ⚡ Claim rank
         </button>
       </div>
-    </section>
-  }
-</section>
+
+      <a routerLink="/categories" class="hero__browse-link">Explore all categories →</a>
+    </div>
+
+    <!-- Trending categories -->
+    <div class="sidebar card">
+      <div class="sidebar__heading">
+        <h2>Trending</h2>
+        <span class="badge badge-amber">🔥 Hot</span>
+      </div>
+      <ol class="sidebar__list">
+        @for (category of trendingCategories(); track category.id) {
+          <li>
+            <a [routerLink]="['/leaderboard', category.slug]">{{ category.name }}</a>
+            <span class="sidebar__score">{{ category.activityScore | number: '1.1-1' }}</span>
+          </li>
+        }
+      </ol>
+      <a routerLink="/categories" class="sidebar__see-all">See all categories →</a>
+    </div>
+
+  </aside>
+
+</div>

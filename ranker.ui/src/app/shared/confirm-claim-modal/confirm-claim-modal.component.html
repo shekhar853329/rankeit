@@ -1,0 +1,56 @@
+@if (modal.claimModal(); as payload) {
+  <div class="modal-backdrop" (click)="modal.closeClaimModal()" (keyup.escape)="modal.closeClaimModal()" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="modal-panel__header">
+        <div>
+          <h2 class="modal-panel__title" id="modal-title">Confirm this rank</h2>
+          <p class="modal-panel__subtitle">Check the rank and price, then agree to the Terms of Service to continue.</p>
+        </div>
+        <button type="button" class="modal-panel__close" (click)="modal.closeClaimModal()" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Rank / Price summary -->
+      <div class="modal-panel__summary">
+        <div class="modal-panel__summary-col">
+          <span class="modal-panel__summary-label">RANK</span>
+          <span class="modal-panel__summary-value">#{{ payload.rank }}</span>
+          <span class="modal-panel__summary-meta">{{ payload.categoryName }}</span>
+        </div>
+        <div class="modal-panel__summary-col modal-panel__summary-col--right">
+          <span class="modal-panel__summary-label">PRICE</span>
+          <span class="modal-panel__summary-value modal-panel__summary-value--accent">${{ payload.amount | number: '1.0-2' }}</span>
+          <span class="modal-panel__summary-meta">Due now</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <p class="modal-panel__description">
+        A listing at that rank on the public board. It goes live when payment confirms. Someone else can claim a higher rank.
+      </p>
+
+      <!-- Terms checkbox -->
+      <label class="modal-panel__terms">
+        <input type="checkbox" [(ngModel)]="agreed" />
+        <span>I have read and agree to the <a href="/rules" target="_blank" rel="noopener" class="modal-panel__link">Terms of Service</a> of outbid.lol</span>
+      </label>
+
+      <!-- Footer links -->
+      <div class="modal-panel__footer-links">
+        <a routerLink="/rules" (click)="modal.closeClaimModal()" class="modal-panel__link">Privacy</a>
+        <span>·</span>
+        <a routerLink="/rules" (click)="modal.closeClaimModal()" class="modal-panel__link">Rules</a>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-panel__actions">
+        <button type="button" class="btn" (click)="modal.closeClaimModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!agreed" (click)="confirm()">
+          Continue to checkout
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

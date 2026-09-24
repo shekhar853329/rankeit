@@ -1,0 +1,199 @@
+/* ── Backdrop ─────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(10, 22, 20, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: backdropIn 0.15s ease both;
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Panel ────────────────────────────────────────────────── */
+.modal-panel {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-modal);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  animation: panelIn 0.2s ease both;
+  position: relative;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.modal-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.modal-panel__title {
+  font-size: 1.15rem;
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  color: var(--text);
+  margin: 0 0 0.25rem;
+}
+
+.modal-panel__subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.modal-panel__close {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: var(--error);
+    color: var(--error);
+  }
+}
+
+/* ── Summary row ──────────────────────────────────────────── */
+.modal-panel__summary {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  background: var(--surface-subtle);
+}
+
+.modal-panel__summary-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  &--right {
+    align-items: flex-end;
+  }
+}
+
+.modal-panel__summary-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.modal-panel__summary-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+
+  &--accent {
+    color: var(--accent);
+  }
+}
+
+.modal-panel__summary-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Description ──────────────────────────────────────────── */
+.modal-panel__description {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Terms checkbox ───────────────────────────────────────── */
+.modal-panel__terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.5;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  input[type='checkbox'] {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+    /* override global input styles */
+    width: 1rem;
+    padding: 0;
+  }
+}
+
+/* ── Footer links ─────────────────────────────────────────── */
+.modal-panel__footer-links {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  margin-top: -0.5rem;
+}
+
+.modal-panel__link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.modal-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
