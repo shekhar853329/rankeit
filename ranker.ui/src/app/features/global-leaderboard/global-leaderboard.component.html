@@ -3,9 +3,9 @@
     <div class="hero__headline-block">
       <span class="hero__live-dot" aria-hidden="true"></span>
       <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real bids.</span></h1>
-    </div>
-    <div class="hero__tabs">
-      <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
+      <div class="hero__tabs">
+        <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
+      </div>
     </div>
   </div>
 </section>
@@ -20,6 +20,7 @@
           <span class="stats-bar__bidder">
             <span class="stats-bar__bidder-medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
             <span class="stats-bar__bidder-name">{{ bidder.listingName }}</span>
+            <span class="stats-bar__bidder-url">{{ bidder.listingUrl }}</span>
             <span class="stats-bar__bidder-amount">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
           </span>
         }
@@ -84,7 +85,7 @@
   <aside class="sidebar-stack">
 
     <!-- Claim card -->
-    <div class="hero__claim card">
+    <div class="hero__claim card" [class.hero__claim--glow]="claimCardGlow()">
       @if (claimSlug() === null) {
         <span class="hero__claim__eyebrow">🏆 Get ranked</span>
         <h1>Claim the top spot</h1>

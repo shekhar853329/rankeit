@@ -94,6 +94,10 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly claimAmount = signal<number | null>(null);
   /** Rank the current claim amount would take; defaults to #1 until a specific row is targeted. */
   readonly targetRank = signal(1);
+  /** Drives the glow animation on the sidebar claim card for 3 s after a feed row is clicked. */
+  readonly claimCardGlow = signal(false);
+
+  private glowTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly rows = computed<FeedRow[]>(() => {
     const clickOverrides = this.clickCounts();
@@ -146,10 +150,7 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
 
     // Load top-3 bidders of today
-    this.leaderboardService.getDailyListings(1, 3).subscribe((result) => {
-      const today = result.items[0];
-      if (today) this.top3Bidders.set(today.entries.slice(0, 3));
-    });
+    this.loadTop3Bidders();
 
     this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
       this.allCategories.set(result.items);
@@ -163,6 +164,7 @@ export class GlobalLeaderboardComponent implements OnInit {
       if (this.joinedCategoryGroup) {
         void this.signalr.leaveCategoryGroup(this.joinedCategoryGroup);
       }
+      if (this.glowTimer) clearTimeout(this.glowTimer);
     });
 
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
@@ -172,6 +174,8 @@ export class GlobalLeaderboardComponent implements OnInit {
       } else if (slug !== null && payload.categorySlug === slug) {
         this.loadCategory(slug);
       }
+      // Any new bid could change the top bidders of the day — refresh the bar
+      this.loadTop3Bidders();
     });
 
     this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
@@ -222,6 +226,11 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.selectClaimCategory(row.categorySlug);
     this.claimAmount.set(row.currentBidAmount + increment);
     this.targetRank.set(row.rank);
+
+    // Pulse the sidebar claim card for 3 s
+    if (this.glowTimer) clearTimeout(this.glowTimer);
+    this.claimCardGlow.set(true);
+    this.glowTimer = setTimeout(() => this.claimCardGlow.set(false), 3000);
   }
 
   incrementClaimAmount(): void {
@@ -297,6 +306,13 @@ export class GlobalLeaderboardComponent implements OnInit {
     } else {
       this.loadCategory(slug);
     }
+  }
+
+  private loadTop3Bidders(): void {
+    this.leaderboardService.getDailyListings(1, 3).subscribe((result) => {
+      const today = result.items[0];
+      if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+    });
   }
 
   private loadGlobal(): void {

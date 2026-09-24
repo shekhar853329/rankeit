@@ -14,6 +14,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { catchError, of, switchMap } from 'rxjs';
 import { CategoryLeaderboardResponseDto, LeaderboardEntryDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
+import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { CategoryService } from '../../core/services/category.service';
 import { SignalrService } from '../../core/services/signalr.service';
@@ -56,6 +57,9 @@ export class LeaderboardComponent implements OnInit {
   // ── Sidebar: trending ──────────────────────────────────────
   readonly trendingCategories = signal<CategoryDto[]>([]);
 
+  // ── Stats bar: top 3 bidders of today ─────────────────────
+  readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
+
   // ── Sidebar: claim card ────────────────────────────────────
   readonly sidebarUrl = signal('');
   readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
@@ -82,6 +86,9 @@ export class LeaderboardComponent implements OnInit {
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 6 }).subscribe((result) => {
       this.trendingCategories.set(result.items);
     });
+
+    // Load top-3 bidders of today
+    this.loadTop3Bidders();
 
     // Watch route param changes
     this.route.paramMap
@@ -114,6 +121,7 @@ export class LeaderboardComponent implements OnInit {
 
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
       if (payload.categorySlug === this.categorySlug()) this.refresh();
+      this.loadTop3Bidders();
     });
 
     this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
@@ -121,6 +129,13 @@ export class LeaderboardComponent implements OnInit {
     });
 
     this.destroyRef.onDestroy(() => void this.signalr.leaveCategoryGroup(this.categorySlug()));
+  }
+
+  private loadTop3Bidders(): void {
+    this.leaderboardService.getDailyListings(1, 3).subscribe((result) => {
+      const today = result.items[0];
+      if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+    });
   }
 
   private async joinGroup(slug: string): Promise<void> {
