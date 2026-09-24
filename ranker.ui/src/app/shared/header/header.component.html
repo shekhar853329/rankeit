@@ -1,29 +1,35 @@
 <header class="site-header">
-  <a routerLink="/" class="site-header__brand">
-    <span class="site-header__mark">⚡</span>
-    RankIt
-  </a>
+  <div class="site-header__inner">
 
-  <nav class="site-header__nav">
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-    <a routerLink="/categories" routerLinkActive="active">Categories</a>
-    <a routerLink="/daily" routerLinkActive="active">Day wise listing</a>
-    <a routerLink="/rules" routerLinkActive="active">Rules</a>
-    <a routerLink="/contact" routerLinkActive="active">Contact</a>
-  </nav>
+    <a routerLink="/" class="site-header__brand">
+      <span class="site-header__logo">⚡</span>
+      <span class="site-header__brand-name">RankIt</span>
+    </a>
 
-  <span class="site-header__online" title="Users currently online">
-    <span class="site-header__online-dot"></span>
-    {{ onlineUsers() }} online
-  </span>
+    <nav class="site-header__nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/categories" routerLinkActive="active">Categories</a>
+      <a routerLink="/daily" routerLinkActive="active">Daily</a>
+      <a routerLink="/rules" routerLinkActive="active">Rules</a>
+      <a routerLink="/contact" routerLinkActive="active">Contact</a>
+    </nav>
 
-  @if (visitsToday() !== null) {
-    <span class="site-header__visits" title="Unique visitors today">
-      👁 {{ visitsToday() }} today
-    </span>
-  }
+    <div class="site-header__status">
+      <span class="site-header__online" title="Users currently online">
+        <span class="site-header__online-dot"></span>
+        {{ onlineUsers() }} online
+      </span>
 
-  <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
-    {{ theme.dark() ? '☀️' : '🌙' }}
-  </button>
+      @if (visitsToday() !== null) {
+        <span class="site-header__visits" title="Unique visitors today">
+          👁 {{ visitsToday() }} today
+        </span>
+      }
+    </div>
+
+    <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
+      {{ theme.dark() ? '☀️' : '🌙' }}
+    </button>
+
+  </div>
 </header>

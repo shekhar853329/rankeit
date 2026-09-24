@@ -38,6 +38,8 @@ export class CategoryDirectoryComponent implements OnInit {
   readonly totalCount = signal(0);
   readonly loading = signal(true);
 
+  readonly Math = Math;
+
   readonly sortOptions: { value: CategorySortBy; label: string }[] = [
     { value: 'Trending', label: 'Trending' },
     { value: 'Newest', label: 'Newest' },

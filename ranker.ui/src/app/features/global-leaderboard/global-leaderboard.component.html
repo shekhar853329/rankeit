@@ -1,18 +1,31 @@
 <section class="hero">
-  <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
+  <div class="hero__inner">
+    <div class="hero__headline-block">
+      <span class="hero__live-dot" aria-hidden="true"></span>
+      <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real bids.</span></h1>
+    </div>
+    <div class="hero__tabs">
+      <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
+    </div>
+  </div>
 </section>
 
 <div class="layout">
+  <!-- ── Feed ── -->
   <section class="feed">
     @if (loading()) {
-      <p>Loading...</p>
+      <div class="feed__loading">
+        @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="skeleton skeleton-row"></div>
+        }
+      </div>
     } @else if (rows().length === 0) {
-      <p class="feed__empty">No bids yet - be the first to claim a spot.</p>
+      <p class="feed__empty">No bids yet — be the first to claim a spot.</p>
     } @else {
       @for (row of rows(); track row.listingId) {
         <div class="feed-row-wrap">
           <button type="button" class="feed-row__claim-overlay" (click)="claimPosition(row, $event)">
-            Claim this position
+            ⚡ Claim this position
           </button>
           <div
             class="feed-row card"
@@ -22,17 +35,26 @@
             (click)="openListing(row)"
             (keyup.enter)="openListing(row)"
           >
-            <span class="feed-row__rank">#{{ row.rank }}</span>
+            <!-- Rank medal -->
+            <span class="feed-row__rank">
+              @if (row.rank === 1) { 🥇 }
+              @else if (row.rank === 2) { 🥈 }
+              @else if (row.rank === 3) { 🥉 }
+              @else { {{ row.rank }} }
+            </span>
+
             <span class="feed-row__avatar">{{ row.listingName.charAt(0).toUpperCase() }}</span>
+
             <span class="feed-row__info">
               <span class="feed-row__title">{{ row.listingName }}</span>
               <span class="feed-row__meta">
                 <span class="badge">{{ row.categoryName }}</span>
                 <span class="feed-row__domain">{{ row.listingUrl }}</span>
+                <a class="feed-row__details" [routerLink]="['/listings', row.listingId]" (click)="$event.stopPropagation()">details</a>
                 <span class="feed-row__clicks">{{ row.clickCount | number }} clicks</span>
-                <a class="feed-row__details" [routerLink]="['/listings', row.listingId]" (click)="$event.stopPropagation()">see details</a>
               </span>
             </span>
+
             <span class="feed-row__price">{{ row.currentBidAmount | number: '1.0-2' }}</span>
           </div>
         </div>
@@ -40,14 +62,18 @@
     }
   </section>
 
+  <!-- ── Sidebar ── -->
   <aside class="sidebar-stack">
+
+    <!-- Claim card -->
     <div class="hero__claim card">
       @if (claimSlug() === null) {
-        <h1>Discover today's top bidders</h1>
-        <p class="hero__subtitle">Choose a category below to see what it costs to claim the #1 spot.</p>
+        <span class="hero__claim__eyebrow">🏆 Get ranked</span>
+        <h1>Claim the top spot</h1>
+        <p class="hero__subtitle">Choose a category to see what it costs to own #1.</p>
       } @else {
+        <span class="hero__claim__eyebrow">⚡ Claiming #{{ targetRank() }}</span>
         <h1>
-          Claim #{{ targetRank() }} for
           <button type="button" class="hero__step" (click)="decrementClaimAmount()" aria-label="Decrease amount">−</button>
           <span class="hero__price">{{ effectiveClaimAmount() | number: '1.0-2' }}</span>
           <button type="button" class="hero__step" (click)="incrementClaimAmount()" aria-label="Increase amount">+</button>
@@ -64,24 +90,29 @@
         />
 
         <select
-          class="hero__category-select"
           [ngModel]="claimSlug()"
           (ngModelChange)="selectClaimCategory($event)"
         >
           <option [ngValue]="null">Choose a category</option>
           @for (category of allCategories(); track category.id) {
-            <option [ngValue]="category.slug">{{ category.name }}</option>
+            <option [ngValue]="category.slug">{{ categoryIcon(category.slug) }} {{ category.name }}</option>
           }
         </select>
 
-        <button type="button" class="btn btn-primary" (click)="claimRank()">Claim rank</button>
+        <button type="button" class="btn btn-primary" (click)="claimRank()">
+          ⚡ Claim rank
+        </button>
       </div>
 
       <a routerLink="/categories" class="hero__browse-link">Explore all categories →</a>
     </div>
 
+    <!-- Trending categories -->
     <div class="sidebar card">
-      <h2>Trending categories</h2>
+      <div class="sidebar__heading">
+        <h2>Trending</h2>
+        <span class="badge badge-amber">🔥 Hot</span>
+      </div>
       <ol class="sidebar__list">
         @for (category of trendingCategories(); track category.id) {
           <li>
@@ -92,5 +123,6 @@
       </ol>
       <a routerLink="/categories" class="sidebar__see-all">See all categories →</a>
     </div>
+
   </aside>
 </div>

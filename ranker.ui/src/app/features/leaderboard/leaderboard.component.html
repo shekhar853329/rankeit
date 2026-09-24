@@ -1,14 +1,14 @@
 <section class="leaderboard">
   <header class="leaderboard__header">
     <div>
-      <a routerLink="/" class="leaderboard__back">&larr; Back home</a>
-      <h1>{{ categoryName() || categorySlug() }}</h1>
+      <a routerLink="/" class="leaderboard__back">← Back home</a>
+      <h1 class="leaderboard__title">{{ categoryName() || categorySlug() }}</h1>
     </div>
     <span class="badge">{{ totalCount() }} listings</span>
   </header>
 
   @if (loading()) {
-    <p>Loading...</p>
+    <p class="leaderboard__empty">Loading...</p>
   } @else if (notFound()) {
     <p class="leaderboard__empty">Category not found.</p>
   } @else {
@@ -22,71 +22,93 @@
           (click)="openListing(entry)"
           (keyup.enter)="openListing(entry)"
         >
-          <span class="feed-row__rank">#{{ entry.rank }}</span>
+          <!-- Rank medal -->
+          <span class="feed-row__rank">
+            @if (entry.rank === 1) { 🥇 }
+            @else if (entry.rank === 2) { 🥈 }
+            @else if (entry.rank === 3) { 🥉 }
+            @else { {{ entry.rank }} }
+          </span>
+
           <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
+
           <span class="feed-row__info">
             <a class="feed-row__title" [href]="entry.listingUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
               {{ entry.listingName }}
             </a>
             <span class="feed-row__meta">
-              First bid {{ entry.firstBidAt | date: 'mediumDate' }} · {{ clickCountFor(entry) | number }} clicks ·
-              <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">see details</a>
+              First bid {{ entry.firstBidAt | date: 'mediumDate' }}
+              · <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">details</a>
+              · {{ clickCountFor(entry) | number }} clicks
             </span>
           </span>
+
           <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
-          <button type="button" class="btn" (click)="selectListingToRebid(entry); $event.stopPropagation()">Reclaim / raise</button>
+
+          <div class="feed-row__actions">
+            <button type="button" class="btn btn-sm" (click)="selectListingToRebid(entry); $event.stopPropagation()">
+              Reclaim ↑
+            </button>
+          </div>
         </div>
       }
     </section>
 
     <nav class="leaderboard__pagination">
-      <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Prev</button>
-      <span>Page {{ page() }} ({{ totalCount() }} listings)</span>
+      <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">← Prev</button>
+      <span>Page {{ page() }} · {{ totalCount() }} listings</span>
       <button type="button" class="btn" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
-        Next
+        Next →
       </button>
     </nav>
 
     <section class="bid-form card">
-      <h2>{{ bidListingId() ? 'Raise / reclaim bid for "' + bidListingName() + '"' : 'New listing bid' }}</h2>
+      <h2 class="bid-form__title">
+        {{ bidListingId() ? '✏️ Raise bid for "' + bidListingName() + '"' : '🆕 Submit a new listing' }}
+      </h2>
+
       <p class="bid-form__rules">
-        Min starting bid: {{ minStartingBid() | number: '1.2-2' }} · Min increment over current top:
-        {{ minBidIncrement() | number: '1.2-2' }}
+        Min starting bid: <strong>{{ minStartingBid() | number: '1.2-2' }}</strong>
+        &nbsp;·&nbsp; Min increment over current top: <strong>{{ minBidIncrement() | number: '1.2-2' }}</strong>
       </p>
 
-      <button type="button" class="pill" (click)="startNewListing()">Start a new listing instead</button>
+      <button type="button" class="pill" (click)="startNewListing()">
+        {{ bidListingId() ? '+ Start a new listing instead' : '↩ Rebid on an existing listing' }}
+      </button>
 
       @if (!bidListingId()) {
         <label>
           Listing name
-          <input type="text" [ngModel]="bidListingName()" (ngModelChange)="bidListingName.set($event)" />
+          <input type="text" [ngModel]="bidListingName()" (ngModelChange)="bidListingName.set($event)" placeholder="e.g. My Awesome Product" />
         </label>
         <label>
           Listing URL
-          <input type="url" [ngModel]="bidListingUrl()" (ngModelChange)="bidListingUrl.set($event)" />
+          <input type="url" [ngModel]="bidListingUrl()" (ngModelChange)="bidListingUrl.set($event)" placeholder="https://..." />
         </label>
       }
 
       <label>
         Owner contact email
-        <input type="email" [ngModel]="bidOwnerEmail()" (ngModelChange)="bidOwnerEmail.set($event)" />
+        <input type="email" [ngModel]="bidOwnerEmail()" (ngModelChange)="bidOwnerEmail.set($event)" placeholder="you@example.com" />
       </label>
       <label>
         Target bid amount
-        <input type="number" [ngModel]="bidTargetAmount()" (ngModelChange)="bidTargetAmount.set($event)" />
+        <input type="number" [ngModel]="bidTargetAmount()" (ngModelChange)="bidTargetAmount.set($event)" placeholder="0.00" />
       </label>
       <label>
-        Payment reference (gateway transaction ID)
-        <input type="text" [ngModel]="bidPaymentReference()" (ngModelChange)="bidPaymentReference.set($event)" />
+        Payment reference <span style="font-weight: 400; opacity: 0.7">(gateway transaction ID)</span>
+        <input type="text" [ngModel]="bidPaymentReference()" (ngModelChange)="bidPaymentReference.set($event)" placeholder="TXN-..." />
       </label>
       <label>
         Confirmed payment amount
-        <input type="number" [ngModel]="bidConfirmedAmount()" (ngModelChange)="bidConfirmedAmount.set($event)" />
+        <input type="number" [ngModel]="bidConfirmedAmount()" (ngModelChange)="bidConfirmedAmount.set($event)" placeholder="0.00" />
       </label>
 
-      <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submitBid()">
-        {{ submitting() ? 'Submitting...' : 'Place bid' }}
-      </button>
+      <div class="bid-form__actions">
+        <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submitBid()">
+          {{ submitting() ? 'Submitting...' : '⚡ Place bid' }}
+        </button>
+      </div>
     </section>
   }
 </section>

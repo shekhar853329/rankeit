@@ -1,13 +1,39 @@
 .category-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
   align-items: center;
+  overflow-x: auto;
+  padding: 0.75rem 0 1rem;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Use standard pill token colours so tabs work on any background */
+  .pill {
+    background: var(--surface-subtle);
+    border-color: var(--border);
+    color: var(--text-muted);
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    &.pill--active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-contrast);
+      box-shadow: var(--shadow-accent);
+    }
+  }
 
   &__explore {
     margin-left: auto;
-    color: var(--accent);
-    border-color: transparent;
-    background: transparent;
+    flex-shrink: 0;
   }
 }

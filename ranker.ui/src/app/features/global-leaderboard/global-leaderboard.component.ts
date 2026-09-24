@@ -48,6 +48,35 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly selectedSlug = signal<string | null>(null);
   readonly heroUrl = signal('');
 
+  readonly categoryIcons: Record<string, string> = {
+    'ai-agents-infrastructure': '🤖',
+    'seo-ai-visibility':        '🔍',
+    'marketing-advertising':    '📣',
+    'developer-tools':          '🛠️',
+    'productivity':             '⚡',
+    'ecommerce-tools':          '🛒',
+    'crypto-web3':              '🪙',
+    'real-estate':              '🏠',
+    'legal-services':           '⚖️',
+    'finance-investing':        '📈',
+    'freelancers':              '💼',
+    'games-entertainment':      '🎮',
+    'music':                    '🎵',
+    'food-beverage':            '🍽️',
+    'fashion':                  '👗',
+    'pet-care':                 '🐾',
+    'travel':                   '✈️',
+    'sports':                   '🏆',
+    'home-services':            '🔧',
+    'automotive':               '🚗',
+    'education':                '📚',
+    'health-fitness':           '💪',
+  };
+
+  categoryIcon(slug: string): string {
+    return this.categoryIcons[slug] ?? '📂';
+  }
+
   readonly loading = signal(true);
   readonly globalEntries = signal<GlobalLeaderboardEntryDto[]>([]);
   readonly categoryData = signal<CategoryLeaderboardResponseDto | null>(null);

@@ -1,37 +1,48 @@
 <section class="listing-detail">
   @if (loading()) {
-    <p>Loading...</p>
+    <p class="listing-detail__empty">Loading...</p>
   } @else if (listing(); as l) {
-    <a [routerLink]="['/leaderboard', l.categorySlug]" class="listing-detail__back">&larr; Back to {{ l.categoryName }}</a>
 
+    <a [routerLink]="['/leaderboard', l.categorySlug]" class="listing-detail__back">
+      ← Back to {{ l.categoryName }}
+    </a>
+
+    <!-- Header card -->
     <header class="listing-detail__header card">
-      <div>
+      <div class="listing-detail__header-left">
         <span class="badge">{{ l.categoryName }}</span>
         <h1>{{ l.listingName }}</h1>
-        <a [href]="l.listingUrl" target="_blank" rel="noopener" class="listing-detail__url">{{ l.listingUrl }}</a>
+        <a [href]="l.listingUrl" target="_blank" rel="noopener" class="listing-detail__url">
+          🔗 {{ l.listingUrl }}
+        </a>
       </div>
-      <div class="listing-detail__price">{{ l.currentBidAmount | number: '1.0-2' }}</div>
+      <div class="listing-detail__price-block">
+        <span class="listing-detail__price-label">Current bid</span>
+        <span class="listing-detail__price">{{ l.currentBidAmount | number: '1.0-2' }}</span>
+      </div>
     </header>
 
+    <!-- Meta grid -->
     <div class="listing-detail__meta card">
       <div>
         <span class="listing-detail__meta-label">First bid</span>
-        <span>{{ l.firstBidAt | date: 'medium' }}</span>
+        <span class="listing-detail__meta-value">{{ l.firstBidAt | date: 'mediumDate' }}</span>
       </div>
       <div>
         <span class="listing-detail__meta-label">Last bid</span>
-        <span>{{ l.lastBidAt | date: 'medium' }}</span>
+        <span class="listing-detail__meta-value">{{ l.lastBidAt | date: 'mediumDate' }}</span>
       </div>
       <div>
         <span class="listing-detail__meta-label">Total bids</span>
-        <span>{{ l.bids.length }}</span>
+        <span class="listing-detail__meta-value">{{ l.bids.length }}</span>
       </div>
       <div>
         <span class="listing-detail__meta-label">Clicks</span>
-        <span>{{ l.clickCount | number }}</span>
+        <span class="listing-detail__meta-value">{{ l.clickCount | number }}</span>
       </div>
     </div>
 
+    <!-- Bid history -->
     <section class="listing-detail__history card">
       <h2>Bid history</h2>
       @if (l.bids.length === 0) {
@@ -57,6 +68,7 @@
         </table>
       }
     </section>
+
   } @else {
     <p class="listing-detail__empty">Listing not found.</p>
   }

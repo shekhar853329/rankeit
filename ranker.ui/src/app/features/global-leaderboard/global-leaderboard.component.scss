@@ -1,197 +1,264 @@
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+}
+
+@keyframes accentFlicker {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+/* ── Hero / filter bar ────────────────────────────────────── */
 .hero {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 1.5rem 1.5rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 1.5rem 0;
 
-  &__claim {
-    padding: 1.5rem;
-    text-align: center;
-
-    h1 {
-      font-size: 1.4rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-  }
-
-  &__step {
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 50%;
-    border: none;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 1;
-    cursor: pointer;
-
-    &:hover {
-      background: var(--accent);
-      color: var(--accent-contrast);
-    }
-  }
-
-  &__subtitle {
-    margin-top: 0.5rem;
-    color: var(--text-muted);
-  }
-
-  &__price {
-    color: var(--accent);
-  }
-
-  &__form {
-    margin-top: 1.25rem;
+  &__inner {
+    max-width: 1280px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-
-    input,
-    select {
-      width: 100%;
-    }
   }
 
-  &__category-select {
-    cursor: pointer;
+  &__headline-block {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    animation: fadeUp 0.4s ease both;
   }
 
-  &__browse-link {
-    display: block;
-    margin-top: 1rem;
+  &__live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    flex-shrink: 0;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+
+  &__headline {
+    color: var(--text);
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-family: 'Sora', 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  &__headline-accent {
     color: var(--accent);
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-decoration: none;
+    animation: accentFlicker 3s ease-in-out infinite;
+  }
+
+  &__tabs {
+    padding-bottom: 0;
+    animation: fadeUp 0.4s 0.1s ease both;
   }
 }
 
+/* ── Main layout ──────────────────────────────────────────── */
 .layout {
   max-width: 1280px;
   margin: 0 auto;
   padding: 1.5rem;
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 320px;
   gap: 1.5rem;
   align-items: start;
 
-  @media (max-width: 800px) {
+  @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 }
 
+/* ── Feed ─────────────────────────────────────────────────── */
 .feed {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
 
   &__empty {
     color: var(--text-muted);
+    text-align: center;
+    padding: 3rem 0;
+    font-size: 0.95rem;
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    .skeleton-row {
+      height: 72px;
+      border-radius: var(--radius-lg);
+    }
   }
 }
 
+/* ── Feed row wrapper (holds overlay) ────────────────────── */
 .feed-row-wrap {
   position: relative;
+
+  &:first-child .feed-row {
+    border-top: none; /* no double border from hero */
+  }
 }
 
+/* ── Claim overlay button ─────────────────────────────────── */
 .feed-row__claim-overlay {
   position: absolute;
   top: 0;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1;
+  z-index: 2;
   border: none;
   border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--accent-contrast);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 0.35rem 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.85rem;
   white-space: nowrap;
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--shadow-accent);
 
   .feed-row-wrap:hover & {
     opacity: 1;
     pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1.04);
   }
 }
 
+/* ── Feed row card ────────────────────────────────────────── */
 .feed-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.9rem 1.1rem;
+  gap: 0.85rem;
+  padding: 0.85rem 1.1rem;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-strong);
   }
 
+  /* #1 gets a gradient left border accent */
   &--top {
-    border-color: var(--accent);
-    background: var(--accent-soft);
+    border-left: 3px solid var(--gold);
+    background: linear-gradient(to right, rgba(245, 158, 11, 0.06), var(--surface));
+
+    .feed-row__rank {
+      color: var(--gold);
+    }
   }
 
+  /* ── Rank badge ──────────────── */
   &__rank {
-    width: 2.25rem;
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
     color: var(--text-muted);
+    background: var(--surface-subtle);
+    border: 1.5px solid var(--border);
   }
 
+  &--top &__rank {
+    background: var(--gradient-gold);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  }
+
+  /* ── Avatar ───────────────────── */
   &__avatar {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    background: var(--accent-soft);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-md);
+    background: var(--gradient-accent-soft);
     color: var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 800;
+    font-size: 1rem;
     flex-shrink: 0;
+    border: 1.5px solid var(--border);
   }
 
+  &--top &__avatar {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #b45309;
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  /* ── Info block ───────────────── */
   &__info {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.2rem;
     flex: 1;
     min-width: 0;
   }
 
   &__title {
     font-weight: 700;
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
   }
 
   &__meta {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.45rem;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.775rem;
+    flex-wrap: wrap;
   }
 
   &__domain {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 180px;
   }
 
   &__clicks {
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+
+    &::before {
+      content: '·';
+    }
   }
 
   &__details {
@@ -200,30 +267,158 @@
     text-decoration: none;
     white-space: nowrap;
 
+    &::before { content: '·'; color: var(--border-strong); margin-right: 0.35rem; }
+
     &:hover {
       text-decoration: underline;
     }
   }
 
+  /* ── Price ────────────────────── */
   &__price {
     font-weight: 800;
+    font-size: 1.05rem;
     color: var(--accent);
     white-space: nowrap;
+    letter-spacing: -0.02em;
   }
 }
 
+/* ── Sidebar stack ────────────────────────────────────────── */
 .sidebar-stack {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  position: sticky;
+  top: calc(var(--header-height, 64px) + 1.5rem);
 }
 
+/* ── Claim card ───────────────────────────────────────────── */
+.hero__claim {
+  padding: 1.5rem;
+  background: var(--surface);
+  overflow: hidden;
+  position: relative;
+
+  /* subtle decorative gradient blob */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--gradient-accent-soft);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    position: relative;
+    text-align: center;
+  }
+
+  &__eyebrow {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+}
+
+.hero__step {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    transform: scale(1.1);
+  }
+}
+
+.hero__subtitle {
+  margin-top: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.hero__price {
+  color: var(--accent);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero__form {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  position: relative;
+
+  .btn-primary {
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+  }
+}
+
+.hero__browse-link {
+  display: block;
+  margin-top: 1rem;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.825rem;
+  text-decoration: none;
+  text-align: center;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
+/* ── Trending sidebar ─────────────────────────────────────── */
 .sidebar {
   padding: 1.25rem;
 
-  h2 {
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
+  &__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    h2 {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
   }
 
   &__list {
@@ -232,30 +427,67 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0;
   }
 
   &__list li {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    gap: 0.5rem;
+
+    &:last-child {
+      border-bottom: none;
+    }
 
     a {
       text-decoration: none;
       font-weight: 600;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: var(--accent);
+      }
     }
   }
 
   &__score {
-    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   &__see-all {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-top: 1rem;
     color: var(--accent);
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.825rem;
     text-decoration: none;
+    gap: 0.25rem;
+    transition: gap 0.15s ease;
+
+    &:hover {
+      text-decoration: underline;
+      gap: 0.45rem;
+    }
   }
 }

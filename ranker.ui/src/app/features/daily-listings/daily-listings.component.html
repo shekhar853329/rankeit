@@ -5,7 +5,7 @@
   </header>
 
   @if (loading()) {
-    <p>Loading...</p>
+    <p class="daily__empty">Loading...</p>
   } @else if (groups().length === 0) {
     <p class="daily__empty">No listings yet.</p>
   } @else {
@@ -26,8 +26,15 @@
               (click)="openListing(entry)"
               (keyup.enter)="openListing(entry)"
             >
-              <span class="feed-row__rank">#{{ entry.rank }}</span>
+              <span class="feed-row__rank">
+                @if (entry.rank === 1) { 🥇 }
+                @else if (entry.rank === 2) { 🥈 }
+                @else if (entry.rank === 3) { 🥉 }
+                @else { {{ entry.rank }} }
+              </span>
+
               <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
+
               <span class="feed-row__info">
                 <span class="feed-row__title">{{ entry.listingName }}</span>
                 <span class="feed-row__meta">
@@ -35,18 +42,21 @@
                   <span class="feed-row__domain">{{ entry.listingUrl }}</span>
                   <span class="feed-row__time">{{ timeAgo(entry.firstBidAt) }}</span>
                   <span class="feed-row__clicks">{{ clickCountFor(entry) | number }} clicks</span>
-                  <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">see details</a>
+                  <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">details</a>
                 </span>
               </span>
+
               <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
             </div>
           }
         </div>
 
         @if (group.entries.length > previewCount) {
-          <button type="button" class="btn day-group__toggle" (click)="toggleExpand(group.day)">
-            {{ isExpanded(group.day) ? 'Show top ranks' : 'Show all ranks' }}
-          </button>
+          <div class="day-group__footer">
+            <button type="button" class="btn btn-sm" (click)="toggleExpand(group.day)">
+              {{ isExpanded(group.day) ? '↑ Show top ranks' : '↓ Show all ' + group.totalCount + ' ranks' }}
+            </button>
+          </div>
         }
       </section>
     }
