@@ -22,15 +22,19 @@
     </div>
 
     <div class="claim-hero__form">
-      <label class="claim-hero__field">
-        <span class="claim-hero__field-icon">🌐</span>
-        <input
-          type="url"
-          placeholder="Your product URL or @handle"
-          [ngModel]="heroUrl()"
-          (ngModelChange)="heroUrl.set($event)"
-        />
-      </label>
+      <div class="claim-hero__field-wrap">
+        <label class="claim-hero__field" [class.claim-hero__field--invalid]="heroUrlDirty() && !isHeroUrlValid()">
+          <span class="claim-hero__field-icon">🌐</span>
+          <input
+            type="text"
+            placeholder="https://… or @handle or email"
+            [ngModel]="heroUrl()"
+            (ngModelChange)="heroUrl.set($event); heroUrlDirty.set(true)"
+            (blur)="heroUrlDirty.set(true)"
+          />
+        </label>
+
+      </div>
       <select
         class="claim-hero__field claim-hero__field--select"
         [ngModel]="claimSlug()"
@@ -41,7 +45,7 @@
           <option [ngValue]="category.slug">{{ categoryIcon(category.slug) }} {{ category.name }}</option>
         }
       </select>
-      <button type="button" class="claim-hero__btn" (click)="claimRank()">
+      <button type="button" class="claim-hero__btn" (click)="claimRank()" [disabled]="!canClaimRank()">
         Claim rank
       </button>
     </div>

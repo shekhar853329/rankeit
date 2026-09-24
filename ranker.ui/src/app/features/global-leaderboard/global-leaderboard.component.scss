@@ -190,6 +190,11 @@
 
     &:focus-within { border-color: var(--accent); }
 
+    &--invalid {
+      border-color: var(--error, #ef4444) !important;
+      &:focus-within { border-color: var(--error, #ef4444); }
+    }
+
     &-icon { font-size: 0.82rem; flex-shrink: 0; opacity: 0.45; }
 
     input {
@@ -209,13 +214,29 @@
     }
   }
 
+  &__field-wrap {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .claim-hero__field { flex: unset; min-width: unset; width: 100%; }
+  }
+
+
+
   &__btn {
     flex-shrink: 0; height: 2rem; padding: 0 1.1rem;
     border-radius: var(--radius-pill); border: none;
     background: var(--accent); color: var(--accent-contrast);
     font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap;
-    transition: background 0.12s ease;
-    &:hover { background: var(--accent-hover); }
+    transition: background 0.12s ease, opacity 0.12s ease;
+    &:hover:not(:disabled) { background: var(--accent-hover); }
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
   }
 }
 

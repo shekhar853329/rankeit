@@ -50,6 +50,8 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly trendingCategories = signal<CategoryDto[]>([]);
   readonly selectedSlug = signal<string | null>(null);
   readonly heroUrl = signal('');
+  /** True once the user has typed in (or cleared) the URL field — gates error visibility. */
+  readonly heroUrlDirty = signal(false);
 
   readonly categoryIcons: Record<string, string> = {
     'ai-agents-infrastructure': '🤖',
@@ -96,6 +98,14 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly targetRank = signal(1);
   /** Drives the glow animation on the sidebar claim card for 3 s after a feed row is clicked. */
   readonly claimCardGlow = signal(false);
+
+  /**
+   * Slug + data populated silently by "Claim this position" row clicks.
+   * Never bound to the dropdown — used as a fallback in claimRank() so the
+   * category dropdown is never touched when a row is clicked.
+   */
+  private readonly claimPositionSlug = signal<string | null>(null);
+  private readonly claimPositionData = signal<CategoryLeaderboardResponseDto | null>(null);
 
   private glowTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -154,8 +164,27 @@ export class GlobalLeaderboardComponent implements OnInit {
     return top.currentBidAmount + increment;
   });
 
-  /** claimAmount() when a specific row was targeted, otherwise the category price, otherwise the global #1 price. */
-  readonly effectiveClaimAmount = computed<number | null>(() =>
+  /**
+   * Accepts:
+   *  - A URL starting with http:// or https://
+   *  - A bare domain like google.com or sub.domain.co.uk
+   *  - A handle starting with @ (e.g. @myhandle)
+   *  - An email address (e.g. user@example.com)
+   */
+  readonly isHeroUrlValid = computed(() => {
+    const v = this.heroUrl().trim();
+    if (!v) return false;
+    if (/^@\S+$/.test(v)) return true;
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;
+    try { const u = new URL(v); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { /* fall through */ }
+    // Bare domain: at least one dot, no spaces, valid TLD-like suffix
+    return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/\S*)?$/.test(v);
+  });
+
+  /** True only when the category dropdown is chosen AND the URL/handle/email is valid. */
+  readonly canClaimRank = computed(() =>
+    !!(this.claimSlug() && this.isHeroUrlValid())
+  );  readonly effectiveClaimAmount = computed<number | null>(() =>
     this.claimAmount() ?? this.claimPrice() ?? this.globalDefaultPrice()
   );
 
@@ -239,9 +268,17 @@ export class GlobalLeaderboardComponent implements OnInit {
     event.stopPropagation();
 
     const increment = this.incrementForCategory(row.categorySlug);
-    this.selectClaimCategory(row.categorySlug);
+    // Only update amount and rank — never touch the dropdown (claimSlug)
     this.claimAmount.set(row.currentBidAmount + increment);
     this.targetRank.set(row.rank);
+
+    // Cache the row's category silently for use in claimRank()
+    this.claimPositionSlug.set(row.categorySlug);
+    if (this.claimPositionData()?.categorySlug !== row.categorySlug) {
+      this.claimPositionData.set(null);
+      this.leaderboardService.getCategoryLeaderboard(row.categorySlug, 1, 20)
+        .subscribe((data) => this.claimPositionData.set(data));
+    }
 
     // Pulse the sidebar claim card for 3 s
     if (this.glowTimer) clearTimeout(this.glowTimer);
@@ -250,25 +287,26 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   incrementClaimAmount(): void {
-    const step = this.incrementForCategory(this.claimSlug());
+    const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
     const current = this.effectiveClaimAmount() ?? 0;
     this.claimAmount.set(current + step);
   }
 
   decrementClaimAmount(): void {
-    const step = this.incrementForCategory(this.claimSlug());
+    const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
     const floor = this.claimPrice() ?? 0;
     const current = this.effectiveClaimAmount() ?? floor;
     this.claimAmount.set(Math.max(current - step, floor));
   }
 
   claimRank(): void {
-    const slug = this.claimSlug();
+    // Prefer the dropdown selection; fall back to a row that was "Claim this position"-clicked
+    const slug = this.claimSlug() ?? this.claimPositionSlug();
     if (!slug) {
       this.toast.show('Choose a category first', 'info');
       return;
     }
-    const data = this.claimCategoryData();
+    const data = this.claimCategoryData() ?? this.claimPositionData();
     if (!data) {
       // No category data yet — navigate directly so the leaderboard page can open the modal
       void this.router.navigate(['/leaderboard', slug]);
