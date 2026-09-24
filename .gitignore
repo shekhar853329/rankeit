@@ -3,3 +3,9 @@ backend/ranker/obj/*
 backend/ranker/bin/*
 backend/ranker.Tests/bin/*
 backend/ranker.Tests/obj/*
+
+# Secrets / environment overrides — never commit these
+backend/ranker/appsettings.Production.json
+.env
+.env.local
+.env.*.local

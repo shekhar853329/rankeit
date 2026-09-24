@@ -22,7 +22,7 @@
     } @else {
       @for (entry of entries(); track entry.listingId) {
         <div class="feed-row-wrap">
-          <button type="button" class="feed-row__claim-overlay" (click)="claimPosition(entry, $event)">
+          <button type="button" class="feed-row__claim-overlay" (click)="claimPositionBid(entry, $event)">
             ⚡ Claim this position
           </button>
           <div
@@ -65,56 +65,6 @@
           Next →
         </button>
       </nav>
-
-      <!-- Bid form -->
-      <section class="bid-form card">
-        <h2 class="bid-form__title">
-          {{ bidListingId() ? '✏️ Raise bid for "' + bidListingName() + '"' : '🆕 Submit a new listing' }}
-        </h2>
-
-        <p class="bid-form__rules">
-          Min starting bid: <strong>{{ minStartingBid() | number: '1.2-2' }}</strong>
-          &nbsp;·&nbsp; Min increment over current top: <strong>{{ minBidIncrement() | number: '1.2-2' }}</strong>
-        </p>
-
-        <button type="button" class="pill" (click)="startNewListing()">
-          {{ bidListingId() ? '+ Start a new listing instead' : '↩ Rebid on an existing listing' }}
-        </button>
-
-        @if (!bidListingId()) {
-          <label>
-            Listing name
-            <input type="text" [ngModel]="bidListingName()" (ngModelChange)="bidListingName.set($event)" placeholder="e.g. My Awesome Product" />
-          </label>
-          <label>
-            Listing URL
-            <input type="url" [ngModel]="bidListingUrl()" (ngModelChange)="bidListingUrl.set($event)" placeholder="https://..." />
-          </label>
-        }
-
-        <label>
-          Owner contact email
-          <input type="email" [ngModel]="bidOwnerEmail()" (ngModelChange)="bidOwnerEmail.set($event)" placeholder="you@example.com" />
-        </label>
-        <label>
-          Target bid amount
-          <input type="number" [ngModel]="bidTargetAmount()" (ngModelChange)="bidTargetAmount.set($event)" placeholder="0.00" />
-        </label>
-        <label>
-          Payment reference <span style="font-weight: 400; opacity: 0.7">(gateway transaction ID)</span>
-          <input type="text" [ngModel]="bidPaymentReference()" (ngModelChange)="bidPaymentReference.set($event)" placeholder="TXN-..." />
-        </label>
-        <label>
-          Confirmed payment amount
-          <input type="number" [ngModel]="bidConfirmedAmount()" (ngModelChange)="bidConfirmedAmount.set($event)" placeholder="0.00" />
-        </label>
-
-        <div class="bid-form__actions">
-          <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submitBid()">
-            {{ submitting() ? 'Submitting...' : '⚡ Place bid' }}
-          </button>
-        </div>
-      </section>
     }
   </section>
 

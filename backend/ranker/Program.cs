@@ -4,6 +4,7 @@ using Ranker.Data;
 using Ranker.Hubs;
 using Ranker.Repositories;
 using Ranker.Services.Leaderboards;
+using Ranker.Services.Payments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,16 @@ builder.Services.AddScoped<IListingRepository, ListingRepository>();
 builder.Services.AddScoped<IBidRepository, BidRepository>();
 builder.Services.AddSingleton<GlobalLeaderboardCache>();
 builder.Services.AddSingleton<OnlineUsersTracker>();
+
+// ── Razorpay ──────────────────────────────────────────────────────────────
+builder.Services.Configure<RazorpayOptions>(
+    builder.Configuration.GetSection(RazorpayOptions.SectionName));
+
+builder.Services.AddSingleton<Razorpay.Api.RazorpayClient>(sp =>
+{
+    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorpayOptions>>().Value;
+    return new Razorpay.Api.RazorpayClient(opts.KeyId, opts.KeySecret);
+});
 
 builder.Services.AddCors(options => options.AddPolicy(AngularDevCorsPolicy, policy =>
     policy.WithOrigins("http://localhost:4200")
