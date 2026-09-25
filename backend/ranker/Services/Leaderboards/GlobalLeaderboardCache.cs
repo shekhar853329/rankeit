@@ -16,9 +16,10 @@ public class GlobalLeaderboardCache(IMemoryCache cache)
 
     public Task<IReadOnlyList<GlobalLeaderboardEntryDto>> GetOrCreateAsync(
         int topN,
+        string timeMode,
         Func<Task<IReadOnlyList<GlobalLeaderboardEntryDto>>> factory)
     {
-        return cache.GetOrCreateAsync($"global-leaderboard:{topN}", async entry =>
+        return cache.GetOrCreateAsync($"global-leaderboard:{timeMode}:{topN}", async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = SafetyNetExpiration;
             entry.AddExpirationToken(new CancellationChangeToken(_resetCts.Token));

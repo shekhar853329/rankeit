@@ -12,15 +12,25 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
     public Task<IReadOnlyList<GlobalLeaderboardEntryDto>> Handle(GetGlobalLeaderboardQuery request, CancellationToken ct)
     {
         var topN = Math.Clamp(request.TopN, 1, 500);
-        return cache.GetOrCreateAsync(topN, () => ComputeAsync(topN, ct));
+        var timeMode = request.TimeMode?.ToLowerInvariant() == "alltime" ? "alltime" : "today";
+        return cache.GetOrCreateAsync(topN, timeMode, () => ComputeAsync(topN, timeMode, ct));
     }
 
-    private async Task<IReadOnlyList<GlobalLeaderboardEntryDto>> ComputeAsync(int topN, CancellationToken ct)
+    private async Task<IReadOnlyList<GlobalLeaderboardEntryDto>> ComputeAsync(int topN, string timeMode, CancellationToken ct)
     {
-        // Global leaderboard: rank listings by their total amount paid (CurrentBidAmount) across
-        // all categories — no normalization, highest payer wins regardless of category.
-        var results = await dbContext.Listings
-            .AsNoTracking()
+        var query = dbContext.Listings.AsNoTracking();
+
+        if (timeMode == "today")
+        {
+            var todayUtc = DateTime.UtcNow.Date;
+            var hasTodayListings = await dbContext.Listings.AnyAsync(l => l.LastBidAt >= todayUtc, ct);
+            if (hasTodayListings)
+            {
+                query = query.Where(l => l.LastBidAt >= todayUtc);
+            }
+        }
+
+        var results = await query
             .OrderByDescending(l => l.CurrentBidAmount)
             .ThenBy(l => l.FirstBidAt)
             .Take(topN)
@@ -31,6 +41,7 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                 l.Url,
                 l.CurrentBidAmount,
                 l.ClickCount,
+                BidCount = l.Bids.Count(),
                 l.CategoryId,
                 l.SiteName,
                 l.LogoUrl,
@@ -38,7 +49,7 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                 l.FaviconUrl,
                 Category = dbContext.Categories
                     .Where(c => c.Id == l.CategoryId)
-                    .Select(c => new { c.Name, c.Slug })
+                    .Select(c => new { c.Name, c.Slug, c.Icon })
                     .FirstOrDefault()
             })
             .ToListAsync(ct);
@@ -49,12 +60,14 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                 x.CategoryId,
                 x.Category != null ? x.Category.Name : string.Empty,
                 x.Category != null ? x.Category.Slug : string.Empty,
+                x.Category?.Icon,
                 x.Id,
                 x.Name,
                 x.Url,
                 x.CurrentBidAmount,
                 x.CurrentBidAmount,
                 x.ClickCount,
+                x.BidCount,
                 x.SiteName,
                 x.LogoUrl,
                 x.Description,

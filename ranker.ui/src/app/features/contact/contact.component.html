@@ -1,22 +1,119 @@
-<section class="static-page card">
-  <p class="static-page__eyebrow">✉️ Get in touch</p>
-  <h1>Contact us</h1>
-  <p>Questions, disputes, or press inquiries? Reach out and we'll get back to you shortly.</p>
+<section class="contact-container">
+  <!-- Header -->
+  <header class="contact-header">
+    <div class="badge-row">
+      <span class="badge-pill badge-pill--accent">
+        <span class="material-symbols-outlined text-[14px]">headset_mic</span>
+        Direct Communications
+      </span>
+      <span class="badge-pill">
+        <span class="material-symbols-outlined text-[14px]">schedule</span>
+        24/7 Monitoring
+      </span>
+    </div>
 
-  <div class="static-page__list">
-    <div class="static-page__item">
-      <span class="static-page__item-icon">🛟</span>
-      <div class="static-page__item-body">
-        <span class="static-page__item-label">Support</span>
-        <a href="mailto:support@rankit.app" class="static-page__item-value">support&#64;rankit.app</a>
+    <h1 class="contact-title">Get in Touch with the Protocol Team</h1>
+    <p class="contact-subtitle">
+      Whether you have a payment inquiry, need metadata assistance, or wish to propose an enterprise category arena, we're ready to assist.
+    </p>
+  </header>
+
+  <!-- Contact Cards Grid -->
+  <div class="contact-grid">
+    <!-- Card 1: Support -->
+    <div class="contact-card card">
+      <div class="contact-card__icon-wrap">
+        <span class="material-symbols-outlined text-[26px]">support_agent</span>
+      </div>
+
+      <div class="contact-card__body">
+        <div class="card-top-row">
+          <h3>General & Billing Support</h3>
+          <span class="sla-badge">Avg SLA &lt; 4h</span>
+        </div>
+        <p>
+          Assistance with payment reconciliation, transaction receipts, listing re-bids, or automated metadata scraping corrections.
+        </p>
+
+        <div class="channel-action">
+          <a href="mailto:support@rankit.app" class="contact-link">
+            <span class="material-symbols-outlined text-[16px]">mail</span>
+            <span>support&#64;rankit.app</span>
+          </a>
+        </div>
       </div>
     </div>
 
-    <div class="static-page__item">
-      <span class="static-page__item-icon">🤝</span>
-      <div class="static-page__item-body">
-        <span class="static-page__item-label">Partnerships</span>
-        <a href="mailto:partners@rankit.app" class="static-page__item-value">partners&#64;rankit.app</a>
+    <!-- Card 2: Partnerships -->
+    <div class="contact-card card">
+      <div class="contact-card__icon-wrap contact-card__icon-wrap--emerald">
+        <span class="material-symbols-outlined text-[26px]">handshake</span>
+      </div>
+
+      <div class="contact-card__body">
+        <div class="card-top-row">
+          <h3>Partnerships & Ecosystem</h3>
+          <span class="sla-badge sla-badge--emerald">Priority</span>
+        </div>
+        <p>
+          Custom category arena sponsorships, API syndication access, VC/accelerator batch listings, and ecosystem integrations.
+        </p>
+
+        <div class="channel-action">
+          <a href="mailto:partners@rankit.app" class="contact-link">
+            <span class="material-symbols-outlined text-[16px]">mail</span>
+            <span>partners&#64;rankit.app</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Security & Fraud -->
+    <div class="contact-card card">
+      <div class="contact-card__icon-wrap contact-card__icon-wrap--gold">
+        <span class="material-symbols-outlined text-[26px]">shield_with_heart</span>
+      </div>
+
+      <div class="contact-card__body">
+        <div class="card-top-row">
+          <h3>Security & Protocol Trust</h3>
+          <span class="sla-badge sla-badge--gold">Critical</span>
+        </div>
+        <p>
+          Vulnerability disclosures, click-fraud detection reports, sybil attack mitigations, and protocol audit verification inquiries.
+        </p>
+
+        <div class="channel-action">
+          <a href="mailto:security@rankit.app" class="contact-link">
+            <span class="material-symbols-outlined text-[16px]">verified</span>
+            <span>security&#64;rankit.app</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Realtime Network Status Panel -->
+  <div class="status-panel card">
+    <div class="status-left">
+      <div class="live-beacon-wrap">
+        <span class="beacon-pulse"></span>
+        <span class="beacon-core"></span>
+      </div>
+      <div>
+        <h4>RankUp Network Status</h4>
+        <p>Auction engine, SignalR streaming hubs, and Razorpay gateways are operating at 100% capacity.</p>
+      </div>
+    </div>
+
+    <div class="status-metrics">
+      <div class="metric-pill">
+        <span class="metric-lbl">WebSocket Hub</span>
+        <span class="metric-val text-secondary">Active (2ms)</span>
+      </div>
+      <div class="metric-pill">
+        <span class="metric-lbl">Payment Gateway</span>
+        <span class="metric-val text-secondary">Operational</span>
       </div>
     </div>
   </div>

@@ -1,78 +1,231 @@
-<section class="listing-detail">
+<section class="listing-detail-container">
   @if (loading()) {
-    <p class="listing-detail__empty">Loading...</p>
+    <div class="detail-loading">
+      <div class="spinner"></div>
+      <span>Loading listing specifications...</span>
+    </div>
   } @else if (listing(); as l) {
+    <!-- Breadcrumb bar -->
+    <nav class="detail-nav">
+      <a [routerLink]="['/leaderboard', l.categorySlug]" class="nav-back">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Back to <strong>{{ l.categoryName }}</strong> Arena</span>
+      </a>
 
-    <a [routerLink]="['/leaderboard', l.categorySlug]" class="listing-detail__back">
-      ← Back to {{ l.categoryName }}
-    </a>
-
-    <!-- Header card -->
-    <header class="listing-detail__header card">
-      <div class="listing-detail__header-left">
-        <span class="badge">{{ l.categoryName }}</span>
-        <h1>{{ l.listingName }}</h1>
-        <p class="listing-detail__rank">
-          @if (l.currentRankInCategory === 1) { 🥇 }
-          @else if (l.currentRankInCategory === 2) { 🥈 }
-          @else if (l.currentRankInCategory === 3) { 🥉 }
-          Ranked #{{ l.currentRankInCategory }} in {{ l.categoryName }}
-        </p>
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        <span>Live on Protocol</span>
       </div>
-      <div class="listing-detail__price-block">
-        <span class="listing-detail__price-label">Current bid</span>
-        <span class="listing-detail__price">{{ l.currentBidAmount | number: '1.0-2' }}</span>
+    </nav>
+
+    <!-- Main Hero Card -->
+    <header class="detail-hero card" [class.detail-hero--gold]="l.currentRankInCategory === 1">
+      <div class="hero-left">
+        <!-- Avatar / Icon -->
+        <div class="hero-avatar">
+          @if (l.logoUrl || l.faviconUrl || getFaviconUrl(l.listingUrl)) {
+            <img
+              [src]="l.logoUrl || l.faviconUrl || getFaviconUrl(l.listingUrl)"
+              [alt]="l.listingName"
+              class="avatar-img"
+              (error)="onImageError($event)"
+            />
+          }
+          <span class="avatar-fallback">{{ l.listingName.charAt(0).toUpperCase() }}</span>
+        </div>
+
+        <div class="hero-info">
+          <div class="hero-badges">
+            <a [routerLink]="['/leaderboard', l.categorySlug]" class="badge-cat">
+              <span class="material-symbols-outlined text-[13px]">category</span>
+              {{ l.categoryName }}
+            </a>
+
+            @if (l.currentRankInCategory === 1) {
+              <span class="badge-rank badge-rank--gold">
+                <span class="material-symbols-outlined text-[15px]">workspace_premium</span>
+                Current Champion (#1)
+              </span>
+            } @else if (l.currentRankInCategory === 2) {
+              <span class="badge-rank badge-rank--silver">
+                <span class="material-symbols-outlined text-[15px]">military_tech</span>
+                Rank #2 Contender
+              </span>
+            } @else if (l.currentRankInCategory === 3) {
+              <span class="badge-rank badge-rank--bronze">
+                <span class="material-symbols-outlined text-[15px]">military_tech</span>
+                Rank #3 Contender
+              </span>
+            } @else {
+              <span class="badge-rank badge-rank--standard">
+                Rank #{{ l.currentRankInCategory }} in {{ l.categoryName }}
+              </span>
+            }
+          </div>
+
+          <h1 class="hero-title">{{ l.listingName }}</h1>
+
+          <div class="hero-links">
+            <button
+              type="button"
+              class="btn-visit"
+              (click)="openExternalUrl(l.listingUrl, l.listingId)"
+              title="Open site in new tab"
+            >
+              <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+              <span>{{ formatDomain(l.listingUrl) }}</span>
+            </button>
+            <span class="link-meta">•</span>
+            <span class="hero-domain-sub">{{ l.siteName || 'Verified Project' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price & Outbid Action Box -->
+      <div class="hero-price-panel">
+        <div class="price-header">
+          <span class="price-eyebrow">Winning Bid</span>
+          <span class="price-display">${{ l.currentBidAmount | number: '1.0-2' }}</span>
+        </div>
+
+        <button
+          type="button"
+          class="btn-outbid-cta"
+          (click)="openOutbidModal()"
+        >
+          <span class="material-symbols-outlined text-[18px]">gavel</span>
+          <span>Outbid This Position</span>
+        </button>
+        <span class="price-sub">Instant settlement via Razorpay</span>
       </div>
     </header>
 
-    <!-- Meta grid -->
-    <div class="listing-detail__meta card">
-      <div>
-        <span class="listing-detail__meta-label">First bid</span>
-        <span class="listing-detail__meta-value">{{ l.firstBidAt | date: 'mediumDate' }}</span>
+    <!-- Description Card (If Available) -->
+    @if (l.description) {
+      <div class="detail-description card">
+        <div class="desc-header">
+          <span class="material-symbols-outlined text-[16px] text-primary">description</span>
+          <h3>Project Overview</h3>
+        </div>
+        <p class="desc-text">{{ l.description }}</p>
       </div>
-      <div>
-        <span class="listing-detail__meta-label">Last bid</span>
-        <span class="listing-detail__meta-value">{{ l.lastBidAt | date: 'mediumDate' }}</span>
+    }
+
+    <!-- 4-Card Analytics Bento Grid -->
+    <div class="stats-bento">
+      <div class="bento-card card">
+        <div class="bento-header">
+          <span class="material-symbols-outlined bento-icon">event_available</span>
+          <span class="bento-label">First Circulated</span>
+        </div>
+        <span class="bento-val">{{ l.firstBidAt | date: 'mediumDate' }}</span>
+        <span class="bento-sub">{{ timeAgo(l.firstBidAt) }}</span>
       </div>
-      <div>
-        <span class="listing-detail__meta-label">Total bids</span>
-        <span class="listing-detail__meta-value">{{ l.bids.length }}</span>
+
+      <div class="bento-card card">
+        <div class="bento-header">
+          <span class="material-symbols-outlined bento-icon">update</span>
+          <span class="bento-label">Latest Bid Activity</span>
+        </div>
+        <span class="bento-val">{{ l.lastBidAt | date: 'mediumDate' }}</span>
+        <span class="bento-sub">{{ timeAgo(l.lastBidAt) }}</span>
       </div>
-      <div>
-        <span class="listing-detail__meta-label">Clicks</span>
-        <span class="listing-detail__meta-value">{{ l.clickCount | number }}</span>
+
+      <div class="bento-card card">
+        <div class="bento-header">
+          <span class="material-symbols-outlined bento-icon">payments</span>
+          <span class="bento-label">Total Bids Placed</span>
+        </div>
+        <span class="bento-val font-mono">{{ l.bids.length }}</span>
+        <span class="bento-sub">Auction transactions</span>
+      </div>
+
+      <div class="bento-card card">
+        <div class="bento-header">
+          <span class="material-symbols-outlined bento-icon text-secondary">visibility</span>
+          <span class="bento-label">Verified Clicks</span>
+        </div>
+        <div class="clicks-val-row">
+          <span class="bento-val font-mono text-secondary">{{ l.clickCount | number }}</span>
+          <span class="pulse-indicator" title="Real-time click tracking active"></span>
+        </div>
+        <span class="bento-sub">Direct referral traffic</span>
       </div>
     </div>
 
-    <!-- Bid history -->
-    <section class="listing-detail__history card">
-      <h2>Bid history</h2>
+    <!-- Bid Ledger / History -->
+    <section class="bid-ledger card">
+      <header class="ledger-header">
+        <div class="ledger-title-wrap">
+          <span class="material-symbols-outlined ledger-icon">receipt_long</span>
+          <div>
+            <h2>Verified Bid Ledger</h2>
+            <p class="ledger-sub">Cryptographically signed and auditable payment transactions</p>
+          </div>
+        </div>
+
+        <span class="ledger-count-pill">
+          {{ l.bids.length }} Transaction{{ l.bids.length === 1 ? '' : 's' }}
+        </span>
+      </header>
+
       @if (l.bids.length === 0) {
-        <p class="listing-detail__empty">No bids recorded.</p>
+        <div class="ledger-empty">
+          <p>No historical bid transactions recorded yet.</p>
+        </div>
       } @else {
-        <table class="listing-detail__table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Payment reference</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (bid of l.bids; track bid.createdAt) {
+        <div class="table-responsive">
+          <table class="ledger-table">
+            <thead>
               <tr>
-                <td>{{ bid.createdAt | date: 'medium' }}</td>
-                <td>{{ bid.amount | number: '1.0-2' }}</td>
-                <td>{{ bid.paymentReferenceMasked }}</td>
+                <th>Date & Time (UTC)</th>
+                <th>Bid Amount</th>
+                <th>Payment Reference</th>
+                <th>Settlement</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (bid of l.bids; track bid.createdAt; let idx = $index) {
+                <tr [class.latest-bid-row]="idx === 0">
+                  <td class="col-date">
+                    <span class="date-main">{{ bid.createdAt | date: 'medium' }}</span>
+                    <span class="date-rel">{{ timeAgo(bid.createdAt) }}</span>
+                  </td>
+                  <td class="col-amount">
+                    <span class="amount-val">${{ bid.amount | number: '1.0-2' }}</span>
+                    @if (idx === 0) {
+                      <span class="tag-peak">Winning</span>
+                    }
+                  </td>
+                  <td class="col-ref">
+                    <span class="ref-badge">
+                      <span class="material-symbols-outlined text-[13px]">tag</span>
+                      <code>{{ bid.paymentReferenceMasked }}</code>
+                    </span>
+                  </td>
+                  <td class="col-status">
+                    <span class="status-pill status-pill--settled">
+                      <span class="material-symbols-outlined text-[13px]">verified</span>
+                      Settled
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     </section>
 
   } @else {
-    <p class="listing-detail__empty">Listing not found.</p>
+    <div class="detail-not-found card">
+      <span class="material-symbols-outlined not-found-icon">search_off</span>
+      <h2>Listing Not Found</h2>
+      <p>The product or bid reference you're looking for does not exist or has been removed from the registry.</p>
+      <a routerLink="/" class="btn-return-home">
+        <span class="material-symbols-outlined text-[18px]">home</span>
+        Return to Global Leaderboard
+      </a>
+    </div>
   }
 </section>

@@ -1,99 +1,330 @@
-<section class="directory">
-  <header>
-    <p class="directory__subtitle">Every category has its own ranking. Pick one to see who leads it.</p>
-  </header>
-
-  @if (hotCategories().length > 0) {
-    <section class="hot-panel">
-      <div class="hot-panel__heading">
-        <span class="hot-panel__dot"></span>
-        <strong>Live activity</strong>
+<div class="arenas-page">
+  <!-- ═══════════════════════════════════════════════════════════
+       BROADCAST NOTICE STRIP
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="notice-strip">
+    <div class="notice-strip__inner">
+      <div class="notice-strip__left">
+        <span class="surge-badge">
+          <span class="pulse-dot"></span>
+          AUCTION SURGE
+        </span>
+        <span class="notice-text">
+          High contention recorded across <strong>AI</strong>, <strong>SEO</strong>, and <strong>Dev Tools</strong> categories. Thresholds updating in real time.
+        </span>
       </div>
-      <h2 class="hot-panel__title">Most active right now</h2>
-      <p class="hot-panel__subtitle">Where ranks are getting claimed — and who is holding the top spot.</p>
+      <div class="notice-strip__right">
+        <span class="block-sync">
+          <span class="material-symbols-outlined icon-xs text-secondary">update</span>
+          Live Network Synced
+        </span>
+      </div>
+    </div>
+  </section>
 
-      <div class="hot-panel__grid">
-        @for (card of hotCategories(); track card.category.id; let i = $index) {
-          <a class="hot-card" [routerLink]="['/leaderboard', card.category.slug]">
-            <div class="hot-card__top">
-              <span class="hot-card__icon">{{ categoryIcon(card.category.id) }}</span>
-              <span class="hot-card__rank">#{{ i + 1 }}{{ i === 0 ? ' · Hottest' : '' }}</span>
-            </div>
-            <h3>{{ card.category.name }}</h3>
-            <div class="hot-card__stats">
-              <span>{{ card.category.recentClaimCount }} claims</span>
-              @if (card.topEntries[0]) {
-                <span>{{ timeAgo(card.topEntries[0].lastBidAt) }}</span>
+  <!-- ═══════════════════════════════════════════════════════════
+       PAGE HEADER & KEY SECTOR METRICS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="arenas-header-section">
+    <div class="section-container">
+      <!-- Breadcrumb & Arena Stats -->
+      <div class="breadcrumb-row">
+        <nav class="breadcrumb-nav">
+          <a routerLink="/" class="breadcrumb-link">Home</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current text-primary font-bold">Categories</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Live Arenas</span>
+        </nav>
+
+        <div class="stat-pills">
+          <div class="stat-pill">
+            <span class="material-symbols-outlined icon-xs text-secondary">grid_view</span>
+            <strong>{{ totalCount() }}</strong> Active Arenas
+          </div>
+          <div class="stat-pill stat-pill--highlight">
+            <span class="material-symbols-outlined icon-xs">payments</span>
+            <strong>Decentralized</strong> Bidding
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Headline & Quick Filter Controls Unified Row -->
+      <div class="header-main-row">
+        <div class="headline-copy">
+          <h1 class="main-heading">
+            Category Arenas & Niche Leaderboards
+          </h1>
+          <p class="main-subheading">
+            Dominate your vertical, hold the spotlight, and redirect high-intent discovery.
+          </p>
+        </div>
+
+        <!-- Live Search & Filter Controls -->
+        <div class="filter-matrix" id="quick-filter">
+          <!-- Search Input -->
+          <div class="search-box">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search niche categories or projects..."
+              [value]="searchTerm()"
+              (input)="searchTerm.set($any($event.target).value)"
+            />
+          </div>
+
+          <!-- Sort Select -->
+          <div class="sort-box">
+            <label for="category-sort" class="sort-label">Sort:</label>
+            <select
+              id="category-sort"
+              class="sort-select"
+              [value]="sortBy()"
+              (change)="setSortBy($any($event.target).value)"
+            >
+              @for (opt of sortOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
               }
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FEATURED SECTOR: HOT CONTENTION ARENAS
+       ═══════════════════════════════════════════════════════════ -->
+  @if (hotCategories().length > 0 && !searchTerm()) {
+    <section class="hot-sectors-section">
+      <div class="section-container">
+        <div class="hot-sectors-header">
+          <div class="hot-title-group">
+            <span class="live-dot-ping">
+              <span class="live-dot-ping__anim"></span>
+              <span class="live-dot-ping__dot"></span>
+            </span>
+            <div>
+              <h2 class="hot-title">Hot Contention Sectors</h2>
+              <span class="hot-sub">Highest bidding velocity and rank changes today</span>
             </div>
-            @if (card.topEntries[0]; as leader) {
-              <div class="hot-card__leader">
-                <span class="hot-card__avatar">{{ leader.listingName.charAt(0).toUpperCase() }}</span>
-                <span class="hot-card__leader-name">{{ leader.listingName }}</span>
-                <span class="hot-card__leader-price">{{ leader.currentBidAmount | number: '1.0-2' }}</span>
+          </div>
+          <div class="hot-tag">
+            <span class="material-symbols-outlined icon-xs text-tertiary">local_fire_department</span>
+            <span>Automatic rank updates every 15 seconds</span>
+          </div>
+        </div>
+
+        <!-- 3 Top Featured Cards -->
+        <div class="hot-cards-grid">
+          @for (card of hotCategories(); track card.category.id; let i = $index) {
+            <div class="hot-card">
+              <div class="hot-card__top">
+                <div class="hot-card__badge-row">
+                  <span class="hot-pill" [class.hot-pill--1]="i === 0" [class.hot-pill--2]="i === 1" [class.hot-pill--3]="i === 2">
+                    <span class="material-symbols-outlined icon-xs">
+                      {{ i === 0 ? 'local_fire_department' : (i === 1 ? 'electric_bolt' : 'code') }}
+                    </span>
+                    #{{ i + 1 }} {{ i === 0 ? 'HOTTEST' : (i === 1 ? 'TRENDING' : 'SURGING') }}
+                  </span>
+                  <span class="hot-card__time">{{ card.topEntries[0] ? timeAgo(card.topEntries[0].lastBidAt) : 'Active' }}</span>
+                </div>
+
+                <h3 class="hot-card__title">
+                  {{ categoryIcon(card.category.id) }} {{ card.category.name }}
+                </h3>
+
+                <div class="hot-card__stats">
+                  <span><strong>{{ card.category.listingCount }}</strong> claims</span>
+                  <span>•</span>
+                  <span class="text-secondary font-semibold">
+                    <span class="material-symbols-outlined icon-xs">bolt</span> High Yield
+                  </span>
+                </div>
               </div>
-            }
-          </a>
-        }
+
+              <!-- Sector King Banner -->
+              @if (card.topEntries[0]) {
+                <a
+                  class="sector-king-banner sector-king-banner--clickable"
+                  [href]="resolveUrl(card.topEntries[0].listingUrl)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  (click)="onBidderClick($event, card.topEntries[0])"
+                  [title]="'Visit ' + (card.topEntries[0].siteName || card.topEntries[0].listingName) + ' (' + card.topEntries[0].listingUrl + ')'"
+                >
+                  <div class="sector-king-banner__left">
+                    <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
+                      <span class="material-symbols-outlined icon-sm">
+                        {{ i === 0 ? 'rocket_launch' : (i === 1 ? 'smart_toy' : 'terminal') }}
+                      </span>
+                    </div>
+                    <div class="king-meta">
+                      <span class="king-label">Current Sector King</span>
+                      <span class="king-name">
+                        {{ card.topEntries[0].siteName || card.topEntries[0].listingName }}
+                        <span class="material-symbols-outlined link-icon">open_in_new</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="sector-king-banner__right">
+                    <span class="king-bid text-primary">
+                      ${{ card.topEntries[0].currentBidAmount | number: '1.0-0' }}
+                    </span>
+                    @if (card.topEntries[0].clickCount) {
+                      <span class="king-clicks text-secondary">+{{ card.topEntries[0].clickCount }} clicks</span>
+                    }
+                  </div>
+                </a>
+              } @else {
+                <div class="sector-king-banner">
+                  <div class="sector-king-banner__left">
+                    <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
+                      <span class="material-symbols-outlined icon-sm">
+                        {{ i === 0 ? 'rocket_launch' : (i === 1 ? 'smart_toy' : 'terminal') }}
+                      </span>
+                    </div>
+                    <div class="king-meta">
+                      <span class="king-label">Current Sector King</span>
+                      <span class="king-name">Unclaimed</span>
+                    </div>
+                  </div>
+                  <div class="sector-king-banner__right">
+                    <span class="king-bid text-primary">
+                      ${{ card.category.minStartingBid | number: '1.0-0' }}
+                    </span>
+                  </div>
+                </div>
+              }
+
+              <!-- Action Buttons -->
+              <div class="hot-card__actions">
+                <a [routerLink]="['/leaderboard', card.category.slug]" class="btn-enter-arena">
+                  Enter Arena
+                </a>
+                <a [routerLink]="['/leaderboard', card.category.slug]" class="btn-claim-hot">
+                  <span class="material-symbols-outlined icon-xs">gavel</span>
+                  <span>Claim #1</span>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
       </div>
     </section>
   }
 
-  <div class="directory__controls">
-    <input
-      type="search"
-      placeholder="🔍  Search categories..."
-      [value]="searchTerm()"
-      (input)="searchTerm.set($any($event.target).value)"
-    />
+  <!-- ═══════════════════════════════════════════════════════════
+       COMPLETE CATEGORY MATRIX
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="all-arenas-section">
+    <div class="section-container">
+      <div class="all-arenas-header">
+        <div>
+          <span class="section-kicker">All Arena Verticals</span>
+          <h2 class="section-heading">Browse Niche Ranking Pools</h2>
+        </div>
+        <span class="arenas-total-count">{{ filteredCards.length }} Arenas Available</span>
+      </div>
 
-    <div class="directory__sort">
-      @for (option of sortOptions; track option.value) {
-        <button type="button" class="pill" [class.pill--active]="sortBy() === option.value" (click)="setSortBy(option.value)">
-          {{ option.label }}
-        </button>
+      @if (loading()) {
+        <div class="arenas-skeleton-grid">
+          @for (_ of [1,2,3,4,5,6]; track $index) {
+            <div class="skeleton-arena-card"></div>
+          }
+        </div>
+      } @else if (filteredCards.length === 0) {
+        <div class="arenas-empty-state">
+          <span class="material-symbols-outlined empty-icon">search_off</span>
+          <h3>No categories found</h3>
+          <p>Try searching for a different keyword or view all categories.</p>
+          <button type="button" class="btn btn-primary" (click)="searchTerm.set('')">Clear Search</button>
+        </div>
+      } @else {
+        <div class="arenas-grid">
+          @for (card of filteredCards; track card.category.id) {
+            <article class="arena-card">
+              <div class="arena-card__header">
+                <div class="arena-card__icon-name">
+                  <span class="arena-icon">{{ categoryIcon(card.category.id) }}</span>
+                  <div class="arena-title-wrap">
+                    <h3 class="arena-name">{{ card.category.name }}</h3>
+                    <span class="arena-count">{{ card.category.listingCount }} competitors</span>
+                  </div>
+                </div>
+                <div class="arena-min-bid">
+                  <span class="min-bid-label">Floor</span>
+                  <span class="min-bid-val">${{ card.category.minStartingBid | number: '1.0-0' }}</span>
+                </div>
+              </div>
+
+              <!-- Top 3 Leaders in this Arena -->
+              <div class="arena-leaders">
+                @if (card.topEntries.length > 0) {
+                  @for (entry of card.topEntries; track entry.listingId; let rankIdx = $index) {
+                    <a
+                      class="arena-leader-row"
+                      [href]="resolveUrl(entry.listingUrl)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      (click)="onBidderClick($event, entry)"
+                      [title]="'Visit ' + (entry.siteName || entry.listingName) + ' (' + entry.listingUrl + ')'"
+                    >
+                      <div class="arena-leader-left">
+                        <span class="arena-medal" [class.arena-medal--gold]="rankIdx === 0" [class.arena-medal--silver]="rankIdx === 1" [class.arena-medal--bronze]="rankIdx === 2">
+                          {{ rankIdx + 1 }}
+                        </span>
+                        <span class="arena-leader-name">{{ entry.siteName || entry.listingName }}</span>
+                        <span class="material-symbols-outlined arena-leader-ext-icon">open_in_new</span>
+                      </div>
+                      <span class="arena-leader-bid">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+                    </a>
+                  }
+                } @else {
+                  <div class="arena-unclaimed-notice">
+                    <span class="material-symbols-outlined icon-xs text-primary">local_fire_department</span>
+                    <span>No active bids. First bidder secures Rank #1 at minimum starting bid!</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Card Action -->
+              <div class="arena-card__footer">
+                <a [routerLink]="['/leaderboard', card.category.slug]" class="arena-action-link">
+                  <span>Enter {{ card.category.name }} Arena</span>
+                  <span class="material-symbols-outlined icon-xs">arrow_forward</span>
+                </a>
+              </div>
+            </article>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalCount() > pageSize() && !searchTerm()) {
+          <div class="pagination-bar">
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="page() <= 1"
+              (click)="goToPage(page() - 1)"
+            >
+              Previous
+            </button>
+            <span class="page-indicator">
+              Page {{ page() }} of {{ Math.ceil(totalCount() / pageSize()) }}
+            </span>
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="page() >= Math.ceil(totalCount() / pageSize())"
+              (click)="goToPage(page() + 1)"
+            >
+              Next
+            </button>
+          </div>
+        }
       }
     </div>
-  </div>
-
-  @if (loading()) {
-    <p class="directory__loading-text">Loading categories...</p>
-  } @else {
-    <div class="directory__grid">
-      @for (card of filteredCards; track card.category.id) {
-        <div class="category-card card">
-          <a [routerLink]="['/leaderboard', card.category.slug]" class="category-card__header">
-            <span class="category-card__icon-wrap">{{ categoryIcon(card.category.id) }}</span>
-            <span class="category-card__name">{{ card.category.name }}</span>
-          </a>
-
-          <hr class="category-card__divider" />
-
-          <div class="category-card__rows">
-            @for (entry of card.topEntries; track entry.listingId) {
-              <div class="category-card__row">
-                <span class="category-card__rank">
-                  @if ($index === 0) { 🥇 }
-                  @else if ($index === 1) { 🥈 }
-                  @else { 🥉 }
-                </span>
-                <span class="category-card__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
-                <span class="category-card__listing-name">{{ entry.listingName }}</span>
-                <span class="category-card__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
-              </div>
-            } @empty {
-              <p class="category-card__empty">No bids yet.</p>
-            }
-          </div>
-
-        </div>
-              }
-    </div>
-
-    <nav class="directory__pagination">
-      <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">← Prev</button>
-      <span>Page {{ page() }} of {{ Math.ceil(totalCount() / pageSize()) }}</span>
-      <button type="button" class="btn" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">Next →</button>
-    </nav>
-  }
-</section>
+  </section>
+</div>

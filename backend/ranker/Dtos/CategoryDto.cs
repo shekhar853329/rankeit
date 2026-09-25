@@ -4,6 +4,7 @@ public sealed record CategoryDto(
     int Id,
     string Name,
     string Slug,
+    string? Icon,
     int? ParentCategoryId,
     decimal MinBidIncrement,
     decimal MinStartingBid,

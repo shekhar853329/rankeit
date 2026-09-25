@@ -12,6 +12,7 @@ public sealed record LeaderboardEntryDto(
     DateTime FirstBidAt,
     DateTime LastBidAt,
     int ClickCount,
+    int BidCount,
     string? SiteName,
     string? LogoUrl,
     string? Description,
@@ -22,6 +23,7 @@ public sealed record CategoryLeaderboardResponseDto(
     int CategoryId,
     string CategoryName,
     string CategorySlug,
+    string? CategoryIcon,
     decimal MinBidIncrement,
     decimal MinStartingBid,
     PagedResult<LeaderboardEntryDto> Leaderboard);

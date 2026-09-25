@@ -1,13 +1,153 @@
-<section class="static-page card">
-  <p class="static-page__eyebrow">📋 How it works</p>
-  <h1>Rules</h1>
-  <p>How ranking and bidding works on RankIt.</p>
+<section class="rules-container">
+  <!-- Protocol Header -->
+  <header class="rules-header">
+    <div class="rules-badge-row">
+      <span class="badge-pill badge-pill--accent">
+        <span class="material-symbols-outlined text-[14px]">policy</span>
+        Protocol Specifications
+      </span>
+      <span class="badge-pill">
+        <span class="material-symbols-outlined text-[14px]">gavel</span>
+        Auction Mechanics
+      </span>
+    </div>
 
-  <ol class="static-page__rules">
-    <li>Listings are ranked strictly by current bid amount within their category; ties go to whoever bid first.</li>
-    <li>A new bid must exceed the category's current top bid by at least the category's minimum increment.</li>
-    <li>A brand-new listing must meet the category's minimum starting bid.</li>
-    <li>The homepage and "Day wise listing" page use a normalized score across categories so high-price verticals don't automatically dominate.</li>
-    <li>Bids are final once payment is confirmed; reclaiming a spot means placing a new, higher bid.</li>
-  </ol>
+    <h1 class="rules-title">Rules of Engagement & Ranking Protocol</h1>
+    <p class="rules-subtitle">
+      RankUp operates an open, transparent, capital-backed discovery engine. Understand how real-time bids, floor increments, and cross-sector normalization determine rank position.
+    </p>
+  </header>
+
+  <!-- Key Principles Grid -->
+  <div class="rules-grid">
+    <!-- Rule 1 -->
+    <div class="rule-card card">
+      <div class="rule-card__number">01</div>
+      <div class="rule-card__content">
+        <div class="rule-card__header">
+          <span class="material-symbols-outlined rule-icon">leaderboard</span>
+          <h3>Strict Capital Precedence</h3>
+        </div>
+        <p>
+          Products are ranked strictly by verified current bid amount within their target category arena. If two listings share an identical bid amount, timestamp precedence governs: the earlier confirmed transaction retains rank advantage.
+        </p>
+      </div>
+    </div>
+
+    <!-- Rule 2 -->
+    <div class="rule-card card">
+      <div class="rule-card__number">02</div>
+      <div class="rule-card__content">
+        <div class="rule-card__header">
+          <span class="material-symbols-outlined rule-icon">upgrade</span>
+          <h3>Dynamic Floors & Bid Increments</h3>
+        </div>
+        <p>
+          Entering an arena for the first time requires meeting or exceeding the sector floor (minimum starting bid). Bumping an incumbent rank holder requires topping their active bid by at least the category's minimum increment (typically $1 to $5).
+        </p>
+      </div>
+    </div>
+
+    <!-- Rule 3 -->
+    <div class="rule-card card">
+      <div class="rule-card__number">03</div>
+      <div class="rule-card__content">
+        <div class="rule-card__header">
+          <span class="material-symbols-outlined rule-icon">equalizer</span>
+          <h3>Cross-Sector Score Normalization</h3>
+        </div>
+        <p>
+          The Global Live Leaderboard and Daily Feed implement an intelligent normalization factor across sectors. High-capital enterprise categories do not drown out exceptional indie developer tools or niche utilities.
+        </p>
+      </div>
+    </div>
+
+    <!-- Rule 4 -->
+    <div class="rule-card card">
+      <div class="rule-card__number">04</div>
+      <div class="rule-card__content">
+        <div class="rule-card__header">
+          <span class="material-symbols-outlined rule-icon">verified_user</span>
+          <h3>Cryptographic Settlement & Finality</h3>
+        </div>
+        <p>
+          Every bid is processed and authorized through payment gateways (Razorpay) before being committed to the public ledger. Once payment is confirmed, ranks update instantaneously across all connected clients via WebSockets. Bids are final.
+        </p>
+      </div>
+    </div>
+
+    <!-- Rule 5 -->
+    <div class="rule-card card">
+      <div class="rule-card__number">05</div>
+      <div class="rule-card__content">
+        <div class="rule-card__header">
+          <span class="material-symbols-outlined rule-icon">ads_click</span>
+          <h3>Verified Traffic & Analytics Tracking</h3>
+        </div>
+        <p>
+          Outbound clicks from RankUp to your product URL are tracked and filtered against automated bot scrapers in real-time. High-ranking spots enjoy verifiable exposure metrics visible directly on public listing profiles.
+        </p>
+      </div>
+    </div>
+
+    <!-- Rule 6 -->
+    <div class="rule-card card">
+      <div class="rule-card__number">06</div>
+      <div class="rule-card__content">
+        <div class="rule-card__header">
+          <span class="material-symbols-outlined rule-icon">av_timer</span>
+          <h3>Continuous Reset & Daily Snapshots</h3>
+        </div>
+        <p>
+          Rankings are live and continuous 24/7/365. Daily snapshots of winning bids are archived at 00:00 UTC and immortalized into the Daily Listings history so top performers maintain permanent proof of dominance.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <section class="rules-faq card">
+    <div class="faq-header">
+      <span class="material-symbols-outlined text-primary text-[24px]">help</span>
+      <h2>Frequently Asked Inquiries</h2>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <h4>What happens when my project is outbid?</h4>
+        <p>
+          You do not lose your listing! When another project places a higher bid, your product automatically shifts down to the next rank. You can reclaim your previous position at any time by placing a new bump bid.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Can I update my product's title, URL, or metadata?</h4>
+        <p>
+          Yes. Re-bidding on an existing listing automatically updates its metadata (scraped from your URL) while maintaining your verified click history and transaction record.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h4>How do category arenas differ from the Global Leaderboard?</h4>
+        <p>
+          Category Arenas are dedicated vertical leaderboards (e.g. Developer Tools, AI & Agents) ranked purely by dollar bids. The Global Leaderboard features top contenders weighted across all sectors for maximum site-wide visibility.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA Bar -->
+  <div class="rules-cta-bar card">
+    <div class="cta-text">
+      <h3>Ready to Claim Your Category Throne?</h3>
+      <p>Select your vertical arena or outbid current contenders on the live global board.</p>
+    </div>
+    <div class="cta-actions">
+      <a routerLink="/categories" class="btn-sec">Explore Arenas</a>
+      <a routerLink="/" class="btn-pri">
+        <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
+        Claim #1 Spot
+      </a>
+    </div>
+  </div>
 </section>

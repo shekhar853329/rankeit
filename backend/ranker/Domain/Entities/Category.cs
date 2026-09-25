@@ -9,6 +9,9 @@ public class Category
     /// <summary>URL-routing slug, e.g. "neet-coaching-patna". Must be unique.</summary>
     public required string Slug { get; set; }
 
+    /// <summary>Emoji or icon representation of the category, e.g. "🤖".</summary>
+    public string? Icon { get; set; }
+
     public int? ParentCategoryId { get; set; }
 
     public Category? ParentCategory { get; set; }

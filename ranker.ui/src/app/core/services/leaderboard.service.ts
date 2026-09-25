@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api-config';
-import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto } from '../models/leaderboard.model';
+import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, HallOfFameItemDto, LiveBidEventDto, PlatformStatsDto } from '../models/leaderboard.model';
 import { DailyListingsResponseDto } from '../models/daily-listing.model';
 
 @Injectable({ providedIn: 'root' })
@@ -20,15 +20,31 @@ export class LeaderboardService {
     );
   }
 
-  getGlobalLeaderboard(topN = 20): Observable<GlobalLeaderboardEntryDto[]> {
+  getGlobalLeaderboard(topN = 20, timeMode = 'today'): Observable<GlobalLeaderboardEntryDto[]> {
     return this.http.get<GlobalLeaderboardEntryDto[]>(`${API_BASE_URL}/api/leaderboard/global`, {
-      params: { topN: String(topN) },
+      params: { topN: String(topN), timeMode },
     });
   }
 
   getDailyListings(page = 1, pageSize = 5): Observable<DailyListingsResponseDto> {
     return this.http.get<DailyListingsResponseDto>(`${API_BASE_URL}/api/leaderboard/daily`, {
       params: { page: String(page), pageSize: String(pageSize) },
+    });
+  }
+
+  getPlatformStats(): Observable<PlatformStatsDto> {
+    return this.http.get<PlatformStatsDto>(`${API_BASE_URL}/api/leaderboard/stats`);
+  }
+
+  getLiveStream(limit = 10): Observable<LiveBidEventDto[]> {
+    return this.http.get<LiveBidEventDto[]>(`${API_BASE_URL}/api/leaderboard/live-stream`, {
+      params: { limit: String(limit) },
+    });
+  }
+
+  getHallOfFame(topN = 5): Observable<HallOfFameItemDto[]> {
+    return this.http.get<HallOfFameItemDto[]>(`${API_BASE_URL}/api/leaderboard/hall-of-fame`, {
+      params: { topN: String(topN) },
     });
   }
 }

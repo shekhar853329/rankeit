@@ -2,33 +2,51 @@
   <div class="site-header__inner">
 
     <a routerLink="/" class="site-header__brand">
-      <span class="site-header__logo">⚡</span>
-      <span class="site-header__brand-name">RankIt</span>
+      <svg class="site-header__logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" fill="none">
+        <rect x="2" y="6" width="28" height="28" rx="8" fill="var(--color-primary, #F95738)"/>
+        <path d="M16 11L22 23H10L16 11Z" fill="#FFFFFF"/>
+        <path d="M12 25H20V27H12V25Z" fill="#FFFFFF" fill-opacity="0.8"/>
+        <text x="38" y="26" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" font-size="20" fill="currentColor" letter-spacing="-0.5">Rank<tspan fill="var(--color-primary, #F95738)">Up</tspan></text>
+      </svg>
+      <span class="site-header__tagline">Claim. Rank. Outgrow.</span>
     </a>
 
-    <span class="site-header__tagline">Rank, claim, and grow your presence — <em>in one place.</em></span>
-
-    <!-- ── Merged stats pill (left of nav) ── -->
+    <!-- ── Live network stats pill (left of nav) ── -->
     <div class="site-header__stats">
-      <span class="site-header__online-dot" aria-hidden="true"></span>
-      <span class="site-header__stats-online" title="Users currently online">{{ onlineUsers() }} online</span>
-      @if (visitsToday() !== null) {
-        <span class="site-header__stats-sep" aria-hidden="true"></span>
-        <span class="site-header__stats-visits" title="Unique visitors today">👁 {{ visitsToday() }} visited</span>
-      }
+      <span class="status-beacon">
+        <span class="status-beacon__ping"></span>
+        <span class="status-beacon__dot"></span>
+      </span>
+      <span class="site-header__stats-text">
+        <strong>{{ onlineUsers() }}</strong> online
+        @if (visitsToday() !== null) {
+          <span class="site-header__stats-sep" aria-hidden="true">•</span>
+          <strong>{{ visitsToday() }}</strong> views today
+          <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+        }
+      </span>
     </div>
 
+    <!-- ── Main Navigation ── -->
     <nav class="site-header__nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Leaderboard</a>
       <a routerLink="/categories" routerLinkActive="active">Categories</a>
-      <a routerLink="/daily" routerLinkActive="active">Daily</a>
-      <a routerLink="/rules" routerLinkActive="active">Rules</a>
+      <a routerLink="/daily" routerLinkActive="active">Daily Bids</a>
+      <a routerLink="/rules" routerLinkActive="active">Rules & FAQ</a>
       <a routerLink="/contact" routerLinkActive="active">Contact</a>
     </nav>
 
+    <!-- ── Actions: Theme & Claim Spot ── -->
     <div class="site-header__actions">
-      <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" aria-label="Toggle dark mode">
-        {{ theme.dark() ? '☀️' : '🌙' }}
+      <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" [attr.aria-label]="theme.dark() ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span class="material-symbols-outlined icon-toggle">
+          {{ theme.dark() ? 'light_mode' : 'dark_mode' }}
+        </span>
       </button>
+      <a routerLink="/" fragment="claim-url" class="site-header__claim-btn">
+        <span class="material-symbols-outlined icon-bolt">bolt</span>
+        <span>Claim #1 Spot</span>
+      </a>
     </div>
 
   </div>

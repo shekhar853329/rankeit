@@ -4,7 +4,7 @@ import { DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Subject } from 'rxjs';
-import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto } from '../../core/models/leaderboard.model';
+import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, PlatformStatsDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
 import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
 import { UrlMetadataDto } from '../../core/models/url-metadata.model';
@@ -15,13 +15,8 @@ import { ListingService } from '../../core/services/listing.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ModalService } from '../../core/services/modal.service';
-import { CategoryTabsComponent } from '../../shared/category-tabs/category-tabs.component';
-import { HeroSectionComponent } from '../../shared/hero-section/hero-section.component';
-import { TopRankerSpotlightComponent } from '../../shared/top-ranker-spotlight/top-ranker-spotlight.component';
-import { TodaysLeaderboardComponent } from '../../shared/todays-leaderboard/todays-leaderboard.component';
-import { ClaimHeroCategory, ClaimHeroComponent } from '../../shared/claim-hero/claim-hero.component';
 
-interface FeedRow {
+export interface FeedRow {
   rank: number;
   listingId: number;
   listingName: string;
@@ -29,17 +24,38 @@ interface FeedRow {
   currentBidAmount: number;
   categoryName: string;
   categorySlug: string;
+  categoryIcon?: string | null;
   clickCount: number;
+  bidCount: number;
   siteName: string | null;
   logoUrl: string | null;
   description: string | null;
   faviconUrl: string | null;
 }
 
+export interface LiveStreamEvent {
+  icon: string;
+  iconClass: string;
+  user: string;
+  action: string;
+  timeAgo: string;
+  highlight: string;
+}
+
+export interface HallOfFameItem {
+  id: number;
+  rank: number;
+  name: string;
+  siteName: string | null;
+  url: string;
+  bid: number;
+  clickCount: number;
+}
+
 @Component({
   selector: 'app-global-leaderboard',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, CategoryTabsComponent, HeroSectionComponent, ClaimHeroComponent, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './global-leaderboard.component.html',
   styleUrl: './global-leaderboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,81 +72,135 @@ export class GlobalLeaderboardComponent implements OnInit {
   private readonly modalService = inject(ModalService);
 
   private joinedCategoryGroup: string | null = null;
+  private countdownTimerId: ReturnType<typeof setInterval> | null = null;
+  private toastTimerId: ReturnType<typeof setTimeout> | null = null;
 
+  /* ── Time & Currency Controls ── */
+  readonly timeMode = signal<'today' | 'alltime'>('today');
+  readonly selectedCurrency = signal<'USD' | 'EUR' | 'INR'>('USD');
+  readonly countdownText = signal('05h : 42m : 18s');
+  readonly currentUtcTime = signal('18:00 UTC');
+
+  readonly currencySymbol = computed(() => {
+    switch (this.selectedCurrency()) {
+      case 'EUR': return '€';
+      case 'INR': return '₹';
+      default: return '$';
+    }
+  });
+
+  /* ── Search & Filter Controls ── */
+  readonly searchQuery = signal('');
+  readonly showAllRows = signal(false);
+
+  /* ── Categories & Tabs ── */
   readonly tabs = signal<CategoryDto[]>([]);
   readonly allCategories = signal<CategoryDto[]>([]);
-  readonly claimHeroCategories = computed<ClaimHeroCategory[]>(() => this.allCategories().map((category) => ({
-    slug: category.slug,
-    name: category.name,
-    icon: this.categoryIcon(category.slug),
-  })));
-  readonly trendingCategories = signal<CategoryDto[]>([]);
+  readonly claimHeroCategories = computed(() =>
+    this.allCategories().map((category) => ({
+      slug: category.slug,
+      name: category.name,
+      icon: this.categoryIcon(category.slug),
+    }))
+  );
   readonly selectedSlug = signal<string | null>(null);
+
+  /* ── Hero / Command Bar Form State ── */
   readonly heroUrl = signal('');
-  /** True once the user has typed in (or cleared) the URL field — gates error visibility. */
   readonly heroUrlDirty = signal(false);
-  /** Metadata fetched from the entered URL; null until a valid URL resolves. */
+  readonly productTitle = signal('');
   readonly urlMetadata = signal<UrlMetadataDto | null>(null);
-  /** Drives the debounced metadata fetch — emits every time heroUrl changes to a valid value. */
-  private readonly urlChange$ = new Subject<string>();
   readonly metadataLoading = signal(false);
+  private readonly urlChange$ = new Subject<string>();
 
-  readonly categoryIcons: Record<string, string> = {
-    'ai-agents-infrastructure': '🤖',
-    'seo-ai-visibility':        '🔍',
-    'marketing-advertising':    '📣',
-    'developer-tools':          '🛠️',
-    'productivity':             '⚡',
-    'ecommerce-tools':          '🛒',
-    'crypto-web3':              '🪙',
-    'real-estate':              '🏠',
-    'legal-services':           '⚖️',
-    'finance-investing':        '📈',
-    'freelancers':              '💼',
-    'games-entertainment':      '🎮',
-    'music':                    '🎵',
-    'food-beverage':            '🍽️',
-    'fashion':                  '👗',
-    'pet-care':                 '🐾',
-    'travel':                   '✈️',
-    'sports':                   '🏆',
-    'home-services':            '🔧',
-    'automotive':               '🚗',
-    'education':                '📚',
-    'health-fitness':           '💪',
-  };
-
-  categoryIcon(slug: string): string {
-    return this.categoryIcons[slug] ?? '📂';
-  }
-
+  /* ── Leaderboard Data Signals ── */
   readonly loading = signal(true);
   readonly globalEntries = signal<GlobalLeaderboardEntryDto[]>([]);
   readonly categoryData = signal<CategoryLeaderboardResponseDto | null>(null);
-  /** Live click-through counts pushed by the "ListingClicked" hub event, keyed by listingId; overrides the loaded DTO's count. */
+  readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
   readonly clickCounts = signal<Record<number, number>>({});
 
-  /** Top-3 bidders of today pulled from the daily listings endpoint. */
-  readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
+  /* ── Claim Target State ── */
   readonly claimSlug = signal<string | null>(null);
   readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
-  /** Manually-picked target bid amount (set by hovering "Claim this position" on a feed row); null falls back to claimPrice(). */
   readonly claimAmount = signal<number | null>(null);
-  /** Rank the current claim amount would take; defaults to #1 until a specific row is targeted. */
   readonly targetRank = signal(1);
-  /** Drives the glow animation on the sidebar claim card for 3 s after a feed row is clicked. */
-  readonly claimCardGlow = signal(false);
 
-  /**
-   * Slug + data populated silently by "Claim this position" row clicks.
-   * Never bound to the dropdown — used as a fallback in claimRank() so the
-   * category dropdown is never touched when a row is clicked.
-   */
   private readonly claimPositionSlug = signal<string | null>(null);
   private readonly claimPositionData = signal<CategoryLeaderboardResponseDto | null>(null);
 
-  private glowTimer: ReturnType<typeof setTimeout> | null = null;
+  /* ── Toast Notification ── */
+  readonly toastVisible = signal(false);
+  readonly toastMessage = signal('');
 
+  /* ── Live Activity Stream (Loaded from DB) ── */
+  readonly liveEvents = signal<LiveStreamEvent[]>([]);
+
+  /* ── Platform Stats & Audit Metrics (Loaded from DB) ── */
+  readonly platformStats = signal<PlatformStatsDto | null>(null);
+
+  /* ── All-Time Hall of Fame (Loaded from DB) ── */
+  readonly hallOfFameList = signal<HallOfFameItem[]>([]);
+
+  categoryIcon(slug: string): string {
+    const found =
+      this.allCategories().find((c) => c.slug === slug)?.icon ??
+      this.tabs().find((c) => c.slug === slug)?.icon;
+    return found || '📂';
+  }
+
+  /* ── Dynamic Hourly Chart Computed Signals (Generated from DB Hourly Pressures) ── */
+  readonly hourlyChartPoints = computed(() => {
+    const stats = this.platformStats();
+    const pressures = stats?.hourlyBidPressures ?? [];
+    if (pressures.length === 0) {
+      return Array.from({ length: 24 }, (_, i) => ({
+        x: Math.round((i / 23) * 600),
+        y: 85,
+        volume: 0,
+        hour: i,
+      }));
+    }
+    const volumes = pressures.map((p) => p.volume);
+    const max = Math.max(...volumes, 1);
+
+    return pressures.map((p, idx) => {
+      const x = Math.round((idx / Math.max(1, pressures.length - 1)) * 600);
+      const ratio = Number(p.volume) / Number(max);
+      const y = Math.round(85 - ratio * 70); // Min y=15, baseline y=85
+      return { x, y, volume: p.volume, hour: p.hour };
+    });
+  });
+
+  readonly hourlyChartPath = computed(() => {
+    const pts = this.hourlyChartPoints();
+    if (pts.length === 0) return 'M 0 85 L 600 85';
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      d += ` L ${pts[i].x} ${pts[i].y}`;
+    }
+    return d;
+  });
+
+  readonly hourlyChartAreaPath = computed(() => {
+    const pts = this.hourlyChartPoints();
+    if (pts.length === 0) return 'M 0 85 L 600 85 L 600 100 L 0 100 Z';
+    let d = `M 0 100 L ${pts[0].x} ${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      d += ` L ${pts[i].x} ${pts[i].y}`;
+    }
+    d += ` L 600 100 Z`;
+    return d;
+  });
+
+  readonly chartPingPoint = computed(() => {
+    const pts = this.hourlyChartPoints();
+    const currentHour = new Date().getUTCHours();
+    const point = pts.find((p) => p.hour === currentHour) ?? pts[pts.length - 1];
+    return point ? { cx: point.x, cy: point.y } : { cx: 600, cy: 85 };
+  });
+
+  /* ── Computed Rows ── */
   readonly rows = computed<FeedRow[]>(() => {
     const clickOverrides = this.clickCounts();
     if (this.selectedSlug() === null) {
@@ -142,7 +212,9 @@ export class GlobalLeaderboardComponent implements OnInit {
         currentBidAmount: e.currentBidAmount,
         categoryName: e.categoryName,
         categorySlug: e.categorySlug,
+        categoryIcon: e.categoryIcon ?? this.categoryIcon(e.categorySlug),
         clickCount: clickOverrides[e.listingId] ?? e.clickCount,
+        bidCount: e.bidCount ?? 1,
         siteName: e.siteName,
         logoUrl: e.logoUrl,
         description: e.description,
@@ -151,9 +223,7 @@ export class GlobalLeaderboardComponent implements OnInit {
     }
 
     const data = this.categoryData();
-    if (!data) {
-      return [];
-    }
+    if (!data) return [];
     return data.leaderboard.items.map((e) => ({
       rank: e.rank,
       listingId: e.listingId,
@@ -162,7 +232,9 @@ export class GlobalLeaderboardComponent implements OnInit {
       currentBidAmount: e.currentBidAmount,
       categoryName: data.categoryName,
       categorySlug: data.categorySlug,
+      categoryIcon: data.categoryIcon ?? this.categoryIcon(data.categorySlug),
       clickCount: clickOverrides[e.listingId] ?? e.clickCount,
+      bidCount: e.bidCount ?? 1,
       siteName: e.siteName,
       logoUrl: e.logoUrl,
       description: e.description,
@@ -170,60 +242,79 @@ export class GlobalLeaderboardComponent implements OnInit {
     }));
   });
 
-  /** Price to become #1 in the claim card's category; null when no category is targeted yet. */
+  readonly allMatchingRows = computed<FeedRow[]>(() => {
+    let list = [...this.rows()];
+    const query = this.searchQuery().trim().toLowerCase();
+    if (query) {
+      list = list.filter(
+        (r) =>
+          r.listingName.toLowerCase().includes(query) ||
+          (r.siteName && r.siteName.toLowerCase().includes(query)) ||
+          (r.description && r.description.toLowerCase().includes(query)) ||
+          r.categoryName.toLowerCase().includes(query)
+      );
+    }
+
+    // Re-index ranks
+    return list.map((item, idx) => ({ ...item, rank: idx + 1 }));
+  });
+
+  readonly displayedRows = computed<FeedRow[]>(() => {
+    const list = this.allMatchingRows();
+    if (this.showAllRows() || list.length <= 6) {
+      return list;
+    }
+    return list.slice(0, 6);
+  });
+
+  readonly reigningChampion = computed<FeedRow | null>(() => {
+    const r = this.rows();
+    return r.length > 0 ? r[0] : null;
+  });
+
+  /* ── Pricing & Validation ── */
   readonly claimPrice = computed<number | null>(() => {
     const data = this.claimCategoryData();
-    if (this.claimSlug() === null || !data) {
-      return null;
-    }
+    if (this.claimSlug() === null || !data) return null;
     const currentTop = data.leaderboard.items[0]?.currentBidAmount;
     return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
   });
 
-  /**
-   * Fallback price derived from the global feed's current #1 entry when no category
-   * has been selected yet. Avoids showing ₹0 on initial page load.
-   */
   readonly globalDefaultPrice = computed<number | null>(() => {
     const top = this.rows()[0];
-    if (!top) return null;
-    // Use the category's minBidIncrement if available, else a safe default of 1
-    const category = this.allCategories().find((c) => c.slug === top.categorySlug)
-      ?? this.tabs().find((c) => c.slug === top.categorySlug);
+    if (!top) return 10;
+    const category =
+      this.allCategories().find((c) => c.slug === top.categorySlug) ??
+      this.tabs().find((c) => c.slug === top.categorySlug);
     const increment = category?.minBidIncrement ?? 1;
     return top.currentBidAmount + increment;
   });
-
-  /**
-   * Accepts:
-   *  - A URL starting with http:// or https://
-   *  - A bare domain like google.com or sub.domain.co.uk
-   *  - A handle starting with @ (e.g. @myhandle)
-   *  - An email address (e.g. user@example.com)
-   */
-  readonly isHeroUrlValid = computed(() => {
-    const v = this.heroUrl().trim();
-    if (!v) return false;
-    if (/^@\S+$/.test(v)) return true;
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;
-    try { const u = new URL(v); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { /* fall through */ }
-    // Bare domain: at least one dot, no spaces, valid TLD-like suffix
-    return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/\S*)?$/.test(v);
-  });
-  readonly canClaimRank = computed(() =>
-    !!(this.claimSlug() && this.isHeroUrlValid())
-  );
 
   readonly effectiveClaimAmount = computed<number | null>(() =>
     this.claimAmount() ?? this.claimPrice() ?? this.globalDefaultPrice()
   );
 
-  /**
-   * Returns a Google S2 favicon URL for the currently entered URL.
-   * Google's service is always publicly accessible (no 403s) and caches
-   * favicons for every domain. Used only for display — the raw faviconUrl
-   * from the API is still stored / passed to the modal.
-   */
+  readonly isHeroUrlValid = computed(() => {
+    const v = this.heroUrl().trim();
+    if (!v) return false;
+    if (/^@\S+$/.test(v)) return true;
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;
+    try {
+      const u = new URL(v);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      /* fall through */
+    }
+    return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/\S*)?$/.test(
+      v
+    );
+  });
+
+  readonly canClaimRank = computed(() => {
+    const hasCategory = !!(this.claimSlug() || this.claimPositionSlug() || this.allCategories().length > 0);
+    return !!(hasCategory && this.isHeroUrlValid());
+  });
+
   readonly faviconDisplayUrl = computed<string | null>(() => {
     const v = this.heroUrl().trim();
     if (!v || !this.isHeroUrlValid()) return null;
@@ -239,7 +330,127 @@ export class GlobalLeaderboardComponent implements OnInit {
     }
   });
 
-  /** Called from the template on every URL input change. Updates the signal, triggers metadata fetch if valid. */
+  ngOnInit(): void {
+    this.startCountdownTimer();
+    this.loadPlatformStats();
+    this.loadLiveStream();
+    this.loadHallOfFame();
+
+    this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 12 }).subscribe((result) => {
+      this.tabs.set(result.items);
+    });
+
+    this.loadTop3Bidders();
+
+    this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
+      this.allCategories.set(result.items);
+      if (!this.claimSlug() && result.items.length > 0) {
+        this.selectClaimCategory(result.items[0].slug);
+      }
+    });
+
+    this.loadSelection();
+    void this.signalr.joinGlobalGroup();
+
+    // Auto-fetch URL metadata 500 ms after typing stops
+    this.urlChange$
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        switchMap((url) => {
+          this.metadataLoading.set(true);
+          return this.urlMetadataService.fetch(url);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((meta) => {
+        this.urlMetadata.set(meta);
+        if (meta?.siteName && !this.productTitle()) {
+          this.productTitle.set(meta.siteName);
+        }
+        this.metadataLoading.set(false);
+      });
+
+    this.destroyRef.onDestroy(() => {
+      void this.signalr.leaveGlobalGroup();
+      if (this.joinedCategoryGroup) {
+        void this.signalr.leaveCategoryGroup(this.joinedCategoryGroup);
+      }
+      if (this.countdownTimerId) clearInterval(this.countdownTimerId);
+      if (this.toastTimerId) clearTimeout(this.toastTimerId);
+    });
+
+    // Real-time rank and bid updates via SignalR
+    this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
+      const slug = this.selectedSlug();
+      if (slug === null && payload.becameCategoryTop) {
+        this.loadGlobal();
+      } else if (slug !== null && payload.categorySlug === slug) {
+        this.loadCategory(slug);
+      }
+      this.loadTop3Bidders();
+
+      // Push to live activity stream
+      this.liveEvents.update((events) => [
+        {
+          icon: payload.becameCategoryTop ? 'local_fire_department' : 'trending_up',
+          iconClass: payload.becameCategoryTop ? 'stream-icon--primary' : 'stream-icon--secondary',
+          user: payload.listingName.startsWith('@') ? payload.listingName : '@' + payload.listingName,
+          action: payload.becameCategoryTop
+            ? `recaptured #1 for ${this.currencySymbol()}${payload.newBidAmount}`
+            : `bumped bid to ${this.currencySymbol()}${payload.newBidAmount}`,
+          timeAgo: 'Just now',
+          highlight: payload.becameCategoryTop ? 'Took Top Spot' : 'Active Bid',
+        },
+        ...events.slice(0, 4),
+      ]);
+    });
+
+    this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
+      this.clickCounts.update((map) => ({ ...map, [listingId]: clickCount }));
+    });
+  }
+
+  /* ── Timer & Currency Methods ── */
+  private startCountdownTimer(): void {
+    const tick = () => {
+      const now = new Date();
+      const utcMidnight = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0)
+      );
+      const diff = Math.max(0, utcMidnight.getTime() - now.getTime());
+      const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+      const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
+      const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+      this.countdownText.set(`${hours}h : ${minutes}m : ${seconds}s`);
+
+      const utcHours = String(now.getUTCHours()).padStart(2, '0');
+      const utcMins = String(now.getUTCMinutes()).padStart(2, '0');
+      this.currentUtcTime.set(`${utcHours}:${utcMins} UTC`);
+    };
+
+    tick();
+    this.countdownTimerId = setInterval(tick, 1000);
+  }
+
+  setTimeMode(mode: 'today' | 'alltime'): void {
+    this.timeMode.set(mode);
+    this.loadSelection();
+  }
+
+  setCurrency(curr: 'USD' | 'EUR' | 'INR'): void {
+    this.selectedCurrency.set(curr);
+  }
+
+  /* ── Interactive Actions ── */
+  onSearchChange(event: Event): void {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  toggleShowAll(): void {
+    this.showAllRows.update((v) => !v);
+  }
+
   onHeroUrlChange(value: string): void {
     this.heroUrl.set(value);
     this.heroUrlDirty.set(true);
@@ -252,76 +463,20 @@ export class GlobalLeaderboardComponent implements OnInit {
     }
   }
 
-  /** Hides a broken favicon img so the 🌐 fallback shows instead. */
+  onProductTitleChange(value: string): void {
+    this.productTitle.set(value);
+  }
+
   onFaviconError(event: Event): void {
     (event.target as HTMLImageElement).style.display = 'none';
   }
 
-  /** Hides a broken listing favicon img so the letter avatar fallback shows instead. */
   onListingFaviconError(event: Event): void {
     (event.target as HTMLImageElement).style.display = 'none';
   }
 
-  ngOnInit(): void {
-    this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 8 }).subscribe((result) => {
-      this.tabs.set(result.items);
-      this.trendingCategories.set(result.items.slice(0, 6));
-    });
-
-    // Load top-3 bidders of today
-    this.loadTop3Bidders();
-
-    this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
-      this.allCategories.set(result.items);
-    });
-
-    this.loadSelection();
-    void this.signalr.joinGlobalGroup();
-
-    // Auto-fetch URL metadata 600 ms after the user stops typing a valid URL
-    this.urlChange$
-      .pipe(
-        debounceTime(600),
-        distinctUntilChanged(),
-        switchMap((url) => {
-          this.metadataLoading.set(true);
-          return this.urlMetadataService.fetch(url);
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((meta) => {
-        this.urlMetadata.set(meta);
-        this.metadataLoading.set(false);
-      });
-
-    this.destroyRef.onDestroy(() => {
-      void this.signalr.leaveGlobalGroup();
-      if (this.joinedCategoryGroup) {
-        void this.signalr.leaveCategoryGroup(this.joinedCategoryGroup);
-      }
-      if (this.glowTimer) clearTimeout(this.glowTimer);
-    });
-
-    this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
-      const slug = this.selectedSlug();
-      if (slug === null && payload.becameCategoryTop) {
-        this.loadGlobal();
-      } else if (slug !== null && payload.categorySlug === slug) {
-        this.loadCategory(slug);
-      }
-      // Any new bid could change the top bidders of the day — refresh the bar
-      this.loadTop3Bidders();
-    });
-
-    this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
-      this.clickCounts.update((map) => ({ ...map, [listingId]: clickCount }));
-    });
-  }
-
   selectTab(slug: string | null): void {
-    if (slug === this.selectedSlug()) {
-      return;
-    }
+    if (slug === this.selectedSlug()) return;
     this.selectedSlug.set(slug);
     this.loadSelection();
 
@@ -335,11 +490,8 @@ export class GlobalLeaderboardComponent implements OnInit {
     }
   }
 
-  /** Changes which category the sidebar claim card targets, without touching the main feed's filter. */
   selectClaimCategory(slug: string | null): void {
-    if (slug === this.claimSlug()) {
-      return;
-    }
+    if (slug === this.claimSlug()) return;
     this.claimSlug.set(slug);
     this.claimAmount.set(null);
     this.targetRank.set(1);
@@ -348,63 +500,74 @@ export class GlobalLeaderboardComponent implements OnInit {
       this.claimCategoryData.set(null);
       return;
     }
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20).subscribe((data) => this.claimCategoryData.set(data));
-  }
-
-  /** Hovering a feed row reveals a "Claim this position" button; clicking it targets that row's rank/amount
-   *  in the claim card only - it never changes the main feed's category filter. */
-  claimPosition(row: FeedRow, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const increment = this.incrementForCategory(row.categorySlug);
-    // Only update amount and rank — never touch the dropdown (claimSlug)
-    this.claimAmount.set(row.currentBidAmount + increment);
-    this.targetRank.set(row.rank);
-
-    // Cache the row's category silently for use in claimRank()
-    this.claimPositionSlug.set(row.categorySlug);
-    if (this.claimPositionData()?.categorySlug !== row.categorySlug) {
-      this.claimPositionData.set(null);
-      this.leaderboardService.getCategoryLeaderboard(row.categorySlug, 1, 20)
-        .subscribe((data) => this.claimPositionData.set(data));
-    }
-
-    // Pulse the sidebar claim card for 3 s
-    if (this.glowTimer) clearTimeout(this.glowTimer);
-    this.claimCardGlow.set(true);
-    this.glowTimer = setTimeout(() => this.claimCardGlow.set(false), 3000);
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20).subscribe((data) =>
+      this.claimCategoryData.set(data)
+    );
   }
 
   incrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
     const current = this.effectiveClaimAmount() ?? 0;
-    this.claimAmount.set(current + step);
+    this.claimAmount.set(current + Math.max(step, 1));
   }
 
   decrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
-    const floor = this.claimPrice() ?? 0;
+    const floor = this.claimPrice() ?? 1;
     const current = this.effectiveClaimAmount() ?? floor;
-    this.claimAmount.set(Math.max(current - step, floor));
+    this.claimAmount.set(Math.max(current - Math.max(step, 1), floor));
+  }
+
+  prepareOutbid(productName: string, minAmount: number, categorySlug?: string, rank?: number): void {
+    this.claimAmount.set(minAmount);
+    if (rank !== undefined) {
+      this.targetRank.set(rank);
+    }
+    if (categorySlug) {
+      this.selectClaimCategory(categorySlug);
+    }
+
+    const urlInput = document.getElementById('claim-url') as HTMLInputElement | null;
+    if (urlInput) {
+      urlInput.focus();
+      urlInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    this.showToastNotification(
+      `Outbid staged against ${productName} for ${this.currencySymbol()}${minAmount}`
+    );
+  }
+
+  showToastNotification(message: string): void {
+    this.toastMessage.set(message);
+    this.toastVisible.set(true);
+    if (this.toastTimerId) clearTimeout(this.toastTimerId);
+    this.toastTimerId = setTimeout(() => this.toastVisible.set(false), 4000);
   }
 
   claimRank(): void {
-    // Prefer the dropdown selection; fall back to a row that was "Claim this position"-clicked
-    const slug = this.claimSlug() ?? this.claimPositionSlug();
+    let slug = this.claimSlug() ?? this.claimPositionSlug();
+    if (!slug && this.allCategories().length > 0) {
+      slug = this.allCategories()[0].slug;
+      this.selectClaimCategory(slug);
+    }
+
     if (!slug) {
       this.toast.show('Choose a category first', 'info');
       return;
     }
+
     const data = this.claimCategoryData() ?? this.claimPositionData();
     if (!data) {
-      // No category data yet — navigate directly so the leaderboard page can open the modal
       void this.router.navigate(['/leaderboard', slug]);
       return;
     }
-    const amount = this.effectiveClaimAmount() ?? 0;
+
+    const amount = this.effectiveClaimAmount() ?? 10;
     const url = this.heroUrl();
     const meta = this.urlMetadata();
+    const title = this.productTitle() || meta?.siteName || '';
+
     this.modalService.openClaimModal({
       rank: this.targetRank(),
       categoryName: data.categoryName,
@@ -413,9 +576,9 @@ export class GlobalLeaderboardComponent implements OnInit {
       minStartingBid: data.minStartingBid,
       minBidIncrement: data.minBidIncrement,
       listingId: null,
-      listingName: meta?.siteName ?? '',
+      listingName: title,
       listingUrl: url,
-      siteName: meta?.siteName ?? null,
+      siteName: title || null,
       logoUrl: meta?.logoUrl ?? null,
       description: meta?.description ?? null,
       faviconUrl: meta?.faviconUrl ?? null,
@@ -425,7 +588,6 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  /** Clicking a bidder card opens the product URL/handle that was submitted with the bid, and records the click. */
   openListing(row: FeedRow): void {
     window.open(row.listingUrl, '_blank', 'noopener,noreferrer');
     this.listingService.recordClick(row.listingId).subscribe((count) => {
@@ -433,18 +595,36 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  private incrementForCategory(slug: string | null): number {
-    if (!slug) {
-      return 0;
+  openListingDirect(url: string, id: number): void {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    this.listingService.recordClick(id).subscribe((count) => {
+      this.clickCounts.update((map) => ({ ...map, [id]: count }));
+    });
+  }
+
+  formatDomain(url: string): string {
+    if (!url) return '';
+    try {
+      let clean = url.trim();
+      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = 'https://' + clean;
+      }
+      return new URL(clean).hostname.replace(/^www\./, '');
+    } catch {
+      return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
     }
+  }
+
+  incrementForCategory(slug: string | null): number {
+    if (!slug) return 1;
     if (this.claimSlug() === slug) {
       const data = this.claimCategoryData();
-      if (data) {
-        return data.minBidIncrement;
-      }
+      if (data) return data.minBidIncrement;
     }
-    const category = this.allCategories().find((c) => c.slug === slug) ?? this.tabs().find((c) => c.slug === slug);
-    return category?.minBidIncrement ?? 0;
+    const cat =
+      this.allCategories().find((c) => c.slug === slug) ??
+      this.tabs().find((c) => c.slug === slug);
+    return cat?.minBidIncrement ?? 1;
   }
 
   private loadSelection(): void {
@@ -465,14 +645,68 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   private loadGlobal(): void {
-    this.leaderboardService.getGlobalLeaderboard(20).subscribe((entries) => {
-      this.globalEntries.set(entries);
-      this.loading.set(false);
+    this.leaderboardService.getGlobalLeaderboard(50, this.timeMode()).subscribe({
+      next: (entries) => {
+        this.globalEntries.set(entries);
+        this.loading.set(false);
+        // If hall of fame is empty, initialize from top global listings
+        if (this.hallOfFameList().length === 0 && entries.length > 0) {
+          this.hallOfFameList.set(
+            entries.slice(0, 5).map((e, idx) => ({
+              id: e.listingId,
+              rank: idx + 1,
+              name: e.listingName,
+              siteName: e.siteName,
+              url: e.listingUrl,
+              bid: e.currentBidAmount,
+              clickCount: e.clickCount,
+            }))
+          );
+        }
+      },
+      error: () => {
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private loadPlatformStats(): void {
+    this.leaderboardService.getPlatformStats().subscribe({
+      next: (stats) => this.platformStats.set(stats),
+    });
+  }
+
+  private loadLiveStream(): void {
+    this.leaderboardService.getLiveStream(5).subscribe({
+      next: (events) => {
+        if (events && events.length > 0) {
+          this.liveEvents.set(
+            events.map((e) => ({
+              icon: e.isTopBid ? 'local_fire_department' : 'arrow_upward',
+              iconClass: e.isTopBid ? 'stream-icon--primary' : 'stream-icon--secondary',
+              user: e.siteName || (e.listingName.startsWith('@') ? e.listingName : '@' + e.listingName),
+              action: e.actionText,
+              timeAgo: e.timeAgo,
+              highlight: e.highlightText,
+            }))
+          );
+        }
+      },
+    });
+  }
+
+  private loadHallOfFame(): void {
+    this.leaderboardService.getHallOfFame(5).subscribe({
+      next: (items) => {
+        if (items && items.length > 0) {
+          this.hallOfFameList.set(items);
+        }
+      },
     });
   }
 
   private loadCategory(slug: string): void {
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20).subscribe({
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, 50).subscribe({
       next: (data) => {
         this.categoryData.set(data);
         this.loading.set(false);

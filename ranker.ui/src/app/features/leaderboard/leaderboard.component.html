@@ -1,114 +1,397 @@
-<app-hero-section
-  [category]="categoryName() || categorySlug()"
-  [listingCount]="totalCount()"
-/>
+<div class="category-arena-page">
+  <!-- ═══════════════════════════════════════════════════════════
+       CATEGORY COMMAND & URGENCY HERO STATION
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="arena-hero">
+    <div class="arena-hero__orb arena-hero__orb--primary" aria-hidden="true"></div>
+    <div class="arena-hero__orb arena-hero__orb--gold" aria-hidden="true"></div>
 
-<app-claim-hero
-  [rank]="targetRank()"
-  [amount]="effectiveClaimAmount()"
-  [url]="sidebarUrl()"
-  [faviconUrl]="faviconDisplayUrl()"
-  [metadataLoading]="metadataLoading()"
-  [inputType]="'url'"
-  placeholder="Your product URL or @handle"
-  (urlChange)="onSidebarUrlChange($event)"
-  (decrement)="decrementClaimAmount()"
-  (increment)="incrementClaimAmount()"
-  (claim)="initiateClaim()"
-  (faviconError)="onFaviconError($event)"
-/>
+    <div class="arena-hero__inner">
+      <!-- Breadcrumb & Arena Badges -->
+      <div class="arena-top-row">
+        <nav class="breadcrumb-nav">
+          <a routerLink="/" class="breadcrumb-link">Home</a>
+          <span class="breadcrumb-sep">/</span>
+          <a routerLink="/categories" class="breadcrumb-link">Categories</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current text-primary font-bold">{{ categoryName() || 'Arena' }}</span>
+        </nav>
 
-<div class="layout">
-
-  <!-- ── Feed ── -->
-  <section class="feed">
-    @if (loading()) {
-      <div class="feed__loading">
-        @for (_ of [1,2,3,4,5]; track $index) {
-          <div class="skeleton skeleton-row"></div>
-        }
+        <div class="arena-badges">
+          <span class="arena-badge arena-badge--contention">
+            <span class="material-symbols-outlined icon-xs text-primary">local_fire_department</span>
+            Live Contested Arena
+          </span>
+          <span class="arena-badge">
+            <span class="material-symbols-outlined icon-xs text-secondary">payments</span>
+            Floor ${{ minStartingBid() | number: '1.0-0' }} · +${{ minBidIncrement() | number: '1.0-0' }} Step
+          </span>
+        </div>
       </div>
-    } @else if (notFound()) {
-      <p class="feed__empty">Category not found.</p>
-    } @else if (entries().length === 0) {
-      <p class="feed__empty">No listings yet — be the first to claim a spot.</p>
-    } @else {
-      @for (entry of entries(); track entry.listingId) {
-        <div class="feed-row-wrap">
-          <button type="button" class="feed-row__claim-overlay" (click)="claimPositionBid(entry, $event)">
-            ⚡ Claim this position
-          </button>
-          <div
-            class="feed-row card"
-            [class.feed-row--top]="entry.rank === 1"
-            role="link"
-            tabindex="0"
-            (click)="openListing(entry)"
-            (keyup.enter)="openListing(entry)"
-          >
-            <span class="feed-row__rank">
-              @if (entry.rank === 1) { 🥇 }
-              @else if (entry.rank === 2) { 🥈 }
-              @else if (entry.rank === 3) { 🥉 }
-              @else { #{{ entry.rank }} }
-            </span>
 
-            <span class="feed-row__avatar">
-              @if (entry.faviconUrl) {
-                <img [src]="entry.faviconUrl" alt="" class="feed-row__favicon" (error)="onListingFaviconError($event)" />
-              } @else {
-                {{ entry.listingName.charAt(0).toUpperCase() }}
-              }
+      <!-- Headline & Stepper -->
+      <div class="arena-headline-row">
+        <div class="arena-headline-copy">
+          <h1 class="arena-headline-title">
+            Claim {{ categoryName() }} #{{ targetRank() }} Spot for
+          </h1>
+          <div class="bid-stepper">
+            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()"
+              aria-label="Decrease bid">−</button>
+            <span class="stepper-display">
+              ${{ effectiveClaimAmount() ?? minStartingBid() | number: '1.0-0' }}
             </span>
-
-            <span class="feed-row__info">
-              <span class="feed-row__title">
-                {{ entry.siteName || entry.listingName }}
-              </span>
-              <span class="feed-row__meta">
-                @if (entry.description) {
-                  <span class="feed-row__description">{{ entry.description }}</span>
-                }
-                First claimed {{ entry.firstBidAt | date: 'mediumDate' }}
-                · <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">details</a>
-                · {{ clickCountFor(entry) | number }} clicks
-              </span>
-            </span>
-
-            <span class="feed-row__price">{{ entry.currentBidAmount | number: '1.0-2' }}</span>
+            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()"
+              aria-label="Increase bid">+</button>
           </div>
         </div>
-      }
 
-      <nav class="feed__pagination">
-        <button type="button" class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">← Prev</button>
-        <span>Page {{ page() }} · {{ totalCount() }} listings</span>
-        <button type="button" class="btn" [disabled]="page() * pageSize() >= totalCount()" (click)="goToPage(page() + 1)">
-          Next →
-        </button>
-      </nav>
-    }
+        <div class="arena-roi-card">
+          <div class="arena-roi-card__icon">
+            <span class="material-symbols-outlined icon-md">trending_up</span>
+          </div>
+          <div>
+            <span class="arena-roi-card__val">#1 Dominance</span>
+            <span class="arena-roi-card__sub">Redirects category discovery</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Command Bar Form -->
+      <div class="command-bar-wrapper">
+        <form class="command-bar" (submit)="$event.preventDefault(); initiateClaim()">
+          <div class="command-bar__field command-bar__field--url">
+            @if (faviconDisplayUrl()) {
+            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" (error)="onFaviconError($event)" />
+            } @else {
+            <span class="material-symbols-outlined field-icon">link</span>
+            }
+            <div class="field-content">
+              <label for="category-claim-url" class="field-label">Website or @X Handle</label>
+              <input id="category-claim-url" type="text" class="field-input" placeholder="https://yourapp.io or @handle"
+                [value]="sidebarUrl()" (input)="onSidebarUrlChange($any($event.target).value)" autocomplete="off"
+                required />
+            </div>
+            @if (metadataLoading()) {
+            <span class="field-spinner" title="Fetching URL metadata..."></span>
+            }
+          </div>
+
+          <div class="command-bar__field command-bar__field--title">
+            <span class="material-symbols-outlined field-icon">badge</span>
+            <div class="field-content">
+              <label for="category-claim-title" class="field-label">Product Title</label>
+              <input id="category-claim-title" type="text" class="field-input" placeholder="e.g. AtlasAI Studio"
+                [value]="productTitle() || urlMetadata()?.siteName || ''"
+                (input)="productTitle.set($any($event.target).value)" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="command-bar__action">
+            <button type="submit" class="claim-submit-btn" [disabled]="!isSidebarUrlValid()">
+              <span>Claim Rank #{{ targetRank() }}</span>
+              <span class="material-symbols-outlined icon-sm">bolt</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </section>
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar-stack">
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN DISCOVERY STAGE: TWO COLUMNS
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="stage-container">
+    <div class="stage-grid">
+      <!-- ── Left Column: Leaderboard Feed ── -->
+      <main class="feed-col">
+        <div class="feed-header">
+          <div class="feed-header__left">
+            <h2 class="feed-title">{{ categoryName() }} Live Arena</h2>
+            <span class="live-pill">
+              <span class="pulse-dot"></span>
+              Live Order
+            </span>
+          </div>
+          <span class="feed-count">{{ totalCount() }} competitors</span>
+        </div>
 
-    @if (entries().length > 0) {
-      <app-top-ranker-spotlight
-        [listingName]="entries()[0].listingName"
-        [currentBidAmount]="entries()[0].currentBidAmount"
-        [categoryName]="categoryName()"
-      />
-    }
+        @if (loading()) {
+        <div class="skeleton-stack">
+          @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="skeleton-row"></div>
+          }
+        </div>
+        } @else if (notFound()) {
+        <div class="empty-state">
+          <h3>Category not found</h3>
+          <p>The requested category does not exist.</p>
+          <a routerLink="/categories" class="btn btn-primary">Browse All Categories</a>
+        </div>
+        } @else if (entries().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined empty-icon">rocket_launch</span>
+          <h3>No listings in this arena yet</h3>
+          <p>Be the first pioneer! Place a bid of ${{ minStartingBid() }} to claim Rank #1 right now.</p>
+        </div>
+        } @else {
+        <div class="feed-list">
+          @for (entry of entries(); track entry.listingId) {
+          @if (entry.rank === 1) {
+          <!-- RANK #1 GOLD CHAMPION -->
+          <article class="podium-card podium-card--gold" (click)="openListing(entry)">
+            <div class="gold-shimmer-line"></div>
+            <div class="podium-card__body">
+              <div class="podium-card__left">
+                <div class="rank-badge rank-badge--gold">
+                  <span class="material-symbols-outlined crown-icon">crown</span>
+                  <span>#1</span>
+                </div>
 
-    @if (top3Bidders().length > 0) {
-      <app-todays-leaderboard
-        [bidders]="top3Bidders()"
-        [clickable]="true"
-        (itemClick)="openBidderListing($event)"
-      />
-    }
+                <div class="avatar-box">
+                  @if (entry.logoUrl || entry.faviconUrl) {
+                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img"
+                    (error)="onListingFaviconError($event)" />
+                  } @else {
+                  <div class="avatar-placeholder">{{ entry.listingName.charAt(0).toUpperCase() }}</div>
+                  }
+                  <span class="live-beacon">
+                    <span class="live-beacon__ping"></span>
+                    <span class="live-beacon__dot"></span>
+                  </span>
+                </div>
 
-  </aside>
+                <div class="info-box">
+                  <div class="title-row">
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="item-title"
+                      (click)="$event.stopPropagation()">
+                      {{ entry.siteName || entry.listingName }}
+                    </a>
+                    <span class="material-symbols-outlined verified-icon">verified</span>
+                  </div>
+                  @if (entry.description) {
+                  <p class="item-desc">{{ entry.description }}</p>
+                  }
+                  <div class="chips-row">
+                    <span class="chip chip--clicks">
+                      <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
+                      {{ clickCountFor(entry) | number }} clicks
+                    </span>
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
+                      (click)="$event.stopPropagation()">
+                      <span class="material-symbols-outlined icon-xxs">open_in_new</span>
+                      {{ formatDomain(entry.listingUrl) }}
+                    </a>
+                  </div>
+                </div>
+              </div>
 
+              <div class="podium-card__right">
+                <div class="price-box">
+                  <span class="price-label">Active Bid</span>
+                  <span class="price-val text-primary">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+                </div>
+                <button type="button" class="outbid-action-btn outbid-action-btn--primary"
+                  (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), 1); $event.stopPropagation()">
+                  <span class="material-symbols-outlined icon-sm">trending_up</span>
+                  <span>Outbid for ${{ entry.currentBidAmount + minBidIncrement() | number: '1.0-0' }}</span>
+                </button>
+              </div>
+            </div>
+          </article>
+          } @else if (entry.rank === 2) {
+          <!-- RANK #2 SILVER -->
+          <article class="podium-card podium-card--silver" (click)="openListing(entry)">
+            <div class="podium-card__body">
+              <div class="podium-card__left">
+                <div class="rank-badge rank-badge--silver">#2</div>
+                <div class="avatar-box">
+                  @if (entry.logoUrl || entry.faviconUrl) {
+                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img"
+                    (error)="onListingFaviconError($event)" />
+                  } @else {
+                  <div class="avatar-placeholder">{{ entry.listingName.charAt(0).toUpperCase() }}</div>
+                  }
+                </div>
+                <div class="info-box">
+                  <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="item-title"
+                    (click)="$event.stopPropagation()">
+                    {{ entry.siteName || entry.listingName }}
+                  </a>
+                  @if (entry.description) {
+                  <p class="item-desc">{{ entry.description }}</p>
+                  }
+                  <div class="chips-row">
+                    <span class="chip">{{ clickCountFor(entry) | number }} clicks</span>
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
+                      (click)="$event.stopPropagation()">
+                      {{ formatDomain(entry.listingUrl) }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="podium-card__right">
+                <div class="price-box">
+                  <span class="price-label">Current Bid</span>
+                  <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+                </div>
+                <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
+                  (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), 2); $event.stopPropagation()">
+                  <span>Outbid for ${{ entry.currentBidAmount + minBidIncrement() | number: '1.0-0' }}</span>
+                </button>
+              </div>
+            </div>
+          </article>
+          } @else if (entry.rank === 3) {
+          <!-- RANK #3 BRONZE -->
+          <article class="podium-card podium-card--bronze" (click)="openListing(entry)">
+            <div class="podium-card__body">
+              <div class="podium-card__left">
+                <div class="rank-badge rank-badge--bronze">#3</div>
+                <div class="avatar-box">
+                  @if (entry.logoUrl || entry.faviconUrl) {
+                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img"
+                    (error)="onListingFaviconError($event)" />
+                  } @else {
+                  <div class="avatar-placeholder">{{ entry.listingName.charAt(0).toUpperCase() }}</div>
+                  }
+                </div>
+                <div class="info-box">
+                  <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="item-title"
+                    (click)="$event.stopPropagation()">
+                    {{ entry.siteName || entry.listingName }}
+                  </a>
+                  @if (entry.description) {
+                  <p class="item-desc">{{ entry.description }}</p>
+                  }
+                  <div class="chips-row">
+                    <span class="chip">{{ clickCountFor(entry) | number }} clicks</span>
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
+                      (click)="$event.stopPropagation()">
+                      {{ formatDomain(entry.listingUrl) }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="podium-card__right">
+                <div class="price-box">
+                  <span class="price-label">Current Bid</span>
+                  <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+                </div>
+                <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
+                  (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), 3); $event.stopPropagation()">
+                  <span>Outbid for ${{ entry.currentBidAmount + minBidIncrement() | number: '1.0-0' }}</span>
+                </button>
+              </div>
+            </div>
+          </article>
+          } @else {
+          <!-- RANK #4+ COMPACT -->
+          <article class="compact-entry-card" (click)="openListing(entry)">
+            <div class="compact-entry-left">
+              <div class="compact-num">#{{ entry.rank }}</div>
+              <div class="compact-details">
+                <span class="compact-title">{{ entry.siteName || entry.listingName }}</span>
+                <div class="compact-meta">
+                  <span>{{ clickCountFor(entry) | number }} clicks</span>
+                  <span>•</span>
+                  <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="compact-link"
+                    (click)="$event.stopPropagation()">
+                    {{ formatDomain(entry.listingUrl) }}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="compact-entry-right">
+              <span class="compact-bid">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+              <button type="button" class="compact-btn"
+                (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), entry.rank); $event.stopPropagation()">
+                Outbid
+              </button>
+            </div>
+          </article>
+          }
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalCount() > pageSize()) {
+        <div class="pagination-row">
+          <button type="button" class="btn-page" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">
+            ← Previous
+          </button>
+          <span class="page-text">
+            Page {{ page() }} of {{ Math.ceil(totalCount() / pageSize()) }}
+          </span>
+          <button type="button" class="btn-page" [disabled]="page() * pageSize() >= totalCount()"
+            (click)="goToPage(page() + 1)">
+            Next →
+          </button>
+        </div>
+        }
+        }
+      </main>
+
+      <!-- ── Right Column: Sticky Sidebar ── -->
+      <aside class="sidebar-col">
+        <!-- Sector King Spotlight -->
+        @if (reigningChampion()) {
+        <section class="spotlight-card">
+          <div class="spotlight-header">
+            <span class="spotlight-pill">
+              <span class="material-symbols-outlined icon-xs">workspace_premium</span>
+              Sector King
+            </span>
+          </div>
+
+          <div class="spotlight-body">
+            <div class="avatar-ring">
+              @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
+              <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt="" class="ring-img" />
+              } @else {
+              <div class="ring-placeholder">{{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}
+              </div>
+              }
+              <div class="crown-badge">
+                <span class="material-symbols-outlined icon-sm">crown</span>
+              </div>
+            </div>
+
+            <h3 class="spotlight-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName }}</h3>
+            <p class="spotlight-sub">Reigning #1 in {{ categoryName() }}</p>
+
+            <button type="button" class="spotlight-claim-btn"
+              (click)="prepareOutbid(reigningChampion()!, (reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement(), 1)">
+              <span class="material-symbols-outlined icon-sm">swords</span>
+              <span>Claim #1 for ${{ (reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement() |
+                number: '1.0-0' }}</span>
+            </button>
+          </div>
+        </section>
+        }
+
+        <!-- Other Trending Arenas -->
+        <section class="side-card">
+          <div class="side-card__header">
+            <h3 class="side-card__title">Explore Other Arenas</h3>
+          </div>
+          <div class="trending-list">
+            @for (cat of trendingCategories(); track cat.slug) {
+            @if (cat.slug !== categorySlug()) {
+            <a [routerLink]="['/leaderboard', cat.slug]" class="trending-row">
+              <span class="trending-name">{{ cat.name }}</span>
+              <span class="trending-count">${{ cat.minStartingBid }} floor</span>
+            </a>
+            }
+            }
+          </div>
+          <a routerLink="/categories" class="all-arenas-link">
+            <span>View All Arenas</span>
+            <span class="material-symbols-outlined icon-xs">arrow_forward</span>
+          </a>
+        </section>
+      </aside>
+    </div>
+  </div>
 </div>

@@ -7,7 +7,7 @@ import { ListingService } from '../../core/services/listing.service';
 import { SignalrService } from '../../core/services/signalr.service';
 import { DailyListingEntryDto, DailyListingGroupDto } from '../../core/models/daily-listing.model';
 
-const TOP_ENTRIES_PREVIEW = 3;
+const TOP_ENTRIES_PREVIEW = 4;
 
 @Component({
   selector: 'app-daily-listings',
@@ -79,12 +79,34 @@ export class DailyListingsComponent implements OnInit {
     return this.clickCounts()[entry.listingId] ?? entry.clickCount;
   }
 
-  /** Clicking a listing card opens the product URL/handle that was submitted with the bid, and records the click. */
+  /** Clicking a listing opens the product URL and records the click. */
   openListing(entry: DailyListingEntryDto): void {
     window.open(entry.listingUrl, '_blank', 'noopener,noreferrer');
     this.listingService.recordClick(entry.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
     });
+  }
+
+  getFaviconUrl(url: string): string {
+    try {
+      const host = new URL(url).hostname;
+      return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+    } catch {
+      return '';
+    }
+  }
+
+  formatDomain(url: string): string {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      return url;
+    }
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLElement;
+    target.style.display = 'none';
   }
 
   timeAgo(iso: string): string {
@@ -94,24 +116,30 @@ export class DailyListingsComponent implements OnInit {
     }
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) {
-      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+      return `${minutes}m ago`;
     }
-    const hours = Math.floor(minutes / 60);
+    const hours = Math.floor(minutes / 24);
     if (hours < 24) {
-      return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+      return `${hours}h ago`;
     }
     const days = Math.floor(hours / 24);
-    return `${days} day${days === 1 ? '' : 's'} ago`;
+    return `${days}d ago`;
   }
 
   private load(page: number, append: boolean): void {
     append ? this.loadingMore.set(true) : this.loading.set(true);
-    this.leaderboardService.getDailyListings(page, this.pageSize).subscribe((result) => {
-      this.groups.set(append ? [...this.groups(), ...result.items] : result.items);
-      this.totalCount.set(result.totalCount);
-      this.page.set(page);
-      this.loading.set(false);
-      this.loadingMore.set(false);
+    this.leaderboardService.getDailyListings(page, this.pageSize).subscribe({
+      next: (result) => {
+        this.groups.set(append ? [...this.groups(), ...result.items] : result.items);
+        this.totalCount.set(result.totalCount);
+        this.page.set(page);
+        this.loading.set(false);
+        this.loadingMore.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.loadingMore.set(false);
+      }
     });
   }
 }

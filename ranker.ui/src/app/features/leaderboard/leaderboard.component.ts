@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
 import { CategoryLeaderboardResponseDto, LeaderboardEntryDto } from '../../core/models/leaderboard.model';
@@ -22,15 +22,11 @@ import { SignalrService } from '../../core/services/signalr.service';
 import { ListingService } from '../../core/services/listing.service';
 import { ModalService } from '../../core/services/modal.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
-import { TopRankerSpotlightComponent } from '../../shared/top-ranker-spotlight/top-ranker-spotlight.component';
-import { TodaysLeaderboardComponent } from '../../shared/todays-leaderboard/todays-leaderboard.component';
-import { HeroSectionComponent } from '../../shared/hero-section/hero-section.component';
-import { ClaimHeroComponent } from '../../shared/claim-hero/claim-hero.component';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, DatePipe, HeroSectionComponent, ClaimHeroComponent, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './leaderboard.component.html',
   styleUrl: './leaderboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,8 +45,8 @@ export class LeaderboardComponent implements OnInit {
   readonly categorySlug = signal('');
   readonly categoryId = signal<number | null>(null);
   readonly categoryName = signal('');
-  readonly minBidIncrement = signal(0);
-  readonly minStartingBid = signal(0);
+  readonly minBidIncrement = signal(1);
+  readonly minStartingBid = signal(10);
 
   // ── Feed state ─────────────────────────────────────────────
   readonly entries = signal<LeaderboardEntryDto[]>([]);
@@ -60,6 +56,7 @@ export class LeaderboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly clickCounts = signal<Record<number, number>>({});
+  readonly Math = Math;
 
   // ── Sidebar: trending ──────────────────────────────────────
   readonly trendingCategories = signal<CategoryDto[]>([]);
@@ -67,37 +64,36 @@ export class LeaderboardComponent implements OnInit {
   // ── Stats bar: top 3 bidders of today ─────────────────────
   readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
 
-  // ── Sidebar: claim card ────────────────────────────────────
+  // ── Command bar form state ─────────────────────────────────
   readonly sidebarUrl = signal('');
+  readonly productTitle = signal('');
   readonly urlMetadata = signal<UrlMetadataDto | null>(null);
   readonly metadataLoading = signal(false);
   private readonly urlChange$ = new Subject<string>();
   readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
   readonly claimAmount = signal<number | null>(null);
   readonly targetRank = signal(1);
-  readonly claimSlug = computed(() => this.categorySlug() || null);
 
   readonly claimPrice = computed<number | null>(() => {
     const data = this.claimCategoryData();
-    if (!data) return null;
+    if (!data) return this.minStartingBid();
     const currentTop = data.leaderboard.items[0]?.currentBidAmount;
     return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
   });
 
   readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
 
-  // ── URL pre-fill (carried through to the modal) ────────────
-  private prefillUrl = '';
+  readonly reigningChampion = computed<LeaderboardEntryDto | null>(() => {
+    const items = this.entries();
+    return items.length > 0 ? items[0] : null;
+  });
 
   ngOnInit(): void {
-    this.prefillUrl = this.route.snapshot.queryParamMap.get('url') ?? '';
-
     // Load trending categories for the sidebar
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 6 }).subscribe((result) => {
       this.trendingCategories.set(result.items);
     });
 
-    // Load top-3 bidders of today
     this.loadTop3Bidders();
 
     // Watch route param changes
@@ -118,7 +114,10 @@ export class LeaderboardComponent implements OnInit {
       )
       .subscribe((result) => {
         this.loading.set(false);
-        if (!result) { this.notFound.set(true); return; }
+        if (!result) {
+          this.notFound.set(true);
+          return;
+        }
         this.notFound.set(false);
         this.categoryId.set(result.categoryId);
         this.categoryName.set(result.categoryName);
@@ -140,10 +139,10 @@ export class LeaderboardComponent implements OnInit {
 
     this.destroyRef.onDestroy(() => void this.signalr.leaveCategoryGroup(this.categorySlug()));
 
-    // Debounced URL metadata fetch for the sidebar field
+    // Debounced URL metadata fetch for the field
     this.urlChange$
       .pipe(
-        debounceTime(600),
+        debounceTime(500),
         distinctUntilChanged(),
         switchMap((url) => {
           this.metadataLoading.set(true);
@@ -153,6 +152,9 @@ export class LeaderboardComponent implements OnInit {
       )
       .subscribe((meta) => {
         this.urlMetadata.set(meta);
+        if (meta?.siteName && !this.productTitle()) {
+          this.productTitle.set(meta.siteName);
+        }
         this.metadataLoading.set(false);
       });
   }
@@ -184,17 +186,22 @@ export class LeaderboardComponent implements OnInit {
     this.refresh();
   }
 
-  /** Validates the sidebar URL the same way the global leaderboard does. */
   isSidebarUrlValid(): boolean {
     const v = this.sidebarUrl().trim();
     if (!v) return false;
     if (/^@\S+$/.test(v)) return true;
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;
-    try { const u = new URL(v); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { /* fall */ }
-    return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/\S*)?$/.test(v);
+    try {
+      const u = new URL(v);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      /* fall */
+    }
+    return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/\S*)?$/.test(
+      v
+    );
   }
 
-  /** Google S2 favicon URL — always publicly accessible, no Cloudflare 403s. */
   faviconDisplayUrl(): string | null {
     const v = this.sidebarUrl().trim();
     if (!v || !this.isSidebarUrlValid()) return null;
@@ -228,34 +235,36 @@ export class LeaderboardComponent implements OnInit {
     (event.target as HTMLImageElement).style.display = 'none';
   }
 
-  // ── Claim card interactions ────────────────────────────────
-
-  claimPosition(entry: LeaderboardEntryDto, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.claimAmount.set(entry.currentBidAmount + this.minBidIncrement());
-    this.targetRank.set(entry.rank);
-  }
-
   incrementClaimAmount(): void {
     const current = this.effectiveClaimAmount() ?? 0;
-    this.claimAmount.set(current + this.minBidIncrement());
+    this.claimAmount.set(current + Math.max(this.minBidIncrement(), 1));
   }
 
   decrementClaimAmount(): void {
-    const floor = this.claimPrice() ?? 0;
+    const floor = this.claimPrice() ?? 1;
     const current = this.effectiveClaimAmount() ?? floor;
-    this.claimAmount.set(Math.max(current - this.minBidIncrement(), floor));
+    this.claimAmount.set(Math.max(current - Math.max(this.minBidIncrement(), 1), floor));
   }
 
-  /**
-   * Sidebar "Claim rank" — opens the single combined modal (ToS + listing form + checkout).
-   */
+  prepareOutbid(entry: LeaderboardEntryDto, minAmount: number, rank?: number): void {
+    this.claimAmount.set(minAmount);
+    if (rank !== undefined) {
+      this.targetRank.set(rank);
+    }
+    const input = document.getElementById('category-claim-url') as HTMLInputElement | null;
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   initiateClaim(): void {
     const categoryId = this.categoryId();
     if (categoryId === null) return;
-    const amount = this.effectiveClaimAmount() ?? 0;
+    const amount = this.effectiveClaimAmount() ?? 10;
     const meta = this.urlMetadata();
+    const title = this.productTitle() || meta?.siteName || '';
+
     this.modalService.openClaimModal({
       rank: this.targetRank(),
       categoryName: this.categoryName(),
@@ -264,17 +273,15 @@ export class LeaderboardComponent implements OnInit {
       minStartingBid: this.minStartingBid(),
       minBidIncrement: this.minBidIncrement(),
       listingId: null,
-      listingName: meta?.siteName ?? '',
+      listingName: title,
       listingUrl: this.sidebarUrl(),
-      siteName: meta?.siteName ?? null,
+      siteName: title || null,
       logoUrl: meta?.logoUrl ?? null,
       description: meta?.description ?? null,
       faviconUrl: meta?.faviconUrl ?? null,
       onSuccess: () => this.refresh(),
     });
   }
-
-  // ── Feed row interactions ──────────────────────────────────
 
   clickCountFor(entry: LeaderboardEntryDto): number {
     return this.clickCounts()[entry.listingId] ?? entry.clickCount;
@@ -287,34 +294,16 @@ export class LeaderboardComponent implements OnInit {
     });
   }
 
-  openBidderListing(bidder: DailyListingEntryDto): void {
-    window.open(bidder.listingUrl, '_blank', 'noopener,noreferrer');
-  }
-
-  /** "Claim this position" overlay — opens the single combined modal pre-filled for this listing. */
-  claimPositionBid(entry: LeaderboardEntryDto, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const categoryId = this.categoryId();
-    if (categoryId === null) return;
-    const amount = entry.currentBidAmount + this.minBidIncrement();
-    this.claimAmount.set(amount);
-    this.targetRank.set(entry.rank);
-    this.modalService.openClaimModal({
-      rank: entry.rank,
-      categoryName: this.categoryName(),
-      amount,
-      categoryId,
-      minStartingBid: this.minStartingBid(),
-      minBidIncrement: this.minBidIncrement(),
-      listingId: entry.listingId,
-      listingName: entry.listingName,
-      listingUrl: entry.listingUrl,
-      siteName: entry.siteName ?? null,
-      logoUrl: entry.logoUrl ?? null,
-      description: entry.description ?? null,
-      faviconUrl: entry.faviconUrl ?? null,
-      onSuccess: () => this.refresh(),
-    });
+  formatDomain(url: string): string {
+    if (!url) return '';
+    try {
+      let clean = url.trim();
+      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = 'https://' + clean;
+      }
+      return new URL(clean).hostname.replace(/^www\./, '');
+    } catch {
+      return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
+    }
   }
 }

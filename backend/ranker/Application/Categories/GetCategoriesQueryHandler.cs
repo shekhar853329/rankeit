@@ -87,6 +87,7 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
                 x.Category.Id,
                 x.Category.Name,
                 x.Category.Slug,
+                x.Category.Icon,
                 x.Category.ParentCategoryId,
                 x.Category.MinBidIncrement,
                 x.Category.MinStartingBid,

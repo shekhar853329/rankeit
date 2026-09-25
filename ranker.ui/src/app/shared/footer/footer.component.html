@@ -1,0 +1,58 @@
+<footer class="app-footer">
+  <div class="footer-inner">
+    <!-- Top row: Brand & Operations status -->
+    <div class="footer-main">
+      <div class="footer-brand-wrap">
+        <div class="footer-brand">
+          <svg class="footer-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="10" fill="#f95738"/>
+            <path d="M12 28L20 12L28 28H23L20 21L17 28H12Z" fill="white"/>
+            <circle cx="20" cy="10" r="2.5" fill="#fde68a"/>
+          </svg>
+          <span class="brand-text">RankUp</span>
+          <span class="verifiable-badge">
+            <span class="material-symbols-outlined text-[13px]">verified</span>
+            100% Verifiable Discovery
+          </span>
+        </div>
+        <p class="brand-desc">
+          © {{ currentYear }} RankUp Protocol. High-stakes discovery, transparent capital allocation, & real-time competitive rankings.
+        </p>
+      </div>
+
+      <div class="footer-status-links">
+        <div class="operational-pill">
+          <span class="op-dot"></span>
+          <span>API Systems Operational</span>
+        </div>
+
+        <nav class="footer-nav">
+          <a routerLink="/" class="footer-link">Leaderboard</a>
+          <a routerLink="/categories" class="footer-link">Category Arenas</a>
+          <a routerLink="/daily" class="footer-link">Daily Feed</a>
+          <a routerLink="/rules" class="footer-link">Rules & Governance</a>
+          <a routerLink="/contact" class="footer-link">Contact</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Bottom sub-bar -->
+    <div class="footer-sub-bar">
+      <span class="sub-disclaimer">
+        Continuous English ascending auctions reset daily at 00:00 UTC. Powered by SignalR & Razorpay.
+      </span>
+
+      <div class="footer-socials">
+        <a routerLink="/rules" class="social-icon" title="Protocol Verification" aria-label="Protocol Verification">
+          <span class="material-symbols-outlined text-[18px]">verified_user</span>
+        </a>
+        <a routerLink="/contact" class="social-icon" title="Community & Support" aria-label="Community & Support">
+          <span class="material-symbols-outlined text-[18px]">forum</span>
+        </a>
+        <a routerLink="/daily" class="social-icon" title="Public Broadcasts" aria-label="Public Broadcasts">
+          <span class="material-symbols-outlined text-[18px]">public</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Ranker.Application.Bids;
 using Ranker.Application.Leaderboards;
 using Ranker.Common;
 using Ranker.Dtos;
@@ -24,8 +25,9 @@ public class LeaderboardController(ISender sender) : ControllerBase
     [HttpGet("global")]
     public async Task<ActionResult<IReadOnlyList<GlobalLeaderboardEntryDto>>> GetGlobalLeaderboard(
         [FromQuery] int topN = 20,
+        [FromQuery] string timeMode = "today",
         CancellationToken ct = default) =>
-        Ok(await sender.Send(new GetGlobalLeaderboardQuery(topN), ct));
+        Ok(await sender.Send(new GetGlobalLeaderboardQuery(topN, timeMode), ct));
 
     [HttpGet("daily")]
     public async Task<ActionResult<PagedResult<DailyListingGroupDto>>> GetDailyListings(
@@ -33,4 +35,20 @@ public class LeaderboardController(ISender sender) : ControllerBase
         [FromQuery] int pageSize = 5,
         CancellationToken ct = default) =>
         Ok(await sender.Send(new GetDailyListingsQuery(page, pageSize), ct));
+
+    [HttpGet("stats")]
+    public async Task<ActionResult<PlatformStatsDto>> GetPlatformStats(CancellationToken ct = default) =>
+        Ok(await sender.Send(new GetPlatformStatsQuery(), ct));
+
+    [HttpGet("live-stream")]
+    public async Task<ActionResult<IReadOnlyList<LiveBidEventDto>>> GetLiveStream(
+        [FromQuery] int limit = 10,
+        CancellationToken ct = default) =>
+        Ok(await sender.Send(new GetRecentBidsQuery(limit), ct));
+
+    [HttpGet("hall-of-fame")]
+    public async Task<ActionResult<IReadOnlyList<HallOfFameItemDto>>> GetHallOfFame(
+        [FromQuery] int topN = 5,
+        CancellationToken ct = default) =>
+        Ok(await sender.Send(new GetHallOfFameQuery(topN), ct));
 }

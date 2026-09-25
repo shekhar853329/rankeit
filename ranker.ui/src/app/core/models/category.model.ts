@@ -4,6 +4,7 @@ export interface CategoryDto {
   id: number;
   name: string;
   slug: string;
+  icon?: string | null;
   parentCategoryId: number | null;
   minBidIncrement: number;
   minStartingBid: number;

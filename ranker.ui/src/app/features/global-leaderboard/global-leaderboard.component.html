@@ -1,99 +1,669 @@
-<app-hero-section variant="global">
-  <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
-</app-hero-section>
+<div class="canvas-container">
+  <!-- ═══════════════════════════════════════════════════════════
+       TOP COMMAND & URGENCY HERO STATION
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="hero-station">
+    <!-- Ambient decorative orbs -->
+    <div class="hero-station__orb hero-station__orb--primary" aria-hidden="true"></div>
+    <div class="hero-station__orb hero-station__orb--gold" aria-hidden="true"></div>
 
-<app-claim-hero
-  [rank]="targetRank()"
-  [amount]="effectiveClaimAmount()"
-  [url]="heroUrl()"
-  [faviconUrl]="faviconDisplayUrl()"
-  [metadataLoading]="metadataLoading()"
-  [invalid]="!isHeroUrlValid()"
-  [showInvalid]="heroUrlDirty()"
-  [disabled]="!canClaimRank()"
-  inputType="text"
-  placeholder="https://… or @handle or email"
-  [categories]="claimHeroCategories()"
-  [selectedCategory]="claimSlug()"
-  (urlChange)="onHeroUrlChange($event)"
-  (urlBlur)="heroUrlDirty.set(true)"
-  (categoryChange)="selectClaimCategory($event)"
-  (decrement)="decrementClaimAmount()"
-  (increment)="incrementClaimAmount()"
-  (claim)="claimRank()"
-  (faviconError)="onFaviconError($event)"
-/>
+    <div class="hero-station__inner">
+      <!-- ── Central Claim Top Row: Headline + Stepper & Live Auction Metadata ── -->
+      <div class="hero-top-row">
+        <div class="headline-title-wrap">
+          <h1 class="headline-title">
+            Claim Today's #{{ targetRank() }} Spot for
+          </h1>
+          <div class="bid-stepper">
+            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease bid"
+              id="bid-decrement">−</button>
+            <span class="stepper-display" id="target-bid-display">
+              {{ currencySymbol() }}{{ effectiveClaimAmount() ?? 10 | number: '1.0-0' }}
+            </span>
+            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase bid"
+              id="bid-increment">+</button>
+          </div>
+        </div>
 
-<div class="layout">
-  <!-- ── Feed ── -->
-  <section class="feed">
-    @if (loading()) {
-    <div class="feed__loading">
-      @for (_ of [1,2,3,4,5]; track $index) {
-      <div class="skeleton skeleton-row"></div>
-      }
-    </div>
-    } @else if (rows().length === 0) {
-    <p class="feed__empty">No listings yet — be the first to claim a spot.</p>
-    } @else {
-    @for (row of rows(); track row.listingId) {
-    <div class="feed-row-wrap">
-      <button type="button" class="feed-row__claim-overlay" (click)="claimPosition(row, $event)">
-        ⚡ Claim this position
-      </button>
-      <div class="feed-row card" [class.feed-row--top]="row.rank === 1" role="link" tabindex="0"
-        (click)="openListing(row)" (keyup.enter)="openListing(row)">
-        <!-- Rank medal -->
-        <span class="feed-row__rank">
-          @if (row.rank === 1) { 🥇 }
-          @else if (row.rank === 2) { 🥈 }
-          @else if (row.rank === 3) { 🥉 }
-          @else { #{{ row.rank }} }
-        </span>
+        <div class="hero-meta-group">
+          <!-- Countdown Urgency Ticker -->
+          <div class="countdown-badge">
+            <span class="material-symbols-outlined countdown-badge__icon">timer</span>
+            <span class="countdown-badge__label">Resets:</span>
+            <span class="countdown-badge__time" id="auction-countdown">{{ countdownText() }}</span>
+            <span class="countdown-badge__sep">•</span>
+            <span class="countdown-badge__utc">Midnight UTC</span>
+          </div>
 
-        <span class="feed-row__avatar">
-          @if (row.faviconUrl) {
-          <img [src]="row.faviconUrl" alt="" class="feed-row__favicon" (error)="onListingFaviconError($event)" />
-          } @else {
-          {{ row.listingName.charAt(0).toUpperCase() }}
-          }
-        </span>
+          <!-- Estimated ROI Value Pill -->
+          <div class="roi-pill" title="Avg direct views for today's leader">
+            <span class="material-symbols-outlined roi-pill__icon">visibility</span>
+            <span class="roi-pill__number">~{{ (platformStats()?.avgLeaderViews ?? (reigningChampion()?.clickCount || 0)) | number }}</span>
+            <span class="roi-pill__label">avg views</span>
+          </div>
 
-        <span class="feed-row__info">
-          <span class="feed-row__title">{{ row.siteName || row.listingName }}</span>
-          <span class="feed-row__meta">
-            @if (row.description) {
-            <span class="feed-row__description">{{ row.description }}</span>
-            }
-            <span class="badge">🥇 #1 in {{ row.categoryName }}</span>
-            <a class="feed-row__details" [routerLink]="['/listings', row.listingId]"
-              (click)="$event.stopPropagation()">details</a>
-            <span class="feed-row__clicks">{{ row.clickCount | number }} clicks</span>
-          </span>
-        </span>
-
-        <span class="feed-row__price">{{ row.currentBidAmount | number: '1.0-2' }}</span>
+          <!-- Currency switcher -->
+          <div class="currency-group">
+            <button type="button" class="currency-btn" [class.currency-btn--active]="selectedCurrency() === 'USD'"
+              (click)="setCurrency('USD')">$ USD</button>
+            <button type="button" class="currency-btn" [class.currency-btn--active]="selectedCurrency() === 'EUR'"
+              (click)="setCurrency('EUR')">€ EUR</button>
+            <button type="button" class="currency-btn" [class.currency-btn--active]="selectedCurrency() === 'INR'"
+              (click)="setCurrency('INR')">₹ INR</button>
+          </div>
+        </div>
       </div>
+
+      <!-- ── Master Interactive Claim / Outbid Command Center Bar ── -->
+      <div class="command-bar-wrapper">
+        <form class="command-bar" (submit)="$event.preventDefault(); claimRank()">
+          <!-- URL / @Handle Input -->
+          <div class="command-bar__field command-bar__field--url">
+            @if (faviconDisplayUrl()) {
+            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" (error)="onFaviconError($event)" />
+            } @else {
+            <span class="material-symbols-outlined field-icon">link</span>
+            }
+            <div class="field-content">
+              <label for="claim-url" class="field-label">Website or @X Handle</label>
+              <input id="claim-url" type="text" class="field-input" placeholder="https://yourapp.io or @maker"
+                [value]="heroUrl()" (input)="onHeroUrlChange($any($event.target).value)" (blur)="heroUrlDirty.set(true)"
+                autocomplete="off" required />
+            </div>
+            @if (metadataLoading()) {
+            <span class="field-spinner" title="Fetching URL metadata..."></span>
+            }
+          </div>
+
+          <!-- Product / Brand Name -->
+          <div class="command-bar__field command-bar__field--title">
+            <span class="material-symbols-outlined field-icon">badge</span>
+            <div class="field-content">
+              <label for="claim-title" class="field-label">Product Title</label>
+              <input id="claim-title" type="text" class="field-input" placeholder="e.g. AtlasAI Studio"
+                [value]="productTitle() || urlMetadata()?.siteName || ''"
+                (input)="onProductTitleChange($any($event.target).value)" autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- Category Picker Dropdown -->
+          <div class="command-bar__field command-bar__field--category">
+            <span class="material-symbols-outlined field-icon">category</span>
+            <div class="field-content">
+              <label for="claim-category" class="field-label">Category Slot</label>
+              <select id="claim-category" class="field-select" [value]="claimSlug() || ''"
+                (change)="selectClaimCategory($any($event.target).value)">
+                <option value="" disabled [selected]="!claimSlug()">Select Category</option>
+                @for (cat of claimHeroCategories(); track cat.slug) {
+                <option [value]="cat.slug">{{ cat.icon }} {{ cat.name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Primary Claim CTA Button -->
+          <div class="command-bar__action">
+            <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()">
+              <span>Claim Rank #{{ targetRank() }}</span>
+              <span class="material-symbols-outlined icon-sm">bolt</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
     </div>
-    }
-    }
   </section>
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar-stack">
+  <!-- ═══════════════════════════════════════════════════════════
+       CATEGORY FILTER RIBBON & DISCOVERY CONTROLS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="filter-ribbon">
+    <!-- Scrollable Category Pill Carousel -->
+    <div class="category-carousel">
+      <button type="button" class="cat-chip" [class.cat-chip--active]="selectedSlug() === null"
+        (click)="selectTab(null)">
+        <span>All Categories</span>
+        <span class="cat-chip__count">{{ rows().length }}</span>
+      </button>
 
-    @if (rows().length > 0) {
-      <app-top-ranker-spotlight
-        [listingName]="rows()[0].listingName"
-        [currentBidAmount]="rows()[0].currentBidAmount"
-        [categoryName]="rows()[0].categoryName"
-        [showStars]="true"
-      />
-    }
+      <button type="button" class="cat-chip" [class.cat-chip--active]="selectedSlug() === 'top-bids'"
+        (click)="selectTab(null)">
+        <span>👑 Top Bids</span>
+      </button>
 
-    @if (top3Bidders().length > 0) {
-      <app-todays-leaderboard [bidders]="top3Bidders()" />
-    }
+      @for (cat of tabs(); track cat.slug) {
+      <button type="button" class="cat-chip" [class.cat-chip--active]="selectedSlug() === cat.slug"
+        (click)="selectTab(cat.slug)">
+        <span>{{ categoryIcon(cat.slug) }} {{ cat.name }}</span>
+        @if (cat.listingCount > 0) {
+        <span class="cat-chip__count">{{ cat.listingCount }}</span>
+        }
+      </button>
+      }
+    </div>
+  </section>
 
-  </aside>
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN DISCOVERY STAGE: TWO-COLUMN HIGH VELOCITY CANVAS
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="stage-grid">
+    <!-- ── LEFT COLUMN: Today's Live Ranked Leaderboard (65% width) ── -->
+    <main class="leaderboard-col">
+      <!-- Section Header -->
+      <div class="stage-header">
+        <div class="stage-header__left">
+          <h2 class="stage-title">
+            {{ timeMode() === 'today' ? "Today's Live Leaderboard" : "All-Time Global Pantheon" }}
+          </h2>
+          <span class="live-indicator-pill">
+            <span class="pulse-dot pulse-dot--secondary"></span>
+            Live Order
+          </span>
+        </div>
+        <div class="stage-header__right">
+          <div class="time-pills">
+            <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
+              (click)="setTimeMode('today')" id="view-today-btn">
+              <span class="pulse-dot"></span>
+              <span>Today's Auction</span>
+            </button>
+            <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
+              (click)="setTimeMode('alltime')" id="view-alltime-btn">
+              <span class="material-symbols-outlined icon-sm">military_tech</span>
+              <span>All-Time Pantheon</span>
+            </button>
+          </div>
+          <span class="stage-count">{{ displayedRows().length }} projects competing</span>
+          <div class="search-box">
+            <span class="material-symbols-outlined search-box__icon">search</span>
+            <input type="text" class="search-box__input" placeholder="Search maker or tag..." [value]="searchQuery()"
+              (input)="onSearchChange($event)" />
+          </div>
+        </div>
+      </div>
+
+      @if (loading()) {
+      <div class="feed-skeleton-wrap">
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <div class="skeleton-card"></div>
+        }
+      </div>
+      } @else if (displayedRows().length === 0) {
+      <div class="feed-empty-card">
+        <span class="material-symbols-outlined feed-empty-card__icon">rocket_launch</span>
+        <h3 class="feed-empty-card__title">No listings found in this category yet</h3>
+        <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
+        <button type="button" class="btn btn-primary" (click)="prepareOutbid('Rank #1', effectiveClaimAmount() ?? 10)">
+          Claim Spot Now
+        </button>
+      </div>
+      } @else {
+      <!-- Feed rows list -->
+      <div class="feed-list">
+        @for (row of displayedRows(); track row.listingId) {
+        @if (row.rank === 1) {
+        <!-- RANK #1: THE REIGNING GOLD CHAMPION CARD -->
+        <article class="champion-card champion-card--gold" (click)="openListing(row)">
+          <div class="gold-shimmer-bar"></div>
+          <div class="gold-ambient-orb" aria-hidden="true"></div>
+
+          <div class="champion-card__body">
+            <div class="champion-card__left">
+              <!-- Giant Rank #1 Badge in Gold -->
+              <div class="rank-badge rank-badge--gold">
+                <span class="material-symbols-outlined rank-badge__crown">crown</span>
+                <span class="rank-badge__num">#1</span>
+              </div>
+
+              <!-- Product Avatar / Media Preview with pinging dot -->
+              <div class="product-avatar-wrap">
+                @if (row.logoUrl || row.faviconUrl) {
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar"
+                  (error)="onListingFaviconError($event)" />
+                } @else {
+                <div class="product-avatar product-avatar--placeholder">
+                  {{ row.listingName.charAt(0).toUpperCase() }}
+                </div>
+                }
+                <span class="avatar-live-beacon">
+                  <span class="avatar-live-beacon__ping"></span>
+                  <span class="avatar-live-beacon__dot"></span>
+                </span>
+              </div>
+
+              <!-- Main Payload Body -->
+              <div class="payload-body">
+                <div class="payload-header">
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="payload-title"
+                    (click)="$event.stopPropagation()">
+                    <span>{{ row.siteName || row.listingName }}</span>
+                    @if (row.siteName && row.listingName !== row.siteName) {
+                    <span class="payload-subtitle">— {{ row.listingName }}</span>
+                    }
+                  </a>
+                  <span class="material-symbols-outlined verified-icon" title="Verified Project">verified</span>
+                </div>
+
+                @if (row.description) {
+                <p class="payload-desc">{{ row.description }}</p>
+                }
+
+                <!-- Metadata Chips -->
+                <div class="meta-chips">
+                  <span class="meta-chip meta-chip--category">
+                    {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
+                  </span>
+                  <span class="meta-chip meta-chip--time">
+                    <span class="material-symbols-outlined icon-xxs">schedule</span>
+                    Active
+                  </span>
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
+                    (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined icon-xxs">open_in_new</span>
+                    {{ formatDomain(row.listingUrl) }}
+                  </a>
+                  <span class="meta-chip meta-chip--clicks">
+                    <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
+                    {{ row.clickCount | number }} clicks today
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Anchor: Bid Price & Outbid Trigger -->
+            <div class="champion-card__right">
+              <div class="price-stack">
+                <span class="price-stack__label">Active Bid</span>
+                <span class="price-stack__val text-primary">{{ currencySymbol() }}{{ row.currentBidAmount | number:
+                  '1.0-0' }}</span>
+              </div>
+              <button type="button" class="outbid-btn outbid-btn--primary"
+                (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, 1); $event.stopPropagation()">
+                <span class="material-symbols-outlined icon-sm">trending_up</span>
+                <span>Outbid for {{ currencySymbol() }}{{ (row.currentBidAmount +
+                  incrementForCategory(row.categorySlug)) | number: '1.0-0' }}</span>
+              </button>
+            </div>
+          </div>
+        </article>
+        } @else if (row.rank === 2) {
+        <!-- RANK #2: SILVER CONTENDER CARD -->
+        <article class="champion-card champion-card--silver" (click)="openListing(row)">
+          <div class="champion-card__body">
+            <div class="champion-card__left">
+              <div class="rank-badge rank-badge--silver">#2</div>
+
+              <div class="product-avatar-wrap">
+                @if (row.logoUrl || row.faviconUrl) {
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar"
+                  (error)="onListingFaviconError($event)" />
+                } @else {
+                <div class="product-avatar product-avatar--placeholder">
+                  {{ row.listingName.charAt(0).toUpperCase() }}
+                </div>
+                }
+              </div>
+
+              <div class="payload-body">
+                <div class="payload-header">
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="payload-title"
+                    (click)="$event.stopPropagation()">
+                    <span>{{ row.siteName || row.listingName }}</span>
+                    @if (row.siteName && row.listingName !== row.siteName) {
+                    <span class="payload-subtitle">— {{ row.listingName }}</span>
+                    }
+                  </a>
+                </div>
+                @if (row.description) {
+                <p class="payload-desc">{{ row.description }}</p>
+                }
+                <div class="meta-chips">
+                  <span class="meta-chip meta-chip--category">
+                    {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
+                  </span>
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
+                    (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined icon-xxs">open_in_new</span>
+                    {{ formatDomain(row.listingUrl) }}
+                  </a>
+                  <span class="meta-chip meta-chip--clicks">
+                    {{ row.clickCount | number }} clicks
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="champion-card__right">
+              <div class="price-stack">
+                <span class="price-stack__label">Current Bid</span>
+                <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
+              </div>
+              <button type="button" class="outbid-btn outbid-btn--secondary"
+                (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, 2); $event.stopPropagation()">
+                <span>Outbid for {{ currencySymbol() }}{{ (row.currentBidAmount +
+                  incrementForCategory(row.categorySlug)) | number: '1.0-0' }}</span>
+              </button>
+            </div>
+          </div>
+        </article>
+        } @else if (row.rank === 3) {
+        <!-- RANK #3: BRONZE CONTENDER CARD -->
+        <article class="champion-card champion-card--bronze" (click)="openListing(row)">
+          <div class="champion-card__body">
+            <div class="champion-card__left">
+              <div class="rank-badge rank-badge--bronze">#3</div>
+
+              <div class="product-avatar-wrap">
+                @if (row.logoUrl || row.faviconUrl) {
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar"
+                  (error)="onListingFaviconError($event)" />
+                } @else {
+                <div class="product-avatar product-avatar--placeholder">
+                  {{ row.listingName.charAt(0).toUpperCase() }}
+                </div>
+                }
+              </div>
+
+              <div class="payload-body">
+                <div class="payload-header">
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="payload-title"
+                    (click)="$event.stopPropagation()">
+                    <span>{{ row.siteName || row.listingName }}</span>
+                    @if (row.siteName && row.listingName !== row.siteName) {
+                    <span class="payload-subtitle">— {{ row.listingName }}</span>
+                    }
+                  </a>
+                </div>
+                @if (row.description) {
+                <p class="payload-desc">{{ row.description }}</p>
+                }
+                <div class="meta-chips">
+                  <span class="meta-chip meta-chip--category">
+                    {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
+                  </span>
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
+                    (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined icon-xxs">open_in_new</span>
+                    {{ formatDomain(row.listingUrl) }}
+                  </a>
+                  <span class="meta-chip meta-chip--clicks">
+                    {{ row.clickCount | number }} clicks
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="champion-card__right">
+              <div class="price-stack">
+                <span class="price-stack__label">Current Bid</span>
+                <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
+              </div>
+              <button type="button" class="outbid-btn outbid-btn--secondary"
+                (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, 3); $event.stopPropagation()">
+                <span>Outbid for {{ currencySymbol() }}{{ (row.currentBidAmount +
+                  incrementForCategory(row.categorySlug)) | number: '1.0-0' }}</span>
+              </button>
+            </div>
+          </div>
+        </article>
+        } @else {
+        <!-- RANK #4+: COMPACT CARD -->
+        <article class="compact-rank-card" (click)="openListing(row)">
+          <div class="compact-rank-card__left">
+            <div class="compact-badge">#{{ row.rank }}</div>
+            <div class="compact-info">
+              <div class="compact-title-row">
+                <span class="compact-title">{{ row.siteName || row.listingName }}</span>
+                @if (row.description) {
+                <span class="compact-sub">— {{ row.description }}</span>
+                }
+                <span class="compact-chip">{{ row.categoryName }}</span>
+              </div>
+              <div class="compact-meta-row">
+                <span>{{ row.clickCount | number }} clicks</span>
+                <span>•</span>
+                <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="compact-link"
+                  (click)="$event.stopPropagation()">
+                  {{ formatDomain(row.listingUrl) }}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="compact-rank-card__right">
+            <span class="compact-price">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
+            <button type="button" class="compact-outbid-btn"
+              (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, row.rank); $event.stopPropagation()">
+              Outbid
+            </button>
+          </div>
+        </article>
+        }
+        }
+      </div>
+
+      <!-- View all / Collapse trigger -->
+      @if (allMatchingRows().length > 6) {
+      <div class="view-all-wrap">
+        <button type="button" class="view-all-btn" (click)="toggleShowAll()">
+          <span>{{ showAllRows() ? 'Show top 6 projects only' : ('View all ' + allMatchingRows().length + ' ranked
+            products today') }}</span>
+          <span class="material-symbols-outlined icon-sm" [class.icon--rotated]="showAllRows()">
+            keyboard_arrow_down
+          </span>
+        </button>
+      </div>
+      }
+      }
+
+      <!-- ── Inline Data Visualizer: Live Bid Velocity Pulse Chart (SVG) ── -->
+      <div class="liquidity-chart-card">
+        <div class="liquidity-header">
+          <div class="liquidity-title-group">
+            <span class="liquidity-title">Hourly Bid Pressure (Today)</span>
+            <span class="liquidity-sub">Auction liquidity in USD / hour</span>
+          </div>
+          <span class="liquidity-badge">
+            <span class="material-symbols-outlined icon-xs text-secondary">trending_up</span>
+            Peak Hour Active
+          </span>
+        </div>
+
+        <div class="chart-container">
+          <svg class="chart-svg" fill="none" preserveAspectRatio="none" viewBox="0 0 600 100">
+            <defs>
+              <linearGradient id="bidChartGradient" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.35"></stop>
+                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.0"></stop>
+              </linearGradient>
+            </defs>
+            <path [attr.d]="hourlyChartAreaPath()" fill="url(#bidChartGradient)"></path>
+            <path [attr.d]="hourlyChartPath()" stroke="var(--color-primary)" stroke-linecap="round" stroke-width="3">
+            </path>
+            <circle [attr.cx]="chartPingPoint().cx" [attr.cy]="chartPingPoint().cy" r="6" fill="var(--color-primary)"
+              class="chart-ping-circle"></circle>
+            <circle [attr.cx]="chartPingPoint().cx" [attr.cy]="chartPingPoint().cy" r="4" fill="var(--color-primary)">
+            </circle>
+          </svg>
+        </div>
+
+        <div class="chart-timeline">
+          <span>00:00 UTC</span>
+          <span>06:00 UTC</span>
+          <span>12:00 UTC</span>
+          <span class="timeline-peak">Now ({{ currentUtcTime() }}) — {{ currencySymbol() }}{{
+            reigningChampion()?.currentBidAmount ?? 0 | number: '1.0-0' }} Peak</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── RIGHT COLUMN: High-Retention Spotlight, Hall of Fame & Live Feed (35% width) ── -->
+    <aside class="sidebar-col">
+      <!-- CARD 1: Reigning Champion Spotlight Trophy Card -->
+      <section class="spotlight-card">
+        <div class="spotlight-card__top">
+          <span class="spotlight-badge">
+            <span class="material-symbols-outlined icon-xs">workspace_premium</span>
+            Global Crown Holder
+          </span>
+          <span class="spotlight-crown-disc">
+            <span class="material-symbols-outlined icon-sm">military_tech</span>
+          </span>
+        </div>
+
+        <div class="spotlight-card__avatar-area">
+          <div class="champion-avatar-ring">
+            @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
+            <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt=""
+              class="champion-avatar-img" />
+            } @else {
+            <div class="champion-avatar-placeholder">
+              {{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}
+            </div>
+            }
+            <div class="crown-topper">
+              <span class="material-symbols-outlined icon-sm">crown</span>
+            </div>
+          </div>
+
+          <h3 class="champion-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName || 'No Leader
+            Yet' }}</h3>
+          <p class="champion-holding">
+            Holding the throne in <strong class="text-on-surface">{{ reigningChampion()?.categoryName || 'Global'
+              }}</strong>
+          </p>
+
+          <div class="defense-grid">
+            <div class="defense-box">
+              <span class="defense-val">{{ reigningChampion()?.bidCount ?? 1 }} {{ (reigningChampion()?.bidCount ?? 1)
+                === 1 ? 'Time' : 'Times' }}</span>
+              <span class="defense-label">Defended Today</span>
+            </div>
+            <div class="defense-box">
+              <span class="defense-val text-primary">{{ currencySymbol() }}{{ reigningChampion()?.currentBidAmount ?? 0
+                | number: '1.0-0' }}</span>
+              <span class="defense-label">Daily Capital Spent</span>
+            </div>
+          </div>
+
+          <button type="button" class="claim-throne-btn"
+            (click)="prepareOutbid(reigningChampion()?.listingName || 'Champion', (reigningChampion()?.currentBidAmount ?? 10) + 1, reigningChampion()?.categorySlug, 1)">
+            <span class="material-symbols-outlined icon-sm">swords</span>
+            <span>Claim Throne for {{ currencySymbol() }}{{ (reigningChampion()?.currentBidAmount ?? 10) + 1 | number:
+              '1.0-0' }}</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- CARD 2: All-Time Highest Bids Hall of Fame -->
+      <section class="side-card">
+        <div class="side-card__header">
+          <div class="side-card__title-group">
+            <span class="material-symbols-outlined icon-sm text-tertiary">emoji_events</span>
+            <h3 class="side-card__title">Hall of Fame</h3>
+          </div>
+          <span class="side-card__badge">All-Time Peak</span>
+        </div>
+
+        <div class="hof-list">
+          @for (hof of hallOfFameList(); track hof.id; let i = $index) {
+          <div class="hof-row" (click)="openListingDirect(hof.url, hof.id)">
+            <div class="hof-row__left">
+              <span class="hof-rank" [class.hof-rank--gold]="i === 0" [class.hof-rank--silver]="i === 1"
+                [class.hof-rank--bronze]="i === 2">
+                {{ i + 1 }}
+              </span>
+              <div class="hof-row__info">
+                <span class="hof-name">{{ hof.siteName || hof.name }}</span>
+                <span class="hof-clicks">{{ hof.clickCount | number }} clicks generated</span>
+              </div>
+            </div>
+            <span class="hof-bid">{{ currencySymbol() }}{{ hof.bid | number: '1.0-0' }}</span>
+          </div>
+          }
+        </div>
+
+        <a routerLink="/daily" class="side-card__action-link">
+          <span>Explore All Historic Champions</span>
+          <span class="material-symbols-outlined icon-xs">arrow_forward</span>
+        </a>
+      </section>
+
+      <!-- CARD 3: Live Activity Ticker (Instant Stream) -->
+      <section class="side-card">
+        <div class="side-card__header">
+          <div class="side-card__title-group">
+            <span class="pulse-beacon">
+              <span class="pulse-beacon__ping"></span>
+              <span class="pulse-beacon__dot"></span>
+            </span>
+            <h3 class="side-card__title">Live Bid Stream</h3>
+          </div>
+          <span class="side-card__status text-secondary">Auto-syncing</span>
+        </div>
+
+        <div class="stream-list">
+          @for (event of liveEvents(); track $index) {
+          <div class="stream-item">
+            <span class="material-symbols-outlined stream-item__icon" [class]="event.iconClass">
+              {{ event.icon }}
+            </span>
+            <div class="stream-item__info">
+              <span class="stream-item__text">
+                <strong>{{ event.user }}</strong> {{ event.action }}
+              </span>
+              <span class="stream-item__time">{{ event.timeAgo }} • {{ event.highlight }}</span>
+            </div>
+          </div>
+          }
+        </div>
+      </section>
+
+      <!-- CARD 4: Transparent Economics & Discovery ROI -->
+      <section class="side-card side-card--muted">
+        <div class="side-card__header">
+          <div class="side-card__title-group">
+            <span class="material-symbols-outlined icon-sm text-secondary">verified</span>
+            <h3 class="side-card__title">Transparent Discovery Metrics</h3>
+          </div>
+        </div>
+        <p class="economics-desc">
+          Rankings operate as a decentralized English ascending auction with a continuous daily reset window.
+        </p>
+
+        <div class="economics-grid">
+          <div class="econ-box">
+            <span class="econ-label">Average CPC Today</span>
+            <span class="econ-val">{{ currencySymbol() }}{{ (platformStats()?.averageCpcToday ?? 0.78) | number: '1.2-2'
+              }}</span>
+          </div>
+          <div class="econ-box">
+            <span class="econ-label">Direct CTR Rate</span>
+            <span class="econ-val text-secondary">{{ (platformStats()?.directCtrRate ?? 4.2) | number: '1.1-1'
+              }}%</span>
+          </div>
+        </div>
+
+        <div class="economics-footer">
+          <span>Live Protocol Audit {{ platformStats()?.protocolAuditId || '#AUDIT-1' }}</span>
+          <a routerLink="/rules" class="ledger-link">View Ledger</a>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NOTIFICATION TOAST MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="floating-toast" [class.floating-toast--visible]="toastVisible()">
+  <div class="toast-card">
+    <div class="toast-icon-box">
+      <span class="material-symbols-outlined icon-sm">bolt</span>
+    </div>
+    <div class="toast-content">
+      <span class="toast-title">Outbid Order Staged</span>
+      <span class="toast-message">{{ toastMessage() }}</span>
+    </div>
+  </div>
 </div>

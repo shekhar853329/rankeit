@@ -20,6 +20,9 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(200)
             .IsRequired();
 
+        builder.Property(c => c.Icon)
+            .HasMaxLength(50);
+
         builder.HasIndex(c => c.Slug).IsUnique();
 
         builder.Property(c => c.MinBidIncrement).HasColumnType("decimal(18,2)");

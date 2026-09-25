@@ -6,6 +6,7 @@ import { CategoryDto, CategorySortBy } from '../../core/models/category.model';
 import { LeaderboardEntryDto } from '../../core/models/leaderboard.model';
 import { CategoryService } from '../../core/services/category.service';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
+import { ListingService } from '../../core/services/listing.service';
 
 export interface CategoryCard {
   category: CategoryDto;
@@ -26,6 +27,7 @@ export class CategoryDirectoryComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly categoryService = inject(CategoryService);
   private readonly leaderboardService = inject(LeaderboardService);
+  private readonly listingService = inject(ListingService);
 
   readonly parentSlug = signal<string | null>(null);
   readonly sortBy = signal<CategorySortBy>('Trending');
@@ -93,6 +95,27 @@ export class CategoryDirectoryComponent implements OnInit {
     }
     const days = Math.floor(hours / 24);
     return `${days} day${days === 1 ? '' : 's'} ago`;
+  }
+
+  resolveUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('@')) {
+      return `https://x.com/${trimmed.substring(1)}`;
+    }
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return `https://${trimmed}`;
+  }
+
+  onBidderClick(event: MouseEvent, entry: LeaderboardEntryDto): void {
+    event.stopPropagation();
+    if (!entry?.listingId) return;
+    this.listingService.recordClick(entry.listingId).subscribe({
+      next: () => {},
+      error: () => {},
+    });
   }
 
   private loadHotCategories(): void {
