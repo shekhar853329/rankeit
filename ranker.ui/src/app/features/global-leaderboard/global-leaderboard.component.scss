@@ -1,19 +1,4 @@
 /* ── Animations ───────────────────────────────────────────── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes livePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-  50%       { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
-}
-
-@keyframes accentFlicker {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 1; }
-}
-
 @keyframes claimGlow {
   0%   { box-shadow: 0 0 0 0 rgba(11, 79, 74, 0);     border-color: var(--border-strong); transform: translateY(0); }
   15%  { box-shadow: 0 0 0 6px rgba(11, 79, 74, 0.45); border-color: var(--accent);        transform: translateY(-6px); }
@@ -27,67 +12,6 @@
     15%  { box-shadow: 0 0 0 6px rgba(63, 163, 148, 0.5); border-color: var(--accent);        transform: translateY(-6px); }
     60%  { box-shadow: 0 0 0 4px rgba(63, 163, 148, 0.3); border-color: var(--accent);        transform: translateY(-6px); }
     100% { box-shadow: 0 0 0 0 rgba(63, 163, 148, 0);    border-color: var(--border-strong); transform: translateY(0); }
-  }
-}
-
-/* ── Hero / filter bar ────────────────────────────────────── */
-.hero {
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem;
-  position: sticky;
-  top: var(--header-height, 48px);
-  z-index: 90;
-  height: var(--hero-bar-height, 52px);
-
-  &__inner {
-    max-width: 1280px;
-    margin: 0 auto;
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-  }
-
-  &__headline-block {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    flex: 1;
-    min-width: 0;
-    animation: fadeUp 0.4s ease both;
-  }
-
-  &__tabs {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  &__live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--success);
-    flex-shrink: 0;
-    animation: livePulse 2s ease-in-out infinite;
-  }
-
-  &__headline {
-    color: var(--text);
-    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-    font-family: 'Sora', 'Inter', system-ui, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.2;
-    margin: 0;
-    white-space: nowrap;
-  }
-
-  &__headline-accent {
-    color: var(--accent);
-    animation: accentFlicker 3s ease-in-out infinite;
   }
 }
 

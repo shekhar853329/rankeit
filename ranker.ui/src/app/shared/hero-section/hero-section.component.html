@@ -1,0 +1,16 @@
+<section class="hero" [class.hero--with-tabs]="variant() === 'global'">
+  <div class="hero__inner">
+    <span class="hero__live-dot" aria-hidden="true"></span>
+    <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real claims.</span></h1>
+    @if (category()) {
+      <span class="hero__separator" aria-hidden="true"></span>
+      <span class="hero__category">{{ category() }}</span>
+      @if (listingCount() != null) {
+        <span class="badge">{{ listingCount() }} listings</span>
+      }
+    }
+    <div class="hero__tabs">
+      <ng-content />
+    </div>
+  </div>
+</section>

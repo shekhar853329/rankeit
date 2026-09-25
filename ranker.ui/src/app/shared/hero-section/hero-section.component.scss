@@ -1,0 +1,107 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+}
+
+@keyframes accentFlicker {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+:host {
+  display: contents;
+}
+
+.hero {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  position: sticky;
+  top: var(--header-height, 48px);
+  z-index: 90;
+
+  &__inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    animation: fadeUp 0.4s ease both;
+    min-height: var(--hero-bar-height, 52px);
+  }
+
+  &__live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    flex-shrink: 0;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+
+  &__headline {
+    color: var(--text);
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    font-family: 'Sora', 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  &__headline-accent {
+    color: var(--accent);
+    animation: accentFlicker 3s ease-in-out infinite;
+  }
+
+  &__separator {
+    width: 1px;
+    height: 18px;
+    background: var(--border-strong);
+    flex-shrink: 0;
+  }
+
+  &__category {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    font-family: 'Sora', 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  &__tabs {
+    display: none;
+  }
+
+  &--with-tabs {
+    height: var(--hero-bar-height, 52px);
+
+    .hero__inner {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 1.25rem;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .hero__headline {
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    }
+
+    .hero__tabs {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+  }
+}

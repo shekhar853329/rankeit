@@ -1,14 +1,6 @@
-<section class="hero">
-  <div class="hero__inner">
-    <div class="hero__headline-block">
-      <span class="hero__live-dot" aria-hidden="true"></span>
-      <h1 class="hero__headline">Live rankings. <span class="hero__headline-accent">Real claims.</span></h1>
-      <div class="hero__tabs">
-        <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
-      </div>
-    </div>
-  </div>
-</section>
+<app-hero-section variant="global">
+  <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
+</app-hero-section>
 
 <!-- ── Claim hero ─────────────────────────────────────────── -->
 <div class="claim-hero">
