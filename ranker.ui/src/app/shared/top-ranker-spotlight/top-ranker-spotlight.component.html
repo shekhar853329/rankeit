@@ -1,0 +1,16 @@
+<div class="spotlight-card card">
+  @if (showStars()) {
+    <div class="spotlight-card__stars">✦ ✦ ✦</div>
+  }
+  <span class="spotlight-card__crown">👑</span>
+  <div class="spotlight-card__name">{{ listingName() }}</div>
+  @if (categoryName()) {
+    <div class="spotlight-card__category">🥇 #1 in {{ categoryName() }}</div>
+  }
+  <div class="spotlight-card__price">₹{{ currentBidAmount() | number: '1.0-2' }}</div>
+  @if (showStars()) {
+    <div class="spotlight-card__label">✦ Top Global Ranker ✦</div>
+  } @else {
+    <div class="spotlight-card__label">🥇 #1 {{ categoryName() ? 'in ' + categoryName() : '' }}</div>
+  }
+</div>

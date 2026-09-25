@@ -17,6 +17,8 @@ import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ModalService } from '../../core/services/modal.service';
 import { CategoryTabsComponent } from '../../shared/category-tabs/category-tabs.component';
+import { TopRankerSpotlightComponent } from '../../shared/top-ranker-spotlight/top-ranker-spotlight.component';
+import { TodaysLeaderboardComponent } from '../../shared/todays-leaderboard/todays-leaderboard.component';
 
 interface FeedRow {
   rank: number;
@@ -36,7 +38,7 @@ interface FeedRow {
 @Component({
   selector: 'app-global-leaderboard',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, FormsModule, CategoryTabsComponent],
+  imports: [RouterLink, DecimalPipe, FormsModule, CategoryTabsComponent, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
   templateUrl: './global-leaderboard.component.html',
   styleUrl: './global-leaderboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

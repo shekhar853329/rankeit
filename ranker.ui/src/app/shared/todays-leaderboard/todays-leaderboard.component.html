@@ -1,0 +1,24 @@
+<div class="sidebar card">
+  <div class="sidebar__heading">
+    <h2>Today's Leaderboard</h2>
+  </div>
+  <ol class="sidebar__list">
+    @for (bidder of bidders(); track bidder.listingId; let i = $index) {
+      <li
+        [class.sidebar__list-item--clickable]="clickable()"
+        (click)="onItemClick(bidder)"
+        [attr.role]="clickable() ? 'link' : null"
+        [attr.tabindex]="clickable() ? 0 : null"
+        (keyup.enter)="onItemClick(bidder)"
+      >
+        <span class="sidebar__medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+        <div class="sidebar__item-info">
+          <span class="sidebar__item-name">{{ bidder.listingName }}</span>
+          <span class="sidebar__item-category">{{ bidder.categoryName }}</span>
+        </div>
+        <span class="sidebar__score">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
+      </li>
+    }
+  </ol>
+  <p class="sidebar__note">Ranks recalculate instantly by claim amount.</p>
+</div>

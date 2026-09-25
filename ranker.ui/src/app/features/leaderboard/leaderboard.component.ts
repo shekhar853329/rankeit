@@ -23,11 +23,13 @@ import { SignalrService } from '../../core/services/signalr.service';
 import { ListingService } from '../../core/services/listing.service';
 import { ModalService } from '../../core/services/modal.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
+import { TopRankerSpotlightComponent } from '../../shared/top-ranker-spotlight/top-ranker-spotlight.component';
+import { TodaysLeaderboardComponent } from '../../shared/todays-leaderboard/todays-leaderboard.component';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe],
+  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
   templateUrl: './leaderboard.component.html',
   styleUrl: './leaderboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

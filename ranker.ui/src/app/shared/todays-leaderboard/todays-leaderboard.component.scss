@@ -1,0 +1,155 @@
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes royalShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ── Today's leaderboard sidebar card ─────────────────────── */
+.sidebar {
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+
+  background: linear-gradient(
+    160deg,
+    #fffdf4 0%,
+    #fef9e7 35%,
+    #fdf0c0 70%,
+    #fce896 100%
+  ) !important;
+  border: none !important;
+
+  /* Very faint shimmer sweep */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 65%
+    );
+    background-size: 200% 100%;
+    animation: royalShimmer 5s linear infinite;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  &__heading {
+    margin-bottom: 0.75rem;
+    h2 {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a06020;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(180, 120, 30, 0.2);
+    font-size: 0.875rem;
+
+    &:last-child { border-bottom: none; }
+
+    &.sidebar__list-item--clickable {
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: background 0.12s ease;
+      &:hover { background: rgba(255, 255, 255, 0.5); }
+    }
+  }
+
+  &__medal { font-size: 1rem; flex-shrink: 0; }
+
+  &__item-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 0.1rem;
+  }
+
+  &__item-name {
+    font-weight: 600;
+    color: #6b3a00;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__item-category {
+    font-size: 0.72rem;
+    color: #9a6020;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__score {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #7c3a00;
+    white-space: nowrap;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__note {
+    font-size: 0.72rem;
+    color: #9a6020;
+    margin-top: 0.75rem;
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* ── Dark-mode overrides ──────────────────────────────────── */
+:root.dark .sidebar {
+  background: linear-gradient(
+    160deg,
+    #221800 0%,
+    #2e2000 35%,
+    #3a2900 70%,
+    #473200 100%
+  ) !important;
+  border: none !important;
+
+  .sidebar__heading h2 { color: #c8973a; }
+  .sidebar__item-name  { color: #fde68a; }
+  .sidebar__item-category { color: #c8973a; }
+  .sidebar__score      { color: var(--gold); }
+  .sidebar__note       { color: #c8973a; }
+
+  .sidebar__list li {
+    border-bottom-color: rgba(240, 184, 92, 0.15);
+
+    &.sidebar__list-item--clickable:hover {
+      background: rgba(240, 184, 92, 0.08);
+    }
+  }
+}

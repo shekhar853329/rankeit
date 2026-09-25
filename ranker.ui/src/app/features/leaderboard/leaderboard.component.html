@@ -125,36 +125,20 @@
   <!-- ── Sidebar ── -->
   <aside class="sidebar-stack">
 
-    <!-- Top bidder spotlight card -->
     @if (entries().length > 0) {
-      <div class="spotlight-card card">
-        <span class="spotlight-card__crown">👑</span>
-        <div class="spotlight-card__name">{{ entries()[0].listingName }}</div>
-        <div class="spotlight-card__label">🥇 #1 in {{ categoryName() }}</div>
-        <div class="spotlight-card__price">₹{{ entries()[0].currentBidAmount | number: '1.0-2' }}</div>
-      </div>
+      <app-top-ranker-spotlight
+        [listingName]="entries()[0].listingName"
+        [currentBidAmount]="entries()[0].currentBidAmount"
+        [categoryName]="categoryName()"
+      />
     }
 
-    <!-- Today's leaderboard -->
     @if (top3Bidders().length > 0) {
-      <div class="sidebar card">
-        <div class="sidebar__heading">
-          <h2>Today's Leaderboard</h2>
-        </div>
-        <ol class="sidebar__list">
-          @for (bidder of top3Bidders(); track bidder.listingId; let i = $index) {
-            <li class="sidebar__list-item" (click)="openBidderListing(bidder)" role="link" tabindex="0" (keyup.enter)="openBidderListing(bidder)">
-              <span class="sidebar__medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
-              <div class="sidebar__item-info">
-                <span class="sidebar__item-name">{{ bidder.listingName }}</span>
-                <span class="sidebar__item-category">{{ bidder.categoryName }}</span>
-              </div>
-              <span class="sidebar__score">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
-            </li>
-          }
-        </ol>
-        <p class="sidebar__note">Ranks recalculate instantly by claim amount.</p>
-      </div>
+      <app-todays-leaderboard
+        [bidders]="top3Bidders()"
+        [clickable]="true"
+        (itemClick)="openBidderListing($event)"
+      />
     }
 
   </aside>
