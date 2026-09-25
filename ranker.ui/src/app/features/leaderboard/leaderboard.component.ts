@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
@@ -26,11 +25,12 @@ import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { TopRankerSpotlightComponent } from '../../shared/top-ranker-spotlight/top-ranker-spotlight.component';
 import { TodaysLeaderboardComponent } from '../../shared/todays-leaderboard/todays-leaderboard.component';
 import { HeroSectionComponent } from '../../shared/hero-section/hero-section.component';
+import { ClaimHeroComponent } from '../../shared/claim-hero/claim-hero.component';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, HeroSectionComponent, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
+  imports: [RouterLink, DecimalPipe, DatePipe, HeroSectionComponent, ClaimHeroComponent, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
   templateUrl: './leaderboard.component.html',
   styleUrl: './leaderboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

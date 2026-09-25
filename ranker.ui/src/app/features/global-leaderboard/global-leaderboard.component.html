@@ -2,50 +2,27 @@
   <app-category-tabs [categories]="tabs()" [selected]="selectedSlug()" (select)="selectTab($event)" />
 </app-hero-section>
 
-<!-- ── Claim hero ─────────────────────────────────────────── -->
-<div class="claim-hero">
-  <div class="claim-hero__inner">
-
-    <div class="claim-hero__headline">
-      Claim&nbsp;<span class="claim-hero__rank">#{{ targetRank() }}</span>&nbsp;for
-      <button type="button" class="claim-hero__step" (click)="decrementClaimAmount()"
-        aria-label="Decrease amount">−</button>
-      <span class="claim-hero__price">₹{{ (effectiveClaimAmount() ?? 0) | number: '1.0-2' }}</span>
-      <button type="button" class="claim-hero__step" (click)="incrementClaimAmount()"
-        aria-label="Increase amount">+</button>
-    </div>
-
-    <div class="claim-hero__form">
-      <div class="claim-hero__field-wrap">
-        <label class="claim-hero__field" [class.claim-hero__field--invalid]="heroUrlDirty() && !isHeroUrlValid()">
-          <span class="claim-hero__field-icon">
-            @if (faviconDisplayUrl()) {
-            <img [src]="faviconDisplayUrl()!" alt="" class="claim-hero__favicon" (error)="onFaviconError($event)" />
-            } @else if (metadataLoading()) {
-            <span class="claim-hero__favicon-spinner"></span>
-            } @else {
-            🌐
-            }
-          </span>
-          <input type="text" placeholder="https://… or @handle or email" [ngModel]="heroUrl()"
-            (ngModelChange)="onHeroUrlChange($event)" (blur)="heroUrlDirty.set(true)" />
-        </label>
-
-      </div>
-      <select class="claim-hero__field claim-hero__field--select" [ngModel]="claimSlug()"
-        (ngModelChange)="selectClaimCategory($event)">
-        <option [ngValue]="null">Choose a category</option>
-        @for (category of allCategories(); track category.id) {
-        <option [ngValue]="category.slug">{{ categoryIcon(category.slug) }} {{ category.name }}</option>
-        }
-      </select>
-      <button type="button" class="claim-hero__btn" (click)="claimRank()" [disabled]="!canClaimRank()">
-        Claim rank
-      </button>
-    </div>
-
-  </div>
-</div>
+<app-claim-hero
+  [rank]="targetRank()"
+  [amount]="effectiveClaimAmount()"
+  [url]="heroUrl()"
+  [faviconUrl]="faviconDisplayUrl()"
+  [metadataLoading]="metadataLoading()"
+  [invalid]="!isHeroUrlValid()"
+  [showInvalid]="heroUrlDirty()"
+  [disabled]="!canClaimRank()"
+  inputType="text"
+  placeholder="https://… or @handle or email"
+  [categories]="claimHeroCategories()"
+  [selectedCategory]="claimSlug()"
+  (urlChange)="onHeroUrlChange($event)"
+  (urlBlur)="heroUrlDirty.set(true)"
+  (categoryChange)="selectClaimCategory($event)"
+  (decrement)="decrementClaimAmount()"
+  (increment)="incrementClaimAmount()"
+  (claim)="claimRank()"
+  (faviconError)="onFaviconError($event)"
+/>
 
 <div class="layout">
   <!-- ── Feed ── -->

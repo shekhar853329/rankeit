@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -20,6 +19,7 @@ import { CategoryTabsComponent } from '../../shared/category-tabs/category-tabs.
 import { HeroSectionComponent } from '../../shared/hero-section/hero-section.component';
 import { TopRankerSpotlightComponent } from '../../shared/top-ranker-spotlight/top-ranker-spotlight.component';
 import { TodaysLeaderboardComponent } from '../../shared/todays-leaderboard/todays-leaderboard.component';
+import { ClaimHeroCategory, ClaimHeroComponent } from '../../shared/claim-hero/claim-hero.component';
 
 interface FeedRow {
   rank: number;
@@ -39,7 +39,7 @@ interface FeedRow {
 @Component({
   selector: 'app-global-leaderboard',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, FormsModule, CategoryTabsComponent, HeroSectionComponent, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
+  imports: [RouterLink, DecimalPipe, CategoryTabsComponent, HeroSectionComponent, ClaimHeroComponent, TopRankerSpotlightComponent, TodaysLeaderboardComponent],
   templateUrl: './global-leaderboard.component.html',
   styleUrl: './global-leaderboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +59,11 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   readonly tabs = signal<CategoryDto[]>([]);
   readonly allCategories = signal<CategoryDto[]>([]);
+  readonly claimHeroCategories = computed<ClaimHeroCategory[]>(() => this.allCategories().map((category) => ({
+    slug: category.slug,
+    name: category.name,
+    icon: this.categoryIcon(category.slug),
+  })));
   readonly trendingCategories = signal<CategoryDto[]>([]);
   readonly selectedSlug = signal<string | null>(null);
   readonly heroUrl = signal('');

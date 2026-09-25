@@ -1,0 +1,38 @@
+<div class="claim-hero">
+  <div class="claim-hero__inner">
+    <div class="claim-hero__headline">
+      Claim&nbsp;<span class="claim-hero__rank">#{{ rank() }}</span>&nbsp;for
+      <button type="button" class="claim-hero__step" (click)="decrement.emit()" aria-label="Decrease amount">−</button>
+      <span class="claim-hero__price">₹{{ (amount() ?? 0) | number: '1.0-2' }}</span>
+      <button type="button" class="claim-hero__step" (click)="increment.emit()" aria-label="Increase amount">+</button>
+    </div>
+
+    <div class="claim-hero__form">
+      <label class="claim-hero__field" [class.claim-hero__field--invalid]="showInvalid() && invalid()">
+        <span class="claim-hero__field-icon">
+          @if (faviconUrl()) {
+            <img [src]="faviconUrl()!" alt="" class="claim-hero__favicon" (error)="faviconError.emit($event)" />
+          } @else if (metadataLoading()) {
+            <span class="claim-hero__favicon-spinner"></span>
+          } @else {
+            🌐
+          }
+        </span>
+        <input [type]="inputType()" [placeholder]="placeholder()" [ngModel]="url()"
+          (ngModelChange)="urlChange.emit($event)" (blur)="urlBlur.emit()" />
+      </label>
+
+      @if (categories().length > 0) {
+        <select class="claim-hero__field claim-hero__field--select" [ngModel]="selectedCategory()"
+          (ngModelChange)="categoryChange.emit($event)">
+          <option [ngValue]="null">Choose a category</option>
+          @for (category of categories(); track category.slug) {
+            <option [ngValue]="category.slug">{{ category.icon ?? '📂' }} {{ category.name }}</option>
+          }
+        </select>
+      }
+
+      <button type="button" class="claim-hero__btn" (click)="claim.emit()" [disabled]="disabled()">Claim rank</button>
+    </div>
+  </div>
+</div>
