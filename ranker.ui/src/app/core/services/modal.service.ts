@@ -11,6 +11,11 @@ export interface ClaimModalPayload {
   listingId: number | null;
   listingName: string;
   listingUrl: string;
+  /** Scraped metadata from the submitted URL — stored alongside the listing on creation. */
+  siteName: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  faviconUrl: string | null;
   /** Called after a successful bid so the leaderboard can refresh. */
   onSuccess: () => void;
 }

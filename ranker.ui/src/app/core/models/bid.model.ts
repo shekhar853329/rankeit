@@ -7,6 +7,10 @@ export interface PlaceBidRequestDto {
   targetBidAmount: number;
   paymentReference: string;
   confirmedPaymentAmount: number;
+  siteName: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  faviconUrl: string | null;
 }
 
 export interface PlaceBidResultDto {

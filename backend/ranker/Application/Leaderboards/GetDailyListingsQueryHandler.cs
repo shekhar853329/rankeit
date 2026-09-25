@@ -41,6 +41,9 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
                     l.CurrentBidAmount,
                     l.FirstBidAt,
                     l.ClickCount,
+                    l.SiteName,
+                    l.LogoUrl,
+                    l.FaviconUrl,
                     CategoryName = l.Category!.Name,
                     CategorySlug = l.Category!.Slug,
                 })
@@ -56,7 +59,10 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
                     e.CategorySlug,
                     e.CurrentBidAmount,
                     e.FirstBidAt,
-                    e.ClickCount))
+                    e.ClickCount,
+                    e.SiteName,
+                    e.LogoUrl,
+                    e.FaviconUrl))
                 .ToList();
 
             groups.Add(new DailyListingGroupDto(DateOnly.FromDateTime(day), rankedEntries.Count, rankedEntries));

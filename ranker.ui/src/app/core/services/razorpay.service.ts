@@ -23,7 +23,7 @@ export class RazorpayService {
   private readonly http = inject(HttpClient);
 
   /** KEY_ID only — safe to expose in the browser. Never send KeySecret to the frontend. */
-  private readonly keyId = 'rzp_test_TfvXLpvBDwUWWX';
+  private readonly keyId = 'rzp_test_TgDVZCWlGGEMuh';
 
   // ── HTTP helpers ─────────────────────────────────────────────────────────
 

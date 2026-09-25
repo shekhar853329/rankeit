@@ -195,7 +195,30 @@
       &:focus-within { border-color: var(--error, #ef4444); }
     }
 
-    &-icon { font-size: 0.82rem; flex-shrink: 0; opacity: 0.45; }
+    &-icon { font-size: 0.82rem; flex-shrink: 0; opacity: 0.45; line-height: 1; }
+
+    .claim-hero__favicon {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 2px;
+      object-fit: contain;
+      opacity: 1;
+      display: block;
+    }
+
+    .claim-hero__favicon-spinner {
+      display: inline-block;
+      width: 0.85rem;
+      height: 0.85rem;
+      border: 1.5px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: favicon-spin 0.7s linear infinite;
+    }
+
+    @keyframes favicon-spin {
+      to { transform: rotate(360deg); }
+    }
 
     input {
       border: none; background: transparent; box-shadow: none;
@@ -369,6 +392,16 @@
     letter-spacing: 0;
   }
 
+  &__favicon {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: var(--radius-md);
+    object-fit: contain;
+    display: block;
+    background: var(--surface-subtle);
+    padding: 0.3rem;
+  }
+
   &--top &__avatar {
     background: linear-gradient(135deg, #d4891a, #b8720e);
   }
@@ -400,12 +433,15 @@
     flex-wrap: wrap;
   }
 
-  &__domain {
+  &__description {
+    color: var(--text-muted);
+    font-size: 0.775rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 200px;
-    color: var(--text-faint);
+    max-width: 300px;
+    display: inline-block;
+    &::after { content: '·'; margin-left: 0.4rem; }
   }
 
   &__clicks {
@@ -522,23 +558,15 @@
     font-weight: 800;
     font-size: 1.05rem;
     color: #6b3a00;
-    margin-bottom: 0.2rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     position: relative;
     z-index: 1;
   }
-
-  &__url {
-    font-size: 0.78rem;
-    color: #9a6020;
+  &__category{
     margin-bottom: 0.9rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    position: relative;
-    z-index: 1;
+
   }
 
   &__price {
@@ -587,7 +615,6 @@
   }
 
   .spotlight-card__name  { color: #fde68a; }
-  .spotlight-card__url   { color: #c8973a; }
   .spotlight-card__stars { color: var(--gold); opacity: 0.6; }
   .spotlight-card__price { color: var(--gold); text-shadow: 0 0 12px rgba(240, 184, 92, 0.5); }
   .spotlight-card__label { color: var(--gold); border-color: rgba(240, 184, 92, 0.4); background: rgba(240, 184, 92, 0.08); }

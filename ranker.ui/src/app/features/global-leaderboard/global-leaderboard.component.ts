@@ -3,13 +3,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
 import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
+import { UrlMetadataDto } from '../../core/models/url-metadata.model';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { CategoryService } from '../../core/services/category.service';
 import { SignalrService } from '../../core/services/signalr.service';
 import { ListingService } from '../../core/services/listing.service';
+import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ModalService } from '../../core/services/modal.service';
 import { CategoryTabsComponent } from '../../shared/category-tabs/category-tabs.component';
@@ -23,6 +27,10 @@ interface FeedRow {
   categoryName: string;
   categorySlug: string;
   clickCount: number;
+  siteName: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  faviconUrl: string | null;
 }
 
 @Component({
@@ -38,6 +46,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   private readonly categoryService = inject(CategoryService);
   private readonly signalr = inject(SignalrService);
   private readonly listingService = inject(ListingService);
+  private readonly urlMetadataService = inject(UrlMetadataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
@@ -52,6 +61,11 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly heroUrl = signal('');
   /** True once the user has typed in (or cleared) the URL field — gates error visibility. */
   readonly heroUrlDirty = signal(false);
+  /** Metadata fetched from the entered URL; null until a valid URL resolves. */
+  readonly urlMetadata = signal<UrlMetadataDto | null>(null);
+  /** Drives the debounced metadata fetch — emits every time heroUrl changes to a valid value. */
+  private readonly urlChange$ = new Subject<string>();
+  readonly metadataLoading = signal(false);
 
   readonly categoryIcons: Record<string, string> = {
     'ai-agents-infrastructure': '🤖',
@@ -121,6 +135,10 @@ export class GlobalLeaderboardComponent implements OnInit {
         categoryName: e.categoryName,
         categorySlug: e.categorySlug,
         clickCount: clickOverrides[e.listingId] ?? e.clickCount,
+        siteName: e.siteName,
+        logoUrl: e.logoUrl,
+        description: e.description,
+        faviconUrl: e.faviconUrl,
       }));
     }
 
@@ -137,6 +155,10 @@ export class GlobalLeaderboardComponent implements OnInit {
       categoryName: data.categoryName,
       categorySlug: data.categorySlug,
       clickCount: clickOverrides[e.listingId] ?? e.clickCount,
+      siteName: e.siteName,
+      logoUrl: e.logoUrl,
+      description: e.description,
+      faviconUrl: e.faviconUrl,
     }));
   });
 
@@ -180,13 +202,57 @@ export class GlobalLeaderboardComponent implements OnInit {
     // Bare domain: at least one dot, no spaces, valid TLD-like suffix
     return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/\S*)?$/.test(v);
   });
-
-  /** True only when the category dropdown is chosen AND the URL/handle/email is valid. */
   readonly canClaimRank = computed(() =>
     !!(this.claimSlug() && this.isHeroUrlValid())
-  );  readonly effectiveClaimAmount = computed<number | null>(() =>
+  );
+
+  readonly effectiveClaimAmount = computed<number | null>(() =>
     this.claimAmount() ?? this.claimPrice() ?? this.globalDefaultPrice()
   );
+
+  /**
+   * Returns a Google S2 favicon URL for the currently entered URL.
+   * Google's service is always publicly accessible (no 403s) and caches
+   * favicons for every domain. Used only for display — the raw faviconUrl
+   * from the API is still stored / passed to the modal.
+   */
+  readonly faviconDisplayUrl = computed<string | null>(() => {
+    const v = this.heroUrl().trim();
+    if (!v || !this.isHeroUrlValid()) return null;
+    try {
+      let urlToParse = v;
+      if (!v.startsWith('http://') && !v.startsWith('https://')) {
+        urlToParse = 'https://' + v;
+      }
+      const host = new URL(urlToParse).hostname;
+      return `https://www.google.com/s2/favicons?domain=${host}&sz=32`;
+    } catch {
+      return null;
+    }
+  });
+
+  /** Called from the template on every URL input change. Updates the signal, triggers metadata fetch if valid. */
+  onHeroUrlChange(value: string): void {
+    this.heroUrl.set(value);
+    this.heroUrlDirty.set(true);
+    const v = value.trim();
+    if (this.isHeroUrlValid()) {
+      this.urlChange$.next(v);
+    } else {
+      this.urlMetadata.set(null);
+      this.metadataLoading.set(false);
+    }
+  }
+
+  /** Hides a broken favicon img so the 🌐 fallback shows instead. */
+  onFaviconError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  /** Hides a broken listing favicon img so the letter avatar fallback shows instead. */
+  onListingFaviconError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
 
   ngOnInit(): void {
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 8 }).subscribe((result) => {
@@ -203,6 +269,22 @@ export class GlobalLeaderboardComponent implements OnInit {
 
     this.loadSelection();
     void this.signalr.joinGlobalGroup();
+
+    // Auto-fetch URL metadata 600 ms after the user stops typing a valid URL
+    this.urlChange$
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(),
+        switchMap((url) => {
+          this.metadataLoading.set(true);
+          return this.urlMetadataService.fetch(url);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((meta) => {
+        this.urlMetadata.set(meta);
+        this.metadataLoading.set(false);
+      });
 
     this.destroyRef.onDestroy(() => {
       void this.signalr.leaveGlobalGroup();
@@ -314,6 +396,7 @@ export class GlobalLeaderboardComponent implements OnInit {
     }
     const amount = this.effectiveClaimAmount() ?? 0;
     const url = this.heroUrl();
+    const meta = this.urlMetadata();
     this.modalService.openClaimModal({
       rank: this.targetRank(),
       categoryName: data.categoryName,
@@ -322,8 +405,12 @@ export class GlobalLeaderboardComponent implements OnInit {
       minStartingBid: data.minStartingBid,
       minBidIncrement: data.minBidIncrement,
       listingId: null,
-      listingName: '',
+      listingName: meta?.siteName ?? '',
       listingUrl: url,
+      siteName: meta?.siteName ?? null,
+      logoUrl: meta?.logoUrl ?? null,
+      description: meta?.description ?? null,
+      faviconUrl: meta?.faviconUrl ?? null,
       onSuccess: () => {
         void this.router.navigate(['/leaderboard', slug]);
       },

@@ -11,7 +11,11 @@ public sealed record LeaderboardEntryDto(
     decimal CurrentBidAmount,
     DateTime FirstBidAt,
     DateTime LastBidAt,
-    int ClickCount);
+    int ClickCount,
+    string? SiteName,
+    string? LogoUrl,
+    string? Description,
+    string? FaviconUrl);
 
 /// <summary>Category context alongside its paginated leaderboard, so callers can place a bid without a second round trip.</summary>
 public sealed record CategoryLeaderboardResponseDto(

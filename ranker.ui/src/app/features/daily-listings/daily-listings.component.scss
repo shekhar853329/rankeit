@@ -149,13 +149,6 @@
     flex-wrap: wrap;
   }
 
-  &__domain {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 160px;
-  }
-
   &__time,
   &__clicks {
     white-space: nowrap;

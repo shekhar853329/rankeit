@@ -13,8 +13,13 @@ public sealed record ListingDetailDto(
     string ListingUrl,
     string CategoryName,
     string CategorySlug,
+    int CurrentRankInCategory,
     decimal CurrentBidAmount,
     DateTime FirstBidAt,
     DateTime LastBidAt,
     int ClickCount,
+    string? SiteName,
+    string? LogoUrl,
+    string? Description,
+    string? FaviconUrl,
     IReadOnlyList<BidHistoryEntryDto> Bids);

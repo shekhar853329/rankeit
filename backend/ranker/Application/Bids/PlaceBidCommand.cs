@@ -15,4 +15,8 @@ public sealed record PlaceBidCommand(
     string OwnerContactEmail,
     decimal TargetBidAmount,
     string PaymentReference,
-    decimal ConfirmedPaymentAmount) : IRequest<PlaceBidResultDto>;
+    decimal ConfirmedPaymentAmount,
+    string? SiteName,
+    string? LogoUrl,
+    string? Description,
+    string? FaviconUrl) : IRequest<PlaceBidResultDto>;

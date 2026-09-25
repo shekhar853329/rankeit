@@ -32,6 +32,10 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                 l.CurrentBidAmount,
                 l.ClickCount,
                 l.CategoryId,
+                l.SiteName,
+                l.LogoUrl,
+                l.Description,
+                l.FaviconUrl,
                 Category = dbContext.Categories
                     .Where(c => c.Id == l.CategoryId)
                     .Select(c => new { c.Name, c.Slug })
@@ -49,8 +53,12 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                 x.Name,
                 x.Url,
                 x.CurrentBidAmount,
-                x.CurrentBidAmount,   // score = raw bid amount
-                x.ClickCount))
+                x.CurrentBidAmount,
+                x.ClickCount,
+                x.SiteName,
+                x.LogoUrl,
+                x.Description,
+                x.FaviconUrl))
             .ToList();
     }
 }

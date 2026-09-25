@@ -17,10 +17,15 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
                 l.Id,
                 l.Name,
                 l.Url,
+                l.CategoryId,
                 l.CurrentBidAmount,
                 l.FirstBidAt,
                 l.LastBidAt,
                 l.ClickCount,
+                l.SiteName,
+                l.LogoUrl,
+                l.Description,
+                l.FaviconUrl,
                 CategoryName = l.Category!.Name,
                 CategorySlug = l.Category!.Slug,
             })
@@ -30,6 +35,15 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
         {
             return null;
         }
+
+        // Calculate the rank of this listing within its category. Rank is determined by
+        // CurrentBidAmount DESC, FirstBidAt ASC (same ordering used in leaderboards).
+        var rank = await dbContext.Listings
+            .AsNoTracking()
+            .Where(l => l.CategoryId == listing.CategoryId)
+            .Where(l => l.CurrentBidAmount > listing.CurrentBidAmount
+                || (l.CurrentBidAmount == listing.CurrentBidAmount && l.FirstBidAt < listing.FirstBidAt))
+            .CountAsync(ct) + 1;
 
         var bids = await dbContext.Bids
             .AsNoTracking()
@@ -48,10 +62,15 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
             listing.Url,
             listing.CategoryName,
             listing.CategorySlug,
+            rank,
             listing.CurrentBidAmount,
             listing.FirstBidAt,
             listing.LastBidAt,
             listing.ClickCount,
+            listing.SiteName,
+            listing.LogoUrl,
+            listing.Description,
+            listing.FaviconUrl,
             bidHistory);
     }
 

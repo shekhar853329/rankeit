@@ -9,6 +9,10 @@ export interface LeaderboardEntryDto {
   firstBidAt: string;
   lastBidAt: string;
   clickCount: number;
+  siteName: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  faviconUrl: string | null;
 }
 
 export interface CategoryLeaderboardResponseDto {
@@ -31,6 +35,10 @@ export interface GlobalLeaderboardEntryDto {
   currentBidAmount: number;
   normalizedScore: number;
   clickCount: number;
+  siteName: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  faviconUrl: string | null;
 }
 
 /** Mirrors Ranker.Hubs.ListingClickedPayload broadcast over the "ListingClicked" SignalR event. */

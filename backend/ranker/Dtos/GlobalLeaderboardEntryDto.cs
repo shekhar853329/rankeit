@@ -14,4 +14,8 @@ public sealed record GlobalLeaderboardEntryDto(
     string ListingUrl,
     decimal CurrentBidAmount,
     decimal NormalizedScore,
-    int ClickCount);
+    int ClickCount,
+    string? SiteName,
+    string? LogoUrl,
+    string? Description,
+    string? FaviconUrl);

@@ -20,7 +20,11 @@ public class BidsController(ISender sender) : ControllerBase
             request.OwnerContactEmail,
             request.TargetBidAmount,
             request.PaymentReference,
-            request.ConfirmedPaymentAmount), ct);
+            request.ConfirmedPaymentAmount,
+            request.SiteName,
+            request.LogoUrl,
+            request.Description,
+            request.FaviconUrl), ct);
 
         return result.Success ? Ok(result) : BadRequest(result);
     }

@@ -10,7 +10,10 @@ public sealed record DailyListingEntryDto(
     string CategorySlug,
     decimal CurrentBidAmount,
     DateTime FirstBidAt,
-    int ClickCount);
+    int ClickCount,
+    string? SiteName,
+    string? LogoUrl,
+    string? FaviconUrl);
 
 /// <summary>All listings that received their first bid on a given day, ranked by CurrentBidAmount DESC.</summary>
 public sealed record DailyListingGroupDto(

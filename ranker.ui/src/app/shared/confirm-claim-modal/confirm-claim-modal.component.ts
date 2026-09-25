@@ -121,6 +121,10 @@ export class ConfirmClaimModalComponent {
           targetBidAmount: amount,
           paymentReference: payment.razorpayPaymentId,
           confirmedPaymentAmount: payment.amountInRupees,
+          siteName: payload.siteName ?? null,
+          logoUrl: payload.logoUrl ?? null,
+          description: payload.description ?? null,
+          faviconUrl: payload.faviconUrl ?? null,
         })
         .subscribe({
           next: (result) => {

@@ -30,7 +30,7 @@
                 @if (entry.rank === 1) { 🥇 }
                 @else if (entry.rank === 2) { 🥈 }
                 @else if (entry.rank === 3) { 🥉 }
-                @else { {{ entry.rank }} }
+                @else { #{{ entry.rank }} }
               </span>
 
               <span class="feed-row__avatar">{{ entry.listingName.charAt(0).toUpperCase() }}</span>
@@ -39,7 +39,7 @@
                 <span class="feed-row__title">{{ entry.listingName }}</span>
                 <span class="feed-row__meta">
                   <span class="badge">{{ entry.categoryName }}</span>
-                  <span class="feed-row__domain">{{ entry.listingUrl }}</span>
+                  <span class="feed-row__rank-info">#{{ entry.rank }} on {{ group.day | date: 'MMM d' }}</span>
                   <span class="feed-row__time">{{ timeAgo(entry.firstBidAt) }}</span>
                   <span class="feed-row__clicks">{{ clickCountFor(entry) | number }} clicks</span>
                   <a class="feed-row__details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()">details</a>

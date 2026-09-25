@@ -5,6 +5,7 @@ using Ranker.Hubs;
 using Ranker.Repositories;
 using Ranker.Services.Leaderboards;
 using Ranker.Services.Payments;
+using Ranker.Services.UrlMetadata;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,33 @@ builder.Services.AddScoped<IListingRepository, ListingRepository>();
 builder.Services.AddScoped<IBidRepository, BidRepository>();
 builder.Services.AddSingleton<GlobalLeaderboardCache>();
 builder.Services.AddSingleton<OnlineUsersTracker>();
+
+// ── URL Metadata ──────────────────────────────────────────────────────────
+// Direct HTTP scrape with enhanced browser mimicry to avoid bot detection
+builder.Services.AddHttpClient("UrlMetadataDirect", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    
+    // Modern Chrome user agent
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+    
+    // Accept headers to look like a real browser
+    client.DefaultRequestHeaders.Accept.ParseAdd(
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+    client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
+    client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    AutomaticDecompression = System.Net.DecompressionMethods.All,
+    AllowAutoRedirect = true,
+    MaxAutomaticRedirections = 5,
+    // Some sites check for cookie support
+    UseCookies = true
+});
+
+builder.Services.AddScoped<IUrlMetadataService, UrlMetadataService>();
 
 // ── Razorpay ──────────────────────────────────────────────────────────────
 builder.Services.Configure<RazorpayOptions>(

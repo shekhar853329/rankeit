@@ -12,9 +12,12 @@
       <div class="listing-detail__header-left">
         <span class="badge">{{ l.categoryName }}</span>
         <h1>{{ l.listingName }}</h1>
-        <a [href]="l.listingUrl" target="_blank" rel="noopener" class="listing-detail__url">
-          🔗 {{ l.listingUrl }}
-        </a>
+        <p class="listing-detail__rank">
+          @if (l.currentRankInCategory === 1) { 🥇 }
+          @else if (l.currentRankInCategory === 2) { 🥈 }
+          @else if (l.currentRankInCategory === 3) { 🥉 }
+          Ranked #{{ l.currentRankInCategory }} in {{ l.categoryName }}
+        </p>
       </div>
       <div class="listing-detail__price-block">
         <span class="listing-detail__price-label">Current bid</span>

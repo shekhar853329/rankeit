@@ -16,33 +16,35 @@
 
     <div class="claim-hero__headline">
       Claim&nbsp;<span class="claim-hero__rank">#{{ targetRank() }}</span>&nbsp;for
-      <button type="button" class="claim-hero__step" (click)="decrementClaimAmount()" aria-label="Decrease amount">−</button>
+      <button type="button" class="claim-hero__step" (click)="decrementClaimAmount()"
+        aria-label="Decrease amount">−</button>
       <span class="claim-hero__price">₹{{ (effectiveClaimAmount() ?? 0) | number: '1.0-2' }}</span>
-      <button type="button" class="claim-hero__step" (click)="incrementClaimAmount()" aria-label="Increase amount">+</button>
+      <button type="button" class="claim-hero__step" (click)="incrementClaimAmount()"
+        aria-label="Increase amount">+</button>
     </div>
 
     <div class="claim-hero__form">
       <div class="claim-hero__field-wrap">
         <label class="claim-hero__field" [class.claim-hero__field--invalid]="heroUrlDirty() && !isHeroUrlValid()">
-          <span class="claim-hero__field-icon">🌐</span>
-          <input
-            type="text"
-            placeholder="https://… or @handle or email"
-            [ngModel]="heroUrl()"
-            (ngModelChange)="heroUrl.set($event); heroUrlDirty.set(true)"
-            (blur)="heroUrlDirty.set(true)"
-          />
+          <span class="claim-hero__field-icon">
+            @if (faviconDisplayUrl()) {
+            <img [src]="faviconDisplayUrl()!" alt="" class="claim-hero__favicon" (error)="onFaviconError($event)" />
+            } @else if (metadataLoading()) {
+            <span class="claim-hero__favicon-spinner"></span>
+            } @else {
+            🌐
+            }
+          </span>
+          <input type="text" placeholder="https://… or @handle or email" [ngModel]="heroUrl()"
+            (ngModelChange)="onHeroUrlChange($event)" (blur)="heroUrlDirty.set(true)" />
         </label>
 
       </div>
-      <select
-        class="claim-hero__field claim-hero__field--select"
-        [ngModel]="claimSlug()"
-        (ngModelChange)="selectClaimCategory($event)"
-      >
+      <select class="claim-hero__field claim-hero__field--select" [ngModel]="claimSlug()"
+        (ngModelChange)="selectClaimCategory($event)">
         <option [ngValue]="null">Choose a category</option>
         @for (category of allCategories(); track category.id) {
-          <option [ngValue]="category.slug">{{ categoryIcon(category.slug) }} {{ category.name }}</option>
+        <option [ngValue]="category.slug">{{ categoryIcon(category.slug) }} {{ category.name }}</option>
         }
       </select>
       <button type="button" class="claim-hero__btn" (click)="claimRank()" [disabled]="!canClaimRank()">
@@ -57,51 +59,54 @@
   <!-- ── Feed ── -->
   <section class="feed">
     @if (loading()) {
-      <div class="feed__loading">
-        @for (_ of [1,2,3,4,5]; track $index) {
-          <div class="skeleton skeleton-row"></div>
-        }
-      </div>
-    } @else if (rows().length === 0) {
-      <p class="feed__empty">No listings yet — be the first to claim a spot.</p>
-    } @else {
-      @for (row of rows(); track row.listingId) {
-        <div class="feed-row-wrap">
-          <button type="button" class="feed-row__claim-overlay" (click)="claimPosition(row, $event)">
-            ⚡ Claim this position
-          </button>
-          <div
-            class="feed-row card"
-            [class.feed-row--top]="row.rank === 1"
-            role="link"
-            tabindex="0"
-            (click)="openListing(row)"
-            (keyup.enter)="openListing(row)"
-          >
-            <!-- Rank medal -->
-            <span class="feed-row__rank">
-              @if (row.rank === 1) { 🥇 }
-              @else if (row.rank === 2) { 🥈 }
-              @else if (row.rank === 3) { 🥉 }
-              @else { {{ row.rank }} }
-            </span>
-
-            <span class="feed-row__avatar">{{ row.listingName.charAt(0).toUpperCase() }}</span>
-
-            <span class="feed-row__info">
-              <span class="feed-row__title">{{ row.listingName }}</span>
-              <span class="feed-row__meta">
-                <span class="badge">{{ row.categoryName }}</span>
-                <span class="feed-row__domain">{{ row.listingUrl }}</span>
-                <a class="feed-row__details" [routerLink]="['/listings', row.listingId]" (click)="$event.stopPropagation()">details</a>
-                <span class="feed-row__clicks">{{ row.clickCount | number }} clicks</span>
-              </span>
-            </span>
-
-            <span class="feed-row__price">{{ row.currentBidAmount | number: '1.0-2' }}</span>
-          </div>
-        </div>
+    <div class="feed__loading">
+      @for (_ of [1,2,3,4,5]; track $index) {
+      <div class="skeleton skeleton-row"></div>
       }
+    </div>
+    } @else if (rows().length === 0) {
+    <p class="feed__empty">No listings yet — be the first to claim a spot.</p>
+    } @else {
+    @for (row of rows(); track row.listingId) {
+    <div class="feed-row-wrap">
+      <button type="button" class="feed-row__claim-overlay" (click)="claimPosition(row, $event)">
+        ⚡ Claim this position
+      </button>
+      <div class="feed-row card" [class.feed-row--top]="row.rank === 1" role="link" tabindex="0"
+        (click)="openListing(row)" (keyup.enter)="openListing(row)">
+        <!-- Rank medal -->
+        <span class="feed-row__rank">
+          @if (row.rank === 1) { 🥇 }
+          @else if (row.rank === 2) { 🥈 }
+          @else if (row.rank === 3) { 🥉 }
+          @else { #{{ row.rank }} }
+        </span>
+
+        <span class="feed-row__avatar">
+          @if (row.faviconUrl) {
+          <img [src]="row.faviconUrl" alt="" class="feed-row__favicon" (error)="onListingFaviconError($event)" />
+          } @else {
+          {{ row.listingName.charAt(0).toUpperCase() }}
+          }
+        </span>
+
+        <span class="feed-row__info">
+          <span class="feed-row__title">{{ row.siteName || row.listingName }}</span>
+          <span class="feed-row__meta">
+            @if (row.description) {
+            <span class="feed-row__description">{{ row.description }}</span>
+            }
+            <span class="badge">🥇 #1 in {{ row.categoryName }}</span>
+            <a class="feed-row__details" [routerLink]="['/listings', row.listingId]"
+              (click)="$event.stopPropagation()">details</a>
+            <span class="feed-row__clicks">{{ row.clickCount | number }} clicks</span>
+          </span>
+        </span>
+
+        <span class="feed-row__price">{{ row.currentBidAmount | number: '1.0-2' }}</span>
+      </div>
+    </div>
+    }
     }
   </section>
 
@@ -110,33 +115,38 @@
 
     <!-- Top bidder spotlight card -->
     @if (rows().length > 0) {
-      <div class="spotlight-card card">
-        <div class="spotlight-card__stars">✦ ✦ ✦</div>
-        <span class="spotlight-card__crown">👑</span>
-        <div class="spotlight-card__name">{{ rows()[0].listingName }}</div>
-        <div class="spotlight-card__url">{{ rows()[0].listingUrl }}</div>
-        <div class="spotlight-card__price">₹{{ rows()[0].currentBidAmount | number: '1.0-2' }}</div>
-        <div class="spotlight-card__label">✦ Top Global Ranker ✦</div>
-      </div>
+    <div class="spotlight-card card">
+      <div class="spotlight-card__stars">✦ ✦ ✦</div>
+      <span class="spotlight-card__crown">👑</span>
+      <div class="spotlight-card__name">{{ rows()[0].listingName }}</div>
+      <div class="spotlight-card__category">🥇 #1 in {{ rows()[0].categoryName }}</div>
+      <div class="spotlight-card__price">₹{{ rows()[0].currentBidAmount | number: '1.0-2' }}</div>
+      <div class="spotlight-card__label">✦ Top Global Ranker ✦</div>
+    </div>
     }
 
     <!-- Today's leaderboard -->
     @if (top3Bidders().length > 0) {
-      <div class="sidebar card">
-        <div class="sidebar__heading">
-          <h2>Today's Leaderboard</h2>
-        </div>
-        <ol class="sidebar__list">
-          @for (bidder of top3Bidders(); track bidder.listingId; let i = $index) {
-            <li>
-              <span class="sidebar__medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
-              <span class="sidebar__item-name">{{ bidder.listingName }}</span>
-              <span class="sidebar__score">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
-            </li>
-          }
-        </ol>
-        <p class="sidebar__note">Ranks recalculate instantly by claim amount.</p>
+    <div class="sidebar card">
+      <div class="sidebar__heading">
+        <h2>Today's Leaderboard</h2>
       </div>
+      <ol class="sidebar__list">
+        @for (bidder of top3Bidders(); track bidder.listingId; let i = $index) {
+        <li>
+          <span class="sidebar__medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+          <div class="sidebar__item-info">
+            <span class="sidebar__item-name">{{ bidder.listingName }}</span>
+            <div>
+              <span class="sidebar__item-category">{{ bidder.categoryName }}</span>
+            </div>
+          </div>
+          <span class="sidebar__score">₹{{ bidder.currentBidAmount | number: '1.0-2' }}</span>
+        </li>
+        }
+      </ol>
+      <p class="sidebar__note">Ranks recalculate instantly by claim amount.</p>
+    </div>
     }
 
   </aside>

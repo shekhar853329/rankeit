@@ -16,6 +16,11 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
         builder.Property(l => l.Url).HasMaxLength(2048).IsRequired();
         builder.Property(l => l.OwnerContactEmail).HasMaxLength(320).IsRequired();
 
+        builder.Property(l => l.SiteName).HasMaxLength(300);
+        builder.Property(l => l.LogoUrl).HasMaxLength(2048);
+        builder.Property(l => l.Description).HasMaxLength(1000);
+        builder.Property(l => l.FaviconUrl).HasMaxLength(2048);
+
         builder.Property(l => l.CurrentBidAmount).HasColumnType("decimal(18,2)");
 
         builder.Property(l => l.ClickCount).HasDefaultValue(0);

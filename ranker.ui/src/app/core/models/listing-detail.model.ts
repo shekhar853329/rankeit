@@ -10,9 +10,14 @@ export interface ListingDetailDto {
   listingUrl: string;
   categoryName: string;
   categorySlug: string;
+  currentRankInCategory: number;
   currentBidAmount: number;
   firstBidAt: string;
   lastBidAt: string;
   clickCount: number;
+  siteName: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  faviconUrl: string | null;
   bids: BidHistoryEntryDto[];
 }

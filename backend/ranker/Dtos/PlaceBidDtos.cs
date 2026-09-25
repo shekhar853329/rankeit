@@ -8,7 +8,11 @@ public sealed record PlaceBidRequestDto(
     string OwnerContactEmail,
     decimal TargetBidAmount,
     string PaymentReference,
-    decimal ConfirmedPaymentAmount);
+    decimal ConfirmedPaymentAmount,
+    string? SiteName,
+    string? LogoUrl,
+    string? Description,
+    string? FaviconUrl);
 
 public sealed record PlaceBidResultDto(
     bool Success,

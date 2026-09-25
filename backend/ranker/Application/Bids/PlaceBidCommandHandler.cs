@@ -131,6 +131,10 @@ public class PlaceBidCommandHandler(
                 CurrentBidAmount = decision.NewCurrentBidAmount,
                 FirstBidAt = now,
                 LastBidAt = now,
+                SiteName = command.SiteName,
+                LogoUrl = command.LogoUrl,
+                Description = command.Description,
+                FaviconUrl = command.FaviconUrl,
             };
             listingRepository.Add(listing);
         }

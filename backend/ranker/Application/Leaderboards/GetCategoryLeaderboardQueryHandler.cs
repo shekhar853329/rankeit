@@ -37,7 +37,7 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
         var pageItems = await ordered
             .Skip(skip)
             .Take(pageSize)
-            .Select(l => new { l.Id, l.Name, l.Url, l.CurrentBidAmount, l.FirstBidAt, l.LastBidAt, l.ClickCount })
+            .Select(l => new { l.Id, l.Name, l.Url, l.CurrentBidAmount, l.FirstBidAt, l.LastBidAt, l.ClickCount, l.SiteName, l.LogoUrl, l.Description, l.FaviconUrl })
             .ToListAsync(ct);
 
         var entries = pageItems
@@ -49,7 +49,11 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
                 l.CurrentBidAmount,
                 l.FirstBidAt,
                 l.LastBidAt,
-                l.ClickCount))
+                l.ClickCount,
+                l.SiteName,
+                l.LogoUrl,
+                l.Description,
+                l.FaviconUrl))
             .ToList();
 
         var leaderboard = new PagedResult<LeaderboardEntryDto>(entries, page, pageSize, totalCount);

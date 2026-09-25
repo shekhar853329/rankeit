@@ -25,6 +25,18 @@ public class Listing
     /// <summary>Used to authenticate re-bids/reclaims by the listing owner.</summary>
     public required string OwnerContactEmail { get; set; }
 
+    /// <summary>Human-readable site/brand name scraped from the submitted URL (og:site_name or &lt;title&gt;).</summary>
+    public string? SiteName { get; set; }
+
+    /// <summary>Primary logo/open-graph image URL scraped from the submitted URL (og:image).</summary>
+    public string? LogoUrl { get; set; }
+
+    /// <summary>Short description scraped from the submitted URL (og:description or meta description).</summary>
+    public string? Description { get; set; }
+
+    /// <summary>Favicon URL derived from the submitted URL.</summary>
+    public string? FaviconUrl { get; set; }
+
     /// <summary>Optimistic-concurrency guard, layered on top of the pessimistic row lock taken during bid placement.</summary>
     public byte[]? RowVersion { get; set; }
 

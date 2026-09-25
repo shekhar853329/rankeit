@@ -11,15 +11,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { Subject } from 'rxjs';
 import { CategoryLeaderboardResponseDto, LeaderboardEntryDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
 import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
+import { UrlMetadataDto } from '../../core/models/url-metadata.model';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { CategoryService } from '../../core/services/category.service';
 import { SignalrService } from '../../core/services/signalr.service';
 import { ListingService } from '../../core/services/listing.service';
 import { ModalService } from '../../core/services/modal.service';
+import { UrlMetadataService } from '../../core/services/url-metadata.service';
 
 @Component({
   selector: 'app-leaderboard',
@@ -37,6 +40,7 @@ export class LeaderboardComponent implements OnInit {
   private readonly listingService = inject(ListingService);
   private readonly modalService = inject(ModalService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly urlMetadataService = inject(UrlMetadataService);
 
   // ── Category metadata ──────────────────────────────────────
   readonly categorySlug = signal('');
@@ -62,6 +66,9 @@ export class LeaderboardComponent implements OnInit {
 
   // ── Sidebar: claim card ────────────────────────────────────
   readonly sidebarUrl = signal('');
+  readonly urlMetadata = signal<UrlMetadataDto | null>(null);
+  readonly metadataLoading = signal(false);
+  private readonly urlChange$ = new Subject<string>();
   readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
   readonly claimAmount = signal<number | null>(null);
   readonly targetRank = signal(1);
@@ -129,6 +136,22 @@ export class LeaderboardComponent implements OnInit {
     });
 
     this.destroyRef.onDestroy(() => void this.signalr.leaveCategoryGroup(this.categorySlug()));
+
+    // Debounced URL metadata fetch for the sidebar field
+    this.urlChange$
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(),
+        switchMap((url) => {
+          this.metadataLoading.set(true);
+          return this.urlMetadataService.fetch(url);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((meta) => {
+        this.urlMetadata.set(meta);
+        this.metadataLoading.set(false);
+      });
   }
 
   private loadTop3Bidders(): void {
@@ -158,6 +181,50 @@ export class LeaderboardComponent implements OnInit {
     this.refresh();
   }
 
+  /** Validates the sidebar URL the same way the global leaderboard does. */
+  isSidebarUrlValid(): boolean {
+    const v = this.sidebarUrl().trim();
+    if (!v) return false;
+    if (/^@\S+$/.test(v)) return true;
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;
+    try { const u = new URL(v); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { /* fall */ }
+    return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(\/\S*)?$/.test(v);
+  }
+
+  /** Google S2 favicon URL — always publicly accessible, no Cloudflare 403s. */
+  faviconDisplayUrl(): string | null {
+    const v = this.sidebarUrl().trim();
+    if (!v || !this.isSidebarUrlValid()) return null;
+    try {
+      let urlToParse = v;
+      if (!v.startsWith('http://') && !v.startsWith('https://')) {
+        urlToParse = 'https://' + v;
+      }
+      const host = new URL(urlToParse).hostname;
+      return `https://www.google.com/s2/favicons?domain=${host}&sz=32`;
+    } catch {
+      return null;
+    }
+  }
+
+  onSidebarUrlChange(value: string): void {
+    this.sidebarUrl.set(value);
+    if (this.isSidebarUrlValid()) {
+      this.urlChange$.next(value.trim());
+    } else {
+      this.urlMetadata.set(null);
+      this.metadataLoading.set(false);
+    }
+  }
+
+  onFaviconError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  onListingFaviconError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
   // ── Claim card interactions ────────────────────────────────
 
   claimPosition(entry: LeaderboardEntryDto, event: Event): void {
@@ -185,6 +252,7 @@ export class LeaderboardComponent implements OnInit {
     const categoryId = this.categoryId();
     if (categoryId === null) return;
     const amount = this.effectiveClaimAmount() ?? 0;
+    const meta = this.urlMetadata();
     this.modalService.openClaimModal({
       rank: this.targetRank(),
       categoryName: this.categoryName(),
@@ -193,8 +261,12 @@ export class LeaderboardComponent implements OnInit {
       minStartingBid: this.minStartingBid(),
       minBidIncrement: this.minBidIncrement(),
       listingId: null,
-      listingName: '',
+      listingName: meta?.siteName ?? '',
       listingUrl: this.sidebarUrl(),
+      siteName: meta?.siteName ?? null,
+      logoUrl: meta?.logoUrl ?? null,
+      description: meta?.description ?? null,
+      faviconUrl: meta?.faviconUrl ?? null,
       onSuccess: () => this.refresh(),
     });
   }
@@ -210,6 +282,10 @@ export class LeaderboardComponent implements OnInit {
     this.listingService.recordClick(entry.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
     });
+  }
+
+  openBidderListing(bidder: DailyListingEntryDto): void {
+    window.open(bidder.listingUrl, '_blank', 'noopener,noreferrer');
   }
 
   /** "Claim this position" overlay — opens the single combined modal pre-filled for this listing. */
@@ -231,6 +307,10 @@ export class LeaderboardComponent implements OnInit {
       listingId: entry.listingId,
       listingName: entry.listingName,
       listingUrl: entry.listingUrl,
+      siteName: entry.siteName ?? null,
+      logoUrl: entry.logoUrl ?? null,
+      description: entry.description ?? null,
+      faviconUrl: entry.faviconUrl ?? null,
       onSuccess: () => this.refresh(),
     });
   }
