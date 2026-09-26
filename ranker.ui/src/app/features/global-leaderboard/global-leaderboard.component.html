@@ -91,12 +91,8 @@
 
           <!-- Custom Category Picker Dropdown -->
           <div class="command-bar__field command-bar__field--category"
-            [class.command-bar__field--open]="categoryDropdownOpen()"
-            (click)="toggleCategoryDropdown($event)"
-            tabindex="0"
-            role="combobox"
-            aria-haspopup="listbox"
-            [attr.aria-expanded]="categoryDropdownOpen()"
+            [class.command-bar__field--open]="categoryDropdownOpen()" (click)="toggleCategoryDropdown($event)"
+            tabindex="0" role="combobox" aria-haspopup="listbox" [attr.aria-expanded]="categoryDropdownOpen()"
             (keydown.enter)="toggleCategoryDropdown($event)"
             (keydown.space)="toggleCategoryDropdown($event); $event.preventDefault()">
             <span class="material-symbols-outlined field-icon">category</span>
@@ -107,7 +103,8 @@
                 <span class="custom-select-val">
                   <span class="cat-icon">{{ cat.icon }}</span>
                   <span class="cat-name">{{ cat.name }}</span>
-                  <button type="button" class="cat-clear-btn" title="Clear category" (click)="clearCategorySelection($event)">
+                  <button type="button" class="cat-clear-btn" title="Clear category"
+                    (click)="clearCategorySelection($event)">
                     <span class="material-symbols-outlined">close</span>
                   </button>
                 </span>
@@ -130,7 +127,8 @@
                   [value]="categorySearchQuery()" (input)="onCategorySearch($event)"
                   (click)="$event.stopPropagation()" />
                 @if (categorySearchQuery()) {
-                <button type="button" class="search-clear" (click)="categorySearchQuery.set(''); $event.stopPropagation()">
+                <button type="button" class="search-clear"
+                  (click)="categorySearchQuery.set(''); $event.stopPropagation()">
                   <span class="material-symbols-outlined">close</span>
                 </button>
                 }
@@ -139,8 +137,7 @@
               <div class="custom-dropdown-scroll">
                 @if (claimSlug()) {
                 <button type="button" class="custom-dropdown-item custom-dropdown-item--clear"
-                  (click)="clearCategorySelection($event); closeCategoryDropdown()"
-                  role="option">
+                  (click)="clearCategorySelection($event); closeCategoryDropdown()" role="option">
                   <span class="material-symbols-outlined item-icon">close</span>
                   <span class="item-name">Clear Category (Blank)</span>
                 </button>
@@ -148,8 +145,7 @@
                 @for (cat of filteredClaimCategories(); track cat.slug) {
                 <button type="button" class="custom-dropdown-item"
                   [class.custom-dropdown-item--selected]="cat.slug === claimSlug()"
-                  (click)="selectDropdownCategory(cat.slug, $event)"
-                  role="option"
+                  (click)="selectDropdownCategory(cat.slug, $event)" role="option"
                   [attr.aria-selected]="cat.slug === claimSlug()">
                   <span class="item-icon">{{ cat.icon }}</span>
                   <span class="item-name">{{ cat.name }}</span>
@@ -174,22 +170,22 @@
               <div class="field-label-row">
                 <span class="field-label">Bid Amount</span>
                 @if (claimPrice(); as minRank1) {
-                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">#1: {{ currencySymbol() }}{{ minRank1 }}</span>
+                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: {{
+                  currencySymbol() }}{{ minRank1 }}</span>
                 }
               </div>
               <div class="amount-stepper-row">
                 <span class="amount-currency">{{ currencySymbol() }}</span>
                 <input id="claim-amount" type="number" class="field-input field-input--amount"
                   [value]="effectiveClaimAmount() ?? claimPrice() ?? 10"
-                  (input)="onClaimAmountInput($any($event.target).value)"
-                  [min]="1"
-                  step="1"
-                  required />
+                  (input)="onClaimAmountInput($any($event.target).value)" [min]="1" step="1" required />
                 <div class="stepper-actions">
-                  <button type="button" class="stepper-arrow-btn" (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
+                  <button type="button" class="stepper-arrow-btn"
+                    (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
                     <span class="material-symbols-outlined">remove</span>
                   </button>
-                  <button type="button" class="stepper-arrow-btn" (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
+                  <button type="button" class="stepper-arrow-btn"
+                    (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
                     <span class="material-symbols-outlined">add</span>
                   </button>
                 </div>
@@ -262,13 +258,15 @@
               <span>All-Time Pantheon</span>
             </button>
           </div>
-          <span class="stage-count">{{ displayedRows().length }} {{ displayedRows().length === 1 ? 'project' : 'projects' }} {{ searchQuery().trim() ? 'found' : 'competing' }}</span>
+          <span class="stage-count">{{ displayedRows().length }} {{ displayedRows().length === 1 ? 'project' :
+            'projects' }} {{ searchQuery().trim() ? 'found' : 'competing' }}</span>
           <div class="search-box">
             <span class="material-symbols-outlined search-box__icon">search</span>
             <input type="text" class="search-box__input" placeholder="Search maker or tag..." [value]="searchQuery()"
               (input)="onSearchChange($event)" />
             @if (searchQuery()) {
-            <button type="button" class="search-box__clear" (click)="clearSearch()" aria-label="Clear search" title="Clear search">
+            <button type="button" class="search-box__clear" (click)="clearSearch()" aria-label="Clear search"
+              title="Clear search">
               <span class="material-symbols-outlined icon-xs">close</span>
             </button>
             }
@@ -701,41 +699,44 @@
 
         <div class="hof-list">
           @if (hallOfFameLoading() && hallOfFameList().length === 0) {
-            @for (_ of [1, 2, 3, 4, 5]; track $index) {
-            <div class="hof-skeleton-row"></div>
-            }
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <div class="hof-skeleton-row"></div>
+          }
           } @else {
-            @for (hof of hallOfFameList(); track hof.id; let i = $index) {
-            <div class="hof-row" (click)="openListingDirect(hof.url, hof.id)">
-              <div class="hof-row__left">
-                <span class="hof-rank" [class.hof-rank--gold]="i === 0" [class.hof-rank--silver]="i === 1"
-                  [class.hof-rank--bronze]="i === 2">
-                  {{ i + 1 }}
-                </span>
-                <div class="hof-row__info">
-                  <span class="hof-name">{{ hof.siteName || hof.name }}</span>
-                  <span class="hof-clicks">{{ hof.clickCount | number }} clicks generated</span>
-                </div>
+          @for (hof of hallOfFameList(); track hof.id; let i = $index) {
+          <div class="hof-row" (click)="openListingDirect(hof.url, hof.id)">
+            <div class="hof-row__left">
+              <span class="hof-rank" [class.hof-rank--gold]="i === 0" [class.hof-rank--silver]="i === 1"
+                [class.hof-rank--bronze]="i === 2">
+                {{ i + 1 }}
+              </span>
+              <div class="hof-row__info">
+                <span class="hof-name">{{ hof.siteName || hof.name }}</span>
+                <span class="hof-clicks">{{ hof.clickCount | number }} clicks generated</span>
               </div>
-              <span class="hof-bid">{{ currencySymbol() }}{{ hof.bid | number: '1.0-0' }}</span>
             </div>
-            } @empty {
-            <div class="hof-empty">
-              <span class="material-symbols-outlined icon-sm">
-                {{ hallOfFameMode() === 'alltime' ? 'emoji_events' : 'gavel' }}
-              </span>
-              <span>
-                {{ hallOfFameMode() === 'alltime' ? 'No all-time champions found yet.' : 'No bids placed in today\'s auction yet.' }}
-              </span>
-            </div>
-            }
+            <span class="hof-bid">{{ currencySymbol() }}{{ hof.bid | number: '1.0-0' }}</span>
+          </div>
+          } @empty {
+          <div class="hof-empty">
+            <span class="material-symbols-outlined icon-sm">
+              {{ hallOfFameMode() === 'alltime' ? 'emoji_events' : 'gavel' }}
+            </span>
+            <span>
+              {{ hallOfFameMode() === 'alltime' ? 'No all-time champions found yet.' : 'No bids placed in today\'s
+              auction yet.' }}
+            </span>
+          </div>
+          }
           }
         </div>
 
         <div class="side-card__actions-wrap">
-          <button type="button" class="side-card__action-btn" (click)="toggleLeaderboardTimeMode()" id="hof-toggle-mode-btn">
+          <button type="button" class="side-card__action-btn" (click)="toggleLeaderboardTimeMode()"
+            id="hof-toggle-mode-btn">
             <span>
-              {{ hallOfFameMode() === 'alltime' ? 'Switch View to All-Time Pantheon' : 'Switch View to Today\'s Auction' }}
+              {{ hallOfFameMode() === 'alltime' ? 'Switch View to All-Time Pantheon' : 'Switch View to Today\'s Auction'
+              }}
             </span>
             <span class="material-symbols-outlined icon-xs">swap_horiz</span>
           </button>

@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HealthService } from '../../core/services/health.service';
 
 @Component({
   selector: 'app-footer',
@@ -10,5 +11,10 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FooterComponent {
+  protected readonly healthService = inject(HealthService);
   readonly currentYear = new Date().getFullYear();
+
+  onCheckHealth(): void {
+    this.healthService.checkHealth();
+  }
 }

@@ -102,6 +102,27 @@
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    line-height: inherit;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    user-select: none;
+
+    &:hover {
+      background: var(--surface-container);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
 
     .op-dot {
       width: 0.5rem;
@@ -110,6 +131,48 @@
       background: var(--color-secondary, #10b981);
       box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
       animation: pulse 2s infinite ease-in-out;
+      flex-shrink: 0;
+      transition: background-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    &.is-operational {
+      border-color: rgba(16, 185, 129, 0.35);
+
+      .op-dot {
+        background: #10b981;
+        box-shadow: 0 0 7px rgba(16, 185, 129, 0.8);
+      }
+    }
+
+    &.is-degraded {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.06);
+
+      .op-dot {
+        background: #f59e0b;
+        box-shadow: 0 0 7px rgba(245, 158, 11, 0.8);
+      }
+    }
+
+    &.is-offline {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.06);
+
+      .op-dot {
+        background: #ef4444;
+        box-shadow: 0 0 7px rgba(239, 68, 68, 0.8);
+        animation: none;
+      }
+    }
+
+    &.is-checking {
+      border-color: var(--border);
+      opacity: 0.85;
+
+      .op-dot {
+        background: #94a3b8;
+        box-shadow: 0 0 4px rgba(148, 163, 184, 0.5);
+      }
     }
   }
 

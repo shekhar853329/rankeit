@@ -1,6 +1,16 @@
 @ranker_HostAddress = http://localhost:5196
 
-GET {{ranker_HostAddress}}/weatherforecast/
+GET {{ranker_HostAddress}}/api/health
+Accept: application/json
+
+###
+
+GET {{ranker_HostAddress}}/health
+Accept: application/json
+
+###
+
+GET {{ranker_HostAddress}}/api/categories
 Accept: application/json
 
 ###

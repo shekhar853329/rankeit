@@ -21,10 +21,20 @@
       </div>
 
       <div class="footer-status-links">
-        <div class="operational-pill">
+        <button
+          type="button"
+          class="operational-pill"
+          [class.is-operational]="healthService.status() === 'operational'"
+          [class.is-degraded]="healthService.status() === 'degraded'"
+          [class.is-offline]="healthService.status() === 'offline'"
+          [class.is-checking]="healthService.status() === 'checking' || healthService.isChecking()"
+          [title]="healthService.statusTooltip()"
+          [attr.aria-label]="healthService.statusTooltip()"
+          (click)="onCheckHealth()"
+        >
           <span class="op-dot"></span>
-          <span>API Systems Operational</span>
-        </div>
+          <span class="op-text">{{ healthService.statusLabel() }}</span>
+        </button>
 
         <nav class="footer-nav">
           <a routerLink="/" class="footer-link">Leaderboard</a>
