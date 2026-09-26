@@ -14,7 +14,7 @@
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
-            Claim Today's Spot for
+            Claim a Spot for
           </h1>
           <div class="bid-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease bid"
@@ -37,23 +37,15 @@
             <span class="countdown-badge__utc">Midnight UTC</span>
           </div>
 
-          <!-- Estimated ROI Value Pill -->
-          <div class="roi-pill" title="Avg direct views for today's leader">
-            <span class="material-symbols-outlined roi-pill__icon">visibility</span>
-            <span class="roi-pill__number">~{{ (platformStats()?.avgLeaderViews ?? (reigningChampion()?.clickCount ||
-              0)) | number }}</span>
-            <span class="roi-pill__label">avg views</span>
-          </div>
-
           <!-- Currency switcher -->
-          <div class="currency-group">
+          <!-- <div class="currency-group">
             <button type="button" class="currency-btn" [class.currency-btn--active]="selectedCurrency() === 'USD'"
               (click)="setCurrency('USD')">$ USD</button>
             <button type="button" class="currency-btn" [class.currency-btn--active]="selectedCurrency() === 'EUR'"
               (click)="setCurrency('EUR')">€ EUR</button>
             <button type="button" class="currency-btn" [class.currency-btn--active]="selectedCurrency() === 'INR'"
               (click)="setCurrency('INR')">₹ INR</button>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -178,8 +170,7 @@
                 <span class="amount-currency">{{ currencySymbol() }}</span>
                 <input id="claim-amount" type="number" class="field-input field-input--amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? claimPrice() ?? 10)"
-                  (focus)="isAmountFieldFocused.set(true)"
-                  (input)="onClaimAmountInput($any($event.target).value)"
+                  (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
                 <div class="stepper-actions">
                   <button type="button" class="stepper-arrow-btn"

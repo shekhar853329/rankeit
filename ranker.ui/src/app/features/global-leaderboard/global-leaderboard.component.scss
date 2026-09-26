@@ -221,17 +221,26 @@
 /* ── Central Claim Top Row: Headline + Stepper & Live Auction Metadata ── */
 .hero-top-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
+  justify-content: center;
+  position: relative;
+  gap: 0.65rem;
+  width: 100%;
+
+  @media (min-width: 992px) {
+    flex-direction: row;
+    gap: 0.75rem 1.25rem;
+  }
 }
 
 .headline-title-wrap {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 0.6rem 0.85rem;
+  text-align: center;
 }
 
 .headline-title {
@@ -240,6 +249,7 @@
   color: var(--color-on-surface);
   letter-spacing: -0.02em;
   line-height: 1.2;
+  text-align: center;
 
   @media (min-width: 640px) {
     font-size: 1.45rem;
@@ -292,8 +302,16 @@
 .hero-meta-group {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.6rem;
   flex-wrap: wrap;
+
+  @media (min-width: 992px) {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 .roi-pill {
