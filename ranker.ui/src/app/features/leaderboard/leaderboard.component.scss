@@ -34,6 +34,7 @@
   border: 1px solid var(--border);
   box-shadow: 0 4px 24px rgba(21, 28, 34, 0.05);
   overflow: hidden;
+  scroll-margin-top: calc(var(--header-height, 72px) + 1.5rem);
 
   @media (min-width: 640px) {
     width: calc(100% - 3rem);

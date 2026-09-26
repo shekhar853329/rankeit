@@ -761,16 +761,16 @@ export class GlobalLeaderboardComponent implements OnInit {
     }
 
     // Move / scroll to Claim Rank section
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const el = document.getElementById('claim-rank-section');
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       el.classList.add('command-bar-wrapper--highlight');
       setTimeout(() => el.classList.remove('command-bar-wrapper--highlight'), 2200);
     }
 
     const urlInput = document.getElementById('claim-url') as HTMLInputElement | null;
     if (urlInput) {
-      setTimeout(() => urlInput.focus(), 350);
+      setTimeout(() => urlInput.focus({ preventScroll: true }), 350);
     }
 
     const amountVal = targetAmount ?? this.effectiveClaimAmount() ?? 10;

@@ -101,14 +101,14 @@ export class LeaderboardComponent implements OnInit {
     this.route.fragment.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((fragment) => {
       if (fragment === 'claim-rank-section') {
         setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
           const el = document.getElementById('claim-rank-section');
           if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el.classList.add('command-bar-wrapper--highlight');
             setTimeout(() => el.classList.remove('command-bar-wrapper--highlight'), 2200);
           }
           const input = document.getElementById('category-claim-url') as HTMLInputElement | null;
-          if (input) input.focus();
+          if (input) input.focus({ preventScroll: true });
         }, 400);
       }
     });
@@ -303,16 +303,17 @@ export class LeaderboardComponent implements OnInit {
 
     // NEVER auto populate website URL or product title!
 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     const section = document.getElementById('claim-rank-section');
     if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
       section.classList.add('command-bar-wrapper--highlight');
       setTimeout(() => section.classList.remove('command-bar-wrapper--highlight'), 2200);
     }
 
     const input = document.getElementById('category-claim-url') as HTMLInputElement | null;
     if (input) {
-      setTimeout(() => input.focus(), 350);
+      setTimeout(() => input.focus({ preventScroll: true }), 350);
     }
   }
 
