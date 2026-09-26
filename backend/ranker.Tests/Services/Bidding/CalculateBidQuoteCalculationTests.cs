@@ -46,13 +46,13 @@ public class CalculateBidQuoteCalculationTests
     {
         decimal? currentTopBid = 200m;
         const decimal minStartingBid = 100m;
-        const decimal minBidIncrement = 10m;
+        const decimal minBidIncrement = 1m;
 
         var requiredMinimum = currentTopBid.HasValue
             ? currentTopBid.Value + minBidIncrement
             : minStartingBid;
 
-        Assert.Equal(210m, requiredMinimum);
+        Assert.Equal(201m, requiredMinimum);
     }
 
     [Theory]

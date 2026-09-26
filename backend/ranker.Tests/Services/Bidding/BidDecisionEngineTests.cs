@@ -46,6 +46,7 @@ public class BidDecisionEngineTests
     [Theory]
     [InlineData(50, false)]  // below top(100) -> succeeds, but does not become top
     [InlineData(100, false)] // equal to top(100) -> succeeds, but does not become top
+    [InlineData(101, true)]  // 1 rupee above top(100) -> succeeds and becomes top
     [InlineData(110, true)]  // above top(100) -> succeeds and becomes top
     [InlineData(150, true)]  // comfortably above -> succeeds and becomes top
     public void Evaluate_BidBelowTopPlusIncrement_SucceedsAndDeterminesBecameTop(decimal target, bool expectedBecameTop)

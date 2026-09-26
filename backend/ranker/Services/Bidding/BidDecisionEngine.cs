@@ -41,7 +41,7 @@ public static class BidDecisionEngine
         decimal targetBidAmount,
         decimal confirmedPaymentAmount)
     {
-        // Amount required to take or maintain Rank #1
+        // Amount required to take or maintain Rank #1: uses categoryMinBidIncrement from database
         var rank1Minimum = currentTopBidInCategory.HasValue
             ? currentTopBidInCategory.Value + categoryMinBidIncrement
             : categoryMinStartingBid;
