@@ -51,6 +51,7 @@ export class LeaderboardComponent implements OnInit {
   // ── Feed state ─────────────────────────────────────────────
   readonly entries = signal<LeaderboardEntryDto[]>([]);
   readonly totalCount = signal(0);
+  readonly timeMode = signal<'alltime' | 'today'>('alltime');
   readonly page = signal(1);
   readonly pageSize = signal(25);
   readonly loading = signal(true);
@@ -121,7 +122,7 @@ export class LeaderboardComponent implements OnInit {
           this.claimAmount.set(null);
           this.targetRank.set(1);
           void this.joinGroup(slug);
-          return this.leaderboardService.getCategoryLeaderboard(slug, this.page(), this.pageSize()).pipe(
+          return this.leaderboardService.getCategoryLeaderboard(slug, this.page(), this.pageSize(), this.timeMode()).pipe(
             catchError(() => of(null as CategoryLeaderboardResponseDto | null)),
           );
         }),
@@ -185,9 +186,16 @@ export class LeaderboardComponent implements OnInit {
     if (slug) await this.signalr.joinCategoryGroup(slug);
   }
 
+  setTimeMode(mode: 'alltime' | 'today'): void {
+    if (this.timeMode() === mode) return;
+    this.timeMode.set(mode);
+    this.page.set(1);
+    this.refresh();
+  }
+
   refresh(): void {
     this.leaderboardService
-      .getCategoryLeaderboard(this.categorySlug(), this.page(), this.pageSize())
+      .getCategoryLeaderboard(this.categorySlug(), this.page(), this.pageSize(), this.timeMode())
       .subscribe((result) => {
         this.entries.set(result.leaderboard.items);
         this.totalCount.set(result.leaderboard.totalCount);

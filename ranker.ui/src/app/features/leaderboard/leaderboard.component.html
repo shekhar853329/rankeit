@@ -96,15 +96,14 @@
                 <span class="amount-currency">$</span>
                 <input id="category-claim-amount" type="number" class="field-input field-input--amount"
                   [value]="effectiveClaimAmount() ?? minStartingBid()"
-                  (input)="onClaimAmountInput($any($event.target).value)"
-                  [min]="minStartingBid()"
-                  step="1"
-                  required />
+                  (input)="onClaimAmountInput($any($event.target).value)" [min]="minStartingBid()" step="1" required />
                 <div class="stepper-actions">
-                  <button type="button" class="stepper-arrow-btn" (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
+                  <button type="button" class="stepper-arrow-btn"
+                    (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
                     <span class="material-symbols-outlined">remove</span>
                   </button>
-                  <button type="button" class="stepper-arrow-btn" (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
+                  <button type="button" class="stepper-arrow-btn"
+                    (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
                     <span class="material-symbols-outlined">add</span>
                   </button>
                 </div>
@@ -137,12 +136,21 @@
               <span class="pulse-dot"></span>
               Live Order
             </span>
+            <div class="time-pills">
+              <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
+                (click)="setTimeMode('alltime')" id="cat-feed-time-alltime"
+                title="All-time rankings including past bids">
+                <span class="material-symbols-outlined icon-xs">history</span>
+                All-Time
+              </button>
+              <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
+                (click)="setTimeMode('today')" id="cat-feed-time-today" title="Bids placed today">
+                <span class="material-symbols-outlined icon-xs">today</span>
+                Today
+              </button>
+            </div>
           </div>
           <div class="feed-header__right">
-            <button type="button" class="btn btn-primary claim-feed-head-btn" (click)="moveToClaimRank()">
-              <span class="material-symbols-outlined icon-sm">workspace_premium</span>
-              <span>Claim This Position</span>
-            </button>
             <span class="feed-count">{{ totalCount() }} competitors</span>
           </div>
         </div>
@@ -162,8 +170,13 @@
         } @else if (entries().length === 0) {
         <div class="empty-state">
           <span class="material-symbols-outlined empty-icon">rocket_launch</span>
+          @if (timeMode() === 'today') {
+          <h3>No bids placed in this arena today</h3>
+          <p>Switch to All-Time to see the reigning champions, or be the first to place a bid today!</p>
+          } @else {
           <h3>No listings in this arena yet</h3>
           <p>Be the first pioneer! Place a bid of ${{ minStartingBid() }} to claim Rank #1 right now.</p>
+          }
         </div>
         } @else {
         <div class="feed-list">

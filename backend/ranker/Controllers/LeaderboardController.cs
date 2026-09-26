@@ -16,7 +16,7 @@ public class LeaderboardController(ISender sender) : ControllerBase
         string categorySlug,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25,
-        [FromQuery] string timeMode = "today",
+        [FromQuery] string timeMode = "alltime",
         [FromQuery] string? query = null,
         CancellationToken ct = default)
     {

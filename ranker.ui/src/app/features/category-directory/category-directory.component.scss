@@ -196,6 +196,43 @@
   }
 }
 
+.time-pills {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 0.65rem;
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.time-pill {
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-headline);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--color-on-surface);
+  }
+
+  &--active {
+    background: var(--color-surface-container-lowest);
+    color: var(--color-on-surface);
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+}
+
 .search-box {
   display: flex;
   align-items: center;
@@ -489,6 +526,14 @@
   &--alt2 { background: var(--color-secondary); color: #ffffff; }
 }
 
+.king-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: contain;
+  padding: 4px;
+}
+
 .king-meta {
   display: flex;
   flex-direction: column;
@@ -767,6 +812,14 @@
   &--gold { background: var(--color-tertiary-fixed); color: var(--color-on-tertiary-fixed); }
   &--silver { background: var(--color-surface-container-high); color: var(--color-on-surface); }
   &--bronze { background: var(--color-outline-variant); color: #ffffff; }
+}
+
+.arena-leader-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .arena-leader-name {

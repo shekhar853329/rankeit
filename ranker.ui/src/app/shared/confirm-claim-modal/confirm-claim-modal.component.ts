@@ -275,7 +275,7 @@ export class ConfirmClaimModalComponent implements OnInit {
   private loadCategoryBenchmarks(categoryId: number, slug?: string): void {
     const s = slug || this.categories().find((c) => c.id === categoryId)?.slug;
     if (!s) return;
-    this.leaderboardService.getCategoryLeaderboard(s, 1, 5, 'today').subscribe({
+    this.leaderboardService.getCategoryLeaderboard(s, 1, 5, 'alltime').subscribe({
       next: (res) => {
         this.minStartingBid.set(res.minStartingBid);
         this.minBidIncrement.set(res.minBidIncrement);

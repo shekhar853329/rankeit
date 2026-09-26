@@ -31,6 +31,7 @@ export class CategoryDirectoryComponent implements OnInit {
 
   readonly parentSlug = signal<string | null>(null);
   readonly sortBy = signal<CategorySortBy>('Trending');
+  readonly timeMode = signal<'alltime' | 'today'>('alltime');
   readonly page = signal(1);
   readonly pageSize = signal(20);
   readonly searchTerm = signal('');
@@ -60,6 +61,18 @@ export class CategoryDirectoryComponent implements OnInit {
       return this.cards();
     }
     return this.cards().filter((c) => c.category.name.toLowerCase().includes(term));
+  }
+
+  setTimeMode(mode: 'alltime' | 'today'): void {
+    if (this.timeMode() === mode) return;
+    this.timeMode.set(mode);
+    this.page.set(1);
+    this.loadHotCategories();
+    this.load();
+  }
+
+  listingCountFor(category: CategoryDto): number {
+    return this.timeMode() === 'today' ? (category.todayListingCount ?? 0) : category.listingCount;
   }
 
   setSortBy(sortBy: CategorySortBy): void {
@@ -150,9 +163,10 @@ export class CategoryDirectoryComponent implements OnInit {
     if (categories.length === 0) {
       return of([]);
     }
+    const mode = this.timeMode();
     return forkJoin(
       categories.map((category) =>
-        this.leaderboardService.getCategoryLeaderboard(category.slug, 1, 3).pipe(
+        this.leaderboardService.getCategoryLeaderboard(category.slug, 1, 3, mode).pipe(
           map((response): CategoryCard => ({ category, topEntries: response.leaderboard.items })),
           catchError(() => of<CategoryCard>({ category, topEntries: [] })),
         ),

@@ -13,7 +13,7 @@ export class LeaderboardService {
     categorySlug: string,
     page = 1,
     pageSize = 25,
-    timeMode = 'today',
+    timeMode = 'alltime',
     query?: string,
   ): Observable<CategoryLeaderboardResponseDto> {
     const params: Record<string, string> = { page: String(page), pageSize: String(pageSize), timeMode };
