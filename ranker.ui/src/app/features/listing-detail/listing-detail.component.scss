@@ -234,7 +234,7 @@
       transition: all 0.15s ease;
 
       &:hover {
-        background: var(--color-primary-container, rgba(255, 90, 54, 0.1));
+        background: var(--accent-soft, rgba(249, 87, 56, 0.1));
         border-color: var(--color-primary);
         color: var(--color-primary);
       }

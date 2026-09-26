@@ -42,9 +42,9 @@
     border: 1px solid var(--border);
 
     &--accent {
-      background: var(--color-primary-container, rgba(255, 90, 54, 0.1));
-      color: var(--color-primary, #f95738);
-      border-color: rgba(255, 90, 54, 0.25);
+      background: var(--accent-soft, rgba(249, 87, 56, 0.1));
+      color: var(--accent, #f95738);
+      border-color: rgba(249, 87, 56, 0.3);
     }
   }
 
