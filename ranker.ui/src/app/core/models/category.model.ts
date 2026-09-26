@@ -11,6 +11,7 @@ export interface CategoryDto {
   activityScore: number;
   recentClaimCount: number;
   listingCount: number;
+  todayListingCount?: number;
 }
 
 export interface CategoryTreeNodeDto {

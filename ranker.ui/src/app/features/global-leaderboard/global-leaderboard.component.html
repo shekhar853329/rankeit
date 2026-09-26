@@ -178,16 +178,14 @@
       <button type="button" class="cat-chip" [class.cat-chip--active]="selectedSlug() === null"
         (click)="selectTab(null)">
         <span>All Categories</span>
-        <span class="cat-chip__count">{{ rows().length }}</span>
+        <span class="cat-chip__count">{{ allCategoriesCount() }}</span>
       </button>
 
       @for (cat of tabs(); track cat.slug) {
       <button type="button" class="cat-chip" [class.cat-chip--active]="selectedSlug() === cat.slug"
         (click)="selectTab(cat.slug)">
         <span>{{ categoryIcon(cat.slug) }} {{ cat.name }}</span>
-        @if (cat.listingCount > 0) {
-        <span class="cat-chip__count">{{ cat.listingCount }}</span>
-        }
+        <span class="cat-chip__count">{{ categoryBidCount(cat) }}</span>
       </button>
       }
     </div>

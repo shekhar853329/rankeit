@@ -26,9 +26,17 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
         // Ranked strictly by CurrentBidAmount DESC, FirstBidAt ASC (rule A1/A2). The (CategoryId,
         // CurrentBidAmount, FirstBidAt) index backs this ordering, and EF Core translates the
         // Skip/Take/CountAsync pair into a single indexed OFFSET/FETCH + COUNT round trip each.
-        var ordered = dbContext.Listings
+        var query = dbContext.Listings
             .AsNoTracking()
-            .Where(l => l.CategoryId == category.Id)
+            .Where(l => l.CategoryId == category.Id);
+
+        if (request.TimeMode?.ToLowerInvariant() == "today")
+        {
+            var todayUtc = DateTime.UtcNow.Date;
+            query = query.Where(l => l.LastBidAt >= todayUtc);
+        }
+
+        var ordered = query
             .OrderByDescending(l => l.CurrentBidAmount)
             .ThenBy(l => l.FirstBidAt);
 

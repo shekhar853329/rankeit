@@ -10,7 +10,8 @@ public sealed record CategoryDto(
     decimal MinStartingBid,
     double ActivityScore,
     int RecentClaimCount,
-    int ListingCount);
+    int ListingCount,
+    int TodayListingCount = 0);
 
 public sealed record CategoryTreeNodeDto(
     int Id,

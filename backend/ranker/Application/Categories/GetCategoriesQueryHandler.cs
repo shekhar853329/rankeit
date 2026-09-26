@@ -80,6 +80,13 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
             _ => withScores.OrderBy(x => x.Category.Name),
         };
 
+        var todayUtc = DateTime.UtcNow.Date;
+        var todayCounts = await dbContext.Listings
+            .Where(l => l.LastBidAt >= todayUtc)
+            .GroupBy(l => l.CategoryId)
+            .Select(g => new { CategoryId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.CategoryId, g => g.Count, ct);
+
         var items = sorted
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -93,7 +100,8 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
                 x.Category.MinStartingBid,
                 x.Score,
                 x.RecentClaimCount,
-                x.ListingCount))
+                x.ListingCount,
+                todayCounts.GetValueOrDefault(x.Category.Id, 0)))
             .ToList();
 
         return new PagedResult<CategoryDto>(items, page, pageSize, totalCount);

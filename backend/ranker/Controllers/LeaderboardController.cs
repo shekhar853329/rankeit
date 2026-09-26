@@ -16,9 +16,10 @@ public class LeaderboardController(ISender sender) : ControllerBase
         string categorySlug,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25,
+        [FromQuery] string timeMode = "today",
         CancellationToken ct = default)
     {
-        var result = await sender.Send(new GetCategoryLeaderboardQuery(categorySlug, page, pageSize), ct);
+        var result = await sender.Send(new GetCategoryLeaderboardQuery(categorySlug, page, pageSize, timeMode), ct);
         return result is null ? NotFound() : Ok(result);
     }
 

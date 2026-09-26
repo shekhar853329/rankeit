@@ -13,10 +13,11 @@ export class LeaderboardService {
     categorySlug: string,
     page = 1,
     pageSize = 25,
+    timeMode = 'today',
   ): Observable<CategoryLeaderboardResponseDto> {
     return this.http.get<CategoryLeaderboardResponseDto>(
       `${API_BASE_URL}/api/leaderboard/category/${encodeURIComponent(categorySlug)}`,
-      { params: { page: String(page), pageSize: String(pageSize) } },
+      { params: { page: String(page), pageSize: String(pageSize), timeMode } },
     );
   }
 

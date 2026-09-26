@@ -108,6 +108,30 @@ export class GlobalLeaderboardComponent implements OnInit {
   );
   readonly selectedSlug = signal<string | null>(null);
 
+  readonly allCategoriesCount = computed(() => {
+    const isToday = this.timeMode() === 'today';
+    const cats = this.allCategories();
+    const list = cats.length > 0 ? cats : this.tabs();
+    if (isToday) {
+      return list.reduce((sum, c) => sum + (c.todayListingCount ?? 0), 0);
+    }
+    return list.reduce((sum, c) => sum + (c.listingCount || 0), 0);
+  });
+
+  categoryBidCount(cat: CategoryDto): number {
+    return this.timeMode() === 'today' ? (cat.todayListingCount ?? 0) : cat.listingCount;
+  }
+
+  readonly selectedCategoryName = computed(() => {
+    const slug = this.selectedSlug();
+    if (!slug) return null;
+    return (
+      this.allCategories().find((c) => c.slug === slug)?.name ??
+      this.tabs().find((c) => c.slug === slug)?.name ??
+      slug
+    );
+  });
+
   /* ── Custom Category Dropdown State ── */
   readonly categoryDropdownOpen = signal(false);
   readonly categorySearchQuery = signal('');
@@ -894,7 +918,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   private loadCategory(slug: string, count = this.visibleCount()): void {
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, count).subscribe({
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, count, this.timeMode()).subscribe({
       next: (data) => {
         this.categoryData.set(data);
         this.hasMoreProducts.set(data.leaderboard.totalCount > count);
