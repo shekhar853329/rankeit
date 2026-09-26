@@ -17,9 +17,10 @@ public class LeaderboardController(ISender sender) : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25,
         [FromQuery] string timeMode = "today",
+        [FromQuery] string? query = null,
         CancellationToken ct = default)
     {
-        var result = await sender.Send(new GetCategoryLeaderboardQuery(categorySlug, page, pageSize, timeMode), ct);
+        var result = await sender.Send(new GetCategoryLeaderboardQuery(categorySlug, page, pageSize, timeMode, query), ct);
         return result is null ? NotFound() : Ok(result);
     }
 
@@ -27,8 +28,9 @@ public class LeaderboardController(ISender sender) : ControllerBase
     public async Task<ActionResult<IReadOnlyList<GlobalLeaderboardEntryDto>>> GetGlobalLeaderboard(
         [FromQuery] int topN = 20,
         [FromQuery] string timeMode = "today",
+        [FromQuery] string? query = null,
         CancellationToken ct = default) =>
-        Ok(await sender.Send(new GetGlobalLeaderboardQuery(topN, timeMode), ct));
+        Ok(await sender.Send(new GetGlobalLeaderboardQuery(topN, timeMode, query), ct));
 
     [HttpGet("daily")]
     public async Task<ActionResult<PagedResult<DailyListingGroupDto>>> GetDailyListings(

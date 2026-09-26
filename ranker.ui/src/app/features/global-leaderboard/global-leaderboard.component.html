@@ -221,11 +221,16 @@
               <span>All-Time Pantheon</span>
             </button>
           </div>
-          <span class="stage-count">{{ displayedRows().length }} projects competing</span>
+          <span class="stage-count">{{ displayedRows().length }} {{ displayedRows().length === 1 ? 'project' : 'projects' }} {{ searchQuery().trim() ? 'found' : 'competing' }}</span>
           <div class="search-box">
             <span class="material-symbols-outlined search-box__icon">search</span>
             <input type="text" class="search-box__input" placeholder="Search maker or tag..." [value]="searchQuery()"
               (input)="onSearchChange($event)" />
+            @if (searchQuery()) {
+            <button type="button" class="search-box__clear" (click)="clearSearch()" aria-label="Clear search" title="Clear search">
+              <span class="material-symbols-outlined icon-xs">close</span>
+            </button>
+            }
           </div>
         </div>
       </div>
@@ -238,17 +243,28 @@
       </div>
       } @else if (displayedRows().length === 0) {
       <div class="feed-empty-card">
-        <span class="material-symbols-outlined feed-empty-card__icon">rocket_launch</span>
-        @if (selectedSlug() === null && timeMode() === 'today') {
+        <span class="material-symbols-outlined feed-empty-card__icon">
+          {{ searchQuery().trim() ? 'search_off' : 'rocket_launch' }}
+        </span>
+        @if (searchQuery().trim()) {
+        <h3 class="feed-empty-card__title">No products found matching "{{ searchQuery().trim() }}"</h3>
+        <p class="feed-empty-card__sub">Try searching with a different keyword, tag, or category name.</p>
+        <button type="button" class="btn btn-secondary" (click)="clearSearch()">
+          Clear Search
+        </button>
+        } @else if (selectedSlug() === null && timeMode() === 'today') {
         <h3 class="feed-empty-card__title">No bids placed in today's auction yet</h3>
         <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
-        } @else {
-        <h3 class="feed-empty-card__title">No listings found in this category yet</h3>
-        <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
-        }
         <button type="button" class="btn btn-primary" (click)="prepareOutbid('Rank #1', effectiveClaimAmount() ?? 10)">
           Claim Spot Now
         </button>
+        } @else {
+        <h3 class="feed-empty-card__title">No listings found in this category yet</h3>
+        <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
+        <button type="button" class="btn btn-primary" (click)="prepareOutbid('Rank #1', effectiveClaimAmount() ?? 10)">
+          Claim Spot Now
+        </button>
+        }
       </div>
       } @else {
       <!-- Feed rows list -->
@@ -496,7 +512,7 @@
       </div>
 
       <!-- Progressive Load / Collapse trigger -->
-      @if (hasMoreProducts() || allMatchingRows().length > 10) {
+      @if (hasMoreProducts() || visibleCount() > 10) {
       <div class="view-all-wrap">
         @if (hasMoreProducts()) {
         <button type="button" class="view-all-btn" [disabled]="loadingMore()" (click)="loadNextBidders()">

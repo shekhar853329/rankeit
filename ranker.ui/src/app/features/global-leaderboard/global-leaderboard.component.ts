@@ -95,6 +95,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly visibleCount = signal(10);
   readonly loadingMore = signal(false);
   readonly hasMoreProducts = signal(true);
+  private readonly searchChange$ = new Subject<string>();
 
   /* ── Categories & Tabs ── */
   readonly tabs = signal<CategoryDto[]>([]);
@@ -298,19 +299,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   });
 
   readonly allMatchingRows = computed<FeedRow[]>(() => {
-    let list = [...this.rows()];
-    const query = this.searchQuery().trim().toLowerCase();
-    if (query) {
-      list = list.filter(
-        (r) =>
-          r.listingName.toLowerCase().includes(query) ||
-          (r.siteName && r.siteName.toLowerCase().includes(query)) ||
-          (r.description && r.description.toLowerCase().includes(query)) ||
-          r.categoryName.toLowerCase().includes(query)
-      );
-    }
-
-    return list;
+    return this.rows();
   });
 
   readonly displayedRows = computed<FeedRow[]>(() => {
@@ -321,7 +310,12 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly hasMoreBidders = computed(() => this.hasMoreProducts());
   readonly showAllRows = computed(() => !this.hasMoreProducts());
 
+  private readonly leadChampion = signal<FeedRow | null>(null);
+
   readonly reigningChampion = computed<FeedRow | null>(() => {
+    if (this.searchQuery().trim() && this.leadChampion()) {
+      return this.leadChampion();
+    }
     const r = this.rows();
     return r.length > 0 ? r[0] : null;
   });
@@ -407,6 +401,19 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.loadSelection();
     void this.signalr.joinGlobalGroup();
 
+    // Debounced server-side search
+    this.searchChange$
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.visibleCount.set(10);
+        this.loading.set(true);
+        this.loadSelection(10);
+      });
+
     // Auto-fetch URL metadata 500 ms after typing stops
     this.urlChange$
       .pipe(
@@ -439,10 +446,11 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
       const slug = this.selectedSlug();
       const currentCount = this.visibleCount();
+      const query = this.searchQuery().trim();
       if (slug === null && payload.becameCategoryTop) {
-        this.loadGlobal(currentCount);
+        this.loadGlobal(currentCount, query);
       } else if (slug !== null && payload.categorySlug === slug) {
-        this.loadCategory(slug, currentCount);
+        this.loadCategory(slug, currentCount, query);
       }
       this.loadTop3Bidders();
       this.loadTodayAuctionTop();
@@ -515,7 +523,16 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   /* ── Interactive Actions ── */
   onSearchChange(event: Event): void {
-    this.searchQuery.set((event.target as HTMLInputElement).value);
+    const val = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(val);
+    this.searchChange$.next(val.trim());
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+    this.visibleCount.set(10);
+    this.loading.set(true);
+    this.loadSelection(10);
   }
 
   loadNextBidders(): void {
@@ -761,10 +778,11 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   private loadSelection(count = this.visibleCount()): void {
     const slug = this.selectedSlug();
+    const query = this.searchQuery().trim();
     if (slug === null) {
-      this.loadGlobal(count);
+      this.loadGlobal(count, query);
     } else {
-      this.loadCategory(slug, count);
+      this.loadCategory(slug, count, query);
     }
   }
 
@@ -775,39 +793,64 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  private loadGlobal(count = this.visibleCount()): void {
+  private loadGlobal(count = this.visibleCount(), query = this.searchQuery().trim()): void {
     // Request count + 1 so we can verify if more records exist on the server
-    this.leaderboardService.getGlobalLeaderboard(count + 1, this.timeMode()).subscribe({
+    this.leaderboardService.getGlobalLeaderboard(count + 1, this.timeMode(), query).subscribe({
       next: (entries) => {
         const hasMore = entries.length > count;
         this.hasMoreProducts.set(hasMore);
-        this.globalEntries.set(entries.slice(0, count));
+        const sliced = entries.slice(0, count);
+        this.globalEntries.set(sliced);
         this.loading.set(false);
         this.loadingMore.set(false);
 
-        const mappedTop5: HallOfFameItem[] = entries.slice(0, 5).map((e, idx) => ({
-          id: e.listingId,
-          rank: idx + 1,
-          name: e.listingName,
-          siteName: e.siteName,
-          url: e.listingUrl,
-          bid: e.currentBidAmount,
-          clickCount: e.clickCount,
-        }));
+        if (!query && sliced.length > 0) {
+          const first = sliced[0];
+          this.leadChampion.set({
+            rank: 1,
+            listingId: first.listingId,
+            listingName: first.listingName,
+            listingUrl: first.listingUrl,
+            currentBidAmount: first.currentBidAmount,
+            categoryName: first.categoryName,
+            categorySlug: first.categorySlug,
+            categoryIcon: first.categoryIcon ?? this.categoryIcon(first.categorySlug),
+            clickCount: first.clickCount,
+            bidCount: first.bidCount ?? 1,
+            siteName: first.siteName,
+            logoUrl: first.logoUrl,
+            description: first.description,
+            faviconUrl: first.faviconUrl,
+          });
+        }
 
-        if (this.timeMode() === 'today') {
-          this.todayAuctionTop.set(mappedTop5);
-          if (this.allTimeHallOfFame().length === 0) {
-            this.loadAllTimeHallOfFame();
-          }
-        } else {
-          this.allTimeHallOfFame.set(mappedTop5);
-          if (this.todayAuctionTop().length === 0) {
-            this.loadTodayAuctionTop();
+        if (!query) {
+          const mappedTop5: HallOfFameItem[] = entries.slice(0, 5).map((e, idx) => ({
+            id: e.listingId,
+            rank: idx + 1,
+            name: e.listingName,
+            siteName: e.siteName,
+            url: e.listingUrl,
+            bid: e.currentBidAmount,
+            clickCount: e.clickCount,
+          }));
+
+          if (this.timeMode() === 'today') {
+            this.todayAuctionTop.set(mappedTop5);
+            if (this.allTimeHallOfFame().length === 0) {
+              this.loadAllTimeHallOfFame();
+            }
+          } else {
+            this.allTimeHallOfFame.set(mappedTop5);
+            if (this.todayAuctionTop().length === 0) {
+              this.loadTodayAuctionTop();
+            }
           }
         }
       },
       error: () => {
+        this.globalEntries.set([]);
+        this.hasMoreProducts.set(false);
         this.loading.set(false);
         this.loadingMore.set(false);
       },
@@ -917,13 +960,33 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  private loadCategory(slug: string, count = this.visibleCount()): void {
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, count, this.timeMode()).subscribe({
+  private loadCategory(slug: string, count = this.visibleCount(), query = this.searchQuery().trim()): void {
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, count, this.timeMode(), query).subscribe({
       next: (data) => {
         this.categoryData.set(data);
         this.hasMoreProducts.set(data.leaderboard.totalCount > count);
         this.loading.set(false);
         this.loadingMore.set(false);
+
+        if (!query && data.leaderboard.items.length > 0) {
+          const first = data.leaderboard.items[0];
+          this.leadChampion.set({
+            rank: 1,
+            listingId: first.listingId,
+            listingName: first.listingName,
+            listingUrl: first.listingUrl,
+            currentBidAmount: first.currentBidAmount,
+            categoryName: data.categoryName,
+            categorySlug: data.categorySlug,
+            categoryIcon: data.categoryIcon ?? this.categoryIcon(data.categorySlug),
+            clickCount: first.clickCount,
+            bidCount: first.bidCount ?? 1,
+            siteName: first.siteName,
+            logoUrl: first.logoUrl,
+            description: first.description,
+            faviconUrl: first.faviconUrl,
+          });
+        }
       },
       error: () => {
         this.categoryData.set(null);

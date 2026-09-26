@@ -816,9 +816,27 @@
     border: none;
     background: transparent;
     font-size: 0.82rem;
-    font-family: inherit;
-    color: var(--color-on-surface);
     outline: none;
+  }
+
+  &__clear {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    margin-left: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-on-surface-variant);
+    opacity: 0.6;
+    border-radius: 50%;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      opacity: 1;
+      background-color: var(--color-surface-container-high);
+    }
   }
 }
 

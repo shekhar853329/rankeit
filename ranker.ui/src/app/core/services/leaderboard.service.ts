@@ -14,16 +14,21 @@ export class LeaderboardService {
     page = 1,
     pageSize = 25,
     timeMode = 'today',
+    query?: string,
   ): Observable<CategoryLeaderboardResponseDto> {
+    const params: Record<string, string> = { page: String(page), pageSize: String(pageSize), timeMode };
+    if (query?.trim()) params['query'] = query.trim();
     return this.http.get<CategoryLeaderboardResponseDto>(
       `${API_BASE_URL}/api/leaderboard/category/${encodeURIComponent(categorySlug)}`,
-      { params: { page: String(page), pageSize: String(pageSize), timeMode } },
+      { params },
     );
   }
 
-  getGlobalLeaderboard(topN = 20, timeMode = 'today'): Observable<GlobalLeaderboardEntryDto[]> {
+  getGlobalLeaderboard(topN = 20, timeMode = 'today', query?: string): Observable<GlobalLeaderboardEntryDto[]> {
+    const params: Record<string, string> = { topN: String(topN), timeMode };
+    if (query?.trim()) params['query'] = query.trim();
     return this.http.get<GlobalLeaderboardEntryDto[]>(`${API_BASE_URL}/api/leaderboard/global`, {
-      params: { topN: String(topN), timeMode },
+      params,
     });
   }
 

@@ -36,6 +36,15 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
             query = query.Where(l => l.LastBidAt >= todayUtc);
         }
 
+        if (!string.IsNullOrWhiteSpace(request.Query))
+        {
+            var search = request.Query.Trim();
+            query = query.Where(l =>
+                EF.Functions.Like(l.Name, $"%{search}%") ||
+                (l.SiteName != null && EF.Functions.Like(l.SiteName, $"%{search}%")) ||
+                (l.Description != null && EF.Functions.Like(l.Description, $"%{search}%")));
+        }
+
         var ordered = query
             .OrderByDescending(l => l.CurrentBidAmount)
             .ThenBy(l => l.FirstBidAt);

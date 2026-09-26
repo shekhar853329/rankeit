@@ -13,10 +13,17 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
     {
         var topN = Math.Clamp(request.TopN, 1, 500);
         var timeMode = request.TimeMode?.ToLowerInvariant() == "alltime" ? "alltime" : "today";
-        return cache.GetOrCreateAsync(topN, timeMode, () => ComputeAsync(topN, timeMode, ct));
+        var searchQuery = request.Query?.Trim();
+
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            return ComputeAsync(topN, timeMode, searchQuery, ct);
+        }
+
+        return cache.GetOrCreateAsync(topN, timeMode, () => ComputeAsync(topN, timeMode, null, ct));
     }
 
-    private async Task<IReadOnlyList<GlobalLeaderboardEntryDto>> ComputeAsync(int topN, string timeMode, CancellationToken ct)
+    private async Task<IReadOnlyList<GlobalLeaderboardEntryDto>> ComputeAsync(int topN, string timeMode, string? searchQuery, CancellationToken ct)
     {
         var query = dbContext.Listings.AsNoTracking();
 
@@ -24,6 +31,15 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
         {
             var todayUtc = DateTime.UtcNow.Date;
             query = query.Where(l => l.LastBidAt >= todayUtc);
+        }
+
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            query = query.Where(l =>
+                EF.Functions.Like(l.Name, $"%{searchQuery}%") ||
+                (l.SiteName != null && EF.Functions.Like(l.SiteName, $"%{searchQuery}%")) ||
+                (l.Description != null && EF.Functions.Like(l.Description, $"%{searchQuery}%")) ||
+                dbContext.Categories.Any(c => c.Id == l.CategoryId && EF.Functions.Like(c.Name, $"%{searchQuery}%")));
         }
 
         var results = await query
