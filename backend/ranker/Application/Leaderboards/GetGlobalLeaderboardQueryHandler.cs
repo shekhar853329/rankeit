@@ -23,11 +23,7 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
         if (timeMode == "today")
         {
             var todayUtc = DateTime.UtcNow.Date;
-            var hasTodayListings = await dbContext.Listings.AnyAsync(l => l.LastBidAt >= todayUtc, ct);
-            if (hasTodayListings)
-            {
-                query = query.Where(l => l.LastBidAt >= todayUtc);
-            }
+            query = query.Where(l => l.LastBidAt >= todayUtc);
         }
 
         var results = await query

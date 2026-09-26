@@ -241,8 +241,13 @@
       } @else if (displayedRows().length === 0) {
       <div class="feed-empty-card">
         <span class="material-symbols-outlined feed-empty-card__icon">rocket_launch</span>
+        @if (selectedSlug() === null && timeMode() === 'today') {
+        <h3 class="feed-empty-card__title">No bids placed in today's auction yet</h3>
+        <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
+        } @else {
         <h3 class="feed-empty-card__title">No listings found in this category yet</h3>
         <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
+        }
         <button type="button" class="btn btn-primary" (click)="prepareOutbid('Rank #1', effectiveClaimAmount() ?? 10)">
           Claim Spot Now
         </button>
@@ -493,14 +498,19 @@
       </div>
 
       <!-- Progressive Load / Collapse trigger -->
-      @if (allMatchingRows().length > 10) {
+      @if (hasMoreProducts() || allMatchingRows().length > 10) {
       <div class="view-all-wrap">
-        @if (hasMoreBidders()) {
-        <button type="button" class="view-all-btn" (click)="loadNextBidders()">
-          <span>View next {{ nextChunkCount() }} products</span>
+        @if (hasMoreProducts()) {
+        <button type="button" class="view-all-btn" [disabled]="loadingMore()" (click)="loadNextBidders()">
+          @if (loadingMore()) {
+          <span class="field-spinner"></span>
+          <span>Loading next 10 products...</span>
+          } @else {
+          <span>View next 10 products</span>
           <span class="material-symbols-outlined icon-sm">
             keyboard_arrow_down
           </span>
+          }
         </button>
         } @else {
         <button type="button" class="view-all-btn" (click)="collapseToTop10()">

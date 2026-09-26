@@ -93,6 +93,8 @@ export class GlobalLeaderboardComponent implements OnInit {
   /* ── Search & Filter Controls ── */
   readonly searchQuery = signal('');
   readonly visibleCount = signal(10);
+  readonly loadingMore = signal(false);
+  readonly hasMoreProducts = signal(true);
 
   /* ── Categories & Tabs ── */
   readonly tabs = signal<CategoryDto[]>([]);
@@ -284,22 +286,16 @@ export class GlobalLeaderboardComponent implements OnInit {
       );
     }
 
-    // Re-index ranks
-    return list.map((item, idx) => ({ ...item, rank: idx + 1 }));
+    return list;
   });
 
   readonly displayedRows = computed<FeedRow[]>(() => {
-    const list = this.allMatchingRows();
-    return list.slice(0, this.visibleCount());
+    return this.allMatchingRows();
   });
 
-  readonly nextChunkCount = computed(() => {
-    const remaining = this.allMatchingRows().length - this.visibleCount();
-    return remaining > 0 ? Math.min(10, remaining) : 0;
-  });
-
-  readonly hasMoreBidders = computed(() => this.nextChunkCount() > 0);
-  readonly showAllRows = computed(() => !this.hasMoreBidders());
+  readonly nextChunkCount = computed(() => (this.hasMoreProducts() ? 10 : 0));
+  readonly hasMoreBidders = computed(() => this.hasMoreProducts());
+  readonly showAllRows = computed(() => !this.hasMoreProducts());
 
   readonly reigningChampion = computed<FeedRow | null>(() => {
     const r = this.rows();
@@ -418,10 +414,11 @@ export class GlobalLeaderboardComponent implements OnInit {
     // Real-time rank and bid updates via SignalR
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
       const slug = this.selectedSlug();
+      const currentCount = this.visibleCount();
       if (slug === null && payload.becameCategoryTop) {
-        this.loadGlobal();
+        this.loadGlobal(currentCount);
       } else if (slug !== null && payload.categorySlug === slug) {
-        this.loadCategory(slug);
+        this.loadCategory(slug, currentCount);
       }
       this.loadTop3Bidders();
       this.loadTodayAuctionTop();
@@ -473,7 +470,9 @@ export class GlobalLeaderboardComponent implements OnInit {
   setTimeMode(mode: 'today' | 'alltime'): void {
     this.timeMode.set(mode);
     this.visibleCount.set(10);
-    this.loadSelection();
+    this.hasMoreProducts.set(true);
+    this.loading.set(true);
+    this.loadSelection(10);
     if (mode === 'today' && this.allTimeHallOfFame().length === 0) {
       this.loadAllTimeHallOfFame();
     } else if (mode === 'alltime' && this.todayAuctionTop().length === 0) {
@@ -493,19 +492,24 @@ export class GlobalLeaderboardComponent implements OnInit {
   /* ── Interactive Actions ── */
   onSearchChange(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);
-    this.visibleCount.set(10);
   }
 
   loadNextBidders(): void {
-    this.visibleCount.update((count) => count + 10);
+    if (this.loadingMore() || !this.hasMoreProducts()) return;
+    this.loadingMore.set(true);
+    const nextCount = this.visibleCount() + 10;
+    this.visibleCount.set(nextCount);
+    this.loadSelection(nextCount);
   }
 
   collapseToTop10(): void {
     this.visibleCount.set(10);
+    this.hasMoreProducts.set(true);
+    this.loadSelection(10);
   }
 
   toggleShowAll(): void {
-    if (this.hasMoreBidders()) {
+    if (this.hasMoreProducts()) {
       this.loadNextBidders();
     } else {
       this.collapseToTop10();
@@ -540,7 +544,9 @@ export class GlobalLeaderboardComponent implements OnInit {
     if (slug === this.selectedSlug()) return;
     this.selectedSlug.set(slug);
     this.visibleCount.set(10);
-    this.loadSelection();
+    this.hasMoreProducts.set(true);
+    this.loading.set(true);
+    this.loadSelection(10);
 
     if (this.joinedCategoryGroup) {
       void this.signalr.leaveCategoryGroup(this.joinedCategoryGroup);
@@ -729,13 +735,12 @@ export class GlobalLeaderboardComponent implements OnInit {
     return cat?.minBidIncrement ?? 1;
   }
 
-  private loadSelection(): void {
-    this.loading.set(true);
+  private loadSelection(count = this.visibleCount()): void {
     const slug = this.selectedSlug();
     if (slug === null) {
-      this.loadGlobal();
+      this.loadGlobal(count);
     } else {
-      this.loadCategory(slug);
+      this.loadCategory(slug, count);
     }
   }
 
@@ -746,11 +751,15 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  private loadGlobal(): void {
-    this.leaderboardService.getGlobalLeaderboard(100, this.timeMode()).subscribe({
+  private loadGlobal(count = this.visibleCount()): void {
+    // Request count + 1 so we can verify if more records exist on the server
+    this.leaderboardService.getGlobalLeaderboard(count + 1, this.timeMode()).subscribe({
       next: (entries) => {
-        this.globalEntries.set(entries);
+        const hasMore = entries.length > count;
+        this.hasMoreProducts.set(hasMore);
+        this.globalEntries.set(entries.slice(0, count));
         this.loading.set(false);
+        this.loadingMore.set(false);
 
         const mappedTop5: HallOfFameItem[] = entries.slice(0, 5).map((e, idx) => ({
           id: e.listingId,
@@ -763,16 +772,12 @@ export class GlobalLeaderboardComponent implements OnInit {
         }));
 
         if (this.timeMode() === 'today') {
-          if (mappedTop5.length > 0) {
-            this.todayAuctionTop.set(mappedTop5);
-          }
+          this.todayAuctionTop.set(mappedTop5);
           if (this.allTimeHallOfFame().length === 0) {
             this.loadAllTimeHallOfFame();
           }
         } else {
-          if (mappedTop5.length > 0) {
-            this.allTimeHallOfFame.set(mappedTop5);
-          }
+          this.allTimeHallOfFame.set(mappedTop5);
           if (this.todayAuctionTop().length === 0) {
             this.loadTodayAuctionTop();
           }
@@ -780,6 +785,7 @@ export class GlobalLeaderboardComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
+        this.loadingMore.set(false);
       },
     });
   }
@@ -887,15 +893,19 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  private loadCategory(slug: string): void {
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, 100).subscribe({
+  private loadCategory(slug: string, count = this.visibleCount()): void {
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, count).subscribe({
       next: (data) => {
         this.categoryData.set(data);
+        this.hasMoreProducts.set(data.leaderboard.totalCount > count);
         this.loading.set(false);
+        this.loadingMore.set(false);
       },
       error: () => {
         this.categoryData.set(null);
+        this.hasMoreProducts.set(false);
         this.loading.set(false);
+        this.loadingMore.set(false);
       },
     });
   }
