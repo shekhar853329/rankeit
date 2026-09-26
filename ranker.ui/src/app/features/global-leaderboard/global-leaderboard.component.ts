@@ -139,8 +139,19 @@ export class GlobalLeaderboardComponent implements OnInit {
   /* ── Platform Stats & Audit Metrics (Loaded from DB) ── */
   readonly platformStats = signal<PlatformStatsDto | null>(null);
 
-  /* ── All-Time Hall of Fame (Loaded from DB) ── */
-  readonly hallOfFameList = signal<HallOfFameItem[]>([]);
+  /* ── All-Time Hall of Fame & Today's Top Lists ── */
+  readonly allTimeHallOfFame = signal<HallOfFameItem[]>([]);
+  readonly todayAuctionTop = signal<HallOfFameItem[]>([]);
+  readonly hallOfFameLoading = signal(false);
+
+  // Inverted view: If viewing today's auction in main stage, Hall of Fame card shows all-time pantheon, and vice versa
+  readonly hallOfFameMode = computed<'today' | 'alltime'>(() =>
+    this.timeMode() === 'today' ? 'alltime' : 'today'
+  );
+
+  readonly hallOfFameList = computed<HallOfFameItem[]>(() =>
+    this.hallOfFameMode() === 'alltime' ? this.allTimeHallOfFame() : this.todayAuctionTop()
+  );
 
   categoryIcon(slug: string): string {
     const found =
@@ -334,7 +345,8 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.startCountdownTimer();
     this.loadPlatformStats();
     this.loadLiveStream();
-    this.loadHallOfFame();
+    this.loadAllTimeHallOfFame();
+    this.loadTodayAuctionTop();
 
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 12 }).subscribe((result) => {
       this.tabs.set(result.items);
@@ -389,6 +401,8 @@ export class GlobalLeaderboardComponent implements OnInit {
         this.loadCategory(slug);
       }
       this.loadTop3Bidders();
+      this.loadTodayAuctionTop();
+      this.loadAllTimeHallOfFame();
 
       // Push to live activity stream
       this.liveEvents.update((events) => [
@@ -436,6 +450,16 @@ export class GlobalLeaderboardComponent implements OnInit {
   setTimeMode(mode: 'today' | 'alltime'): void {
     this.timeMode.set(mode);
     this.loadSelection();
+    if (mode === 'today' && this.allTimeHallOfFame().length === 0) {
+      this.loadAllTimeHallOfFame();
+    } else if (mode === 'alltime' && this.todayAuctionTop().length === 0) {
+      this.loadTodayAuctionTop();
+    }
+  }
+
+  toggleLeaderboardTimeMode(): void {
+    const nextMode = this.timeMode() === 'today' ? 'alltime' : 'today';
+    this.setTimeMode(nextMode);
   }
 
   setCurrency(curr: 'USD' | 'EUR' | 'INR'): void {
@@ -649,19 +673,31 @@ export class GlobalLeaderboardComponent implements OnInit {
       next: (entries) => {
         this.globalEntries.set(entries);
         this.loading.set(false);
-        // If hall of fame is empty, initialize from top global listings
-        if (this.hallOfFameList().length === 0 && entries.length > 0) {
-          this.hallOfFameList.set(
-            entries.slice(0, 5).map((e, idx) => ({
-              id: e.listingId,
-              rank: idx + 1,
-              name: e.listingName,
-              siteName: e.siteName,
-              url: e.listingUrl,
-              bid: e.currentBidAmount,
-              clickCount: e.clickCount,
-            }))
-          );
+
+        const mappedTop5: HallOfFameItem[] = entries.slice(0, 5).map((e, idx) => ({
+          id: e.listingId,
+          rank: idx + 1,
+          name: e.listingName,
+          siteName: e.siteName,
+          url: e.listingUrl,
+          bid: e.currentBidAmount,
+          clickCount: e.clickCount,
+        }));
+
+        if (this.timeMode() === 'today') {
+          if (mappedTop5.length > 0) {
+            this.todayAuctionTop.set(mappedTop5);
+          }
+          if (this.allTimeHallOfFame().length === 0) {
+            this.loadAllTimeHallOfFame();
+          }
+        } else {
+          if (mappedTop5.length > 0) {
+            this.allTimeHallOfFame.set(mappedTop5);
+          }
+          if (this.todayAuctionTop().length === 0) {
+            this.loadTodayAuctionTop();
+          }
         }
       },
       error: () => {
@@ -695,12 +731,80 @@ export class GlobalLeaderboardComponent implements OnInit {
     });
   }
 
-  private loadHallOfFame(): void {
+  private loadAllTimeHallOfFame(): void {
+    this.hallOfFameLoading.set(true);
     this.leaderboardService.getHallOfFame(5).subscribe({
       next: (items) => {
         if (items && items.length > 0) {
-          this.hallOfFameList.set(items);
+          this.allTimeHallOfFame.set(items);
+          this.hallOfFameLoading.set(false);
+        } else {
+          this.leaderboardService.getGlobalLeaderboard(5, 'alltime').subscribe({
+            next: (entries) => {
+              if (entries && entries.length > 0) {
+                this.allTimeHallOfFame.set(
+                  entries.slice(0, 5).map((e, idx) => ({
+                    id: e.listingId,
+                    rank: idx + 1,
+                    name: e.listingName,
+                    siteName: e.siteName,
+                    url: e.listingUrl,
+                    bid: e.currentBidAmount,
+                    clickCount: e.clickCount,
+                  }))
+                );
+              }
+              this.hallOfFameLoading.set(false);
+            },
+            error: () => this.hallOfFameLoading.set(false),
+          });
         }
+      },
+      error: () => {
+        this.leaderboardService.getGlobalLeaderboard(5, 'alltime').subscribe({
+          next: (entries) => {
+            if (entries && entries.length > 0) {
+              this.allTimeHallOfFame.set(
+                entries.slice(0, 5).map((e, idx) => ({
+                  id: e.listingId,
+                  rank: idx + 1,
+                  name: e.listingName,
+                  siteName: e.siteName,
+                  url: e.listingUrl,
+                  bid: e.currentBidAmount,
+                  clickCount: e.clickCount,
+                }))
+              );
+            }
+            this.hallOfFameLoading.set(false);
+          },
+          error: () => this.hallOfFameLoading.set(false),
+        });
+      },
+    });
+  }
+
+  private loadTodayAuctionTop(): void {
+    this.hallOfFameLoading.set(true);
+    this.leaderboardService.getGlobalLeaderboard(5, 'today').subscribe({
+      next: (entries) => {
+        if (entries && entries.length > 0) {
+          this.todayAuctionTop.set(
+            entries.slice(0, 5).map((e, idx) => ({
+              id: e.listingId,
+              rank: idx + 1,
+              name: e.listingName,
+              siteName: e.siteName,
+              url: e.listingUrl,
+              bid: e.currentBidAmount,
+              clickCount: e.clickCount,
+            }))
+          );
+        }
+        this.hallOfFameLoading.set(false);
+      },
+      error: () => {
+        this.hallOfFameLoading.set(false);
       },
     });
   }

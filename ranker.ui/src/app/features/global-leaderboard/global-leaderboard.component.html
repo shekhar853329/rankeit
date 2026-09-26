@@ -551,38 +551,77 @@
         </div>
       </section>
 
-      <!-- CARD 2: All-Time Highest Bids Hall of Fame -->
+      <!-- CARD 2: Complementary Leaderboard Card (All-Time Pantheon vs Today's Auction) -->
       <section class="side-card" id="hall-of-fame">
         <div class="side-card__header">
           <div class="side-card__title-group">
-            <span class="material-symbols-outlined icon-sm text-tertiary">emoji_events</span>
-            <h3 class="side-card__title">Hall of Fame</h3>
+            @if (hallOfFameMode() === 'alltime') {
+            <span class="material-symbols-outlined icon-sm text-tertiary">military_tech</span>
+            <h3 class="side-card__title">All-Time Pantheon</h3>
+            } @else {
+            <span class="material-symbols-outlined icon-sm text-primary">local_fire_department</span>
+            <h3 class="side-card__title">Today's Auction</h3>
+            }
           </div>
-          <span class="side-card__badge">All-Time Peak</span>
-        </div>
 
-        <div class="hof-list">
-          @for (hof of hallOfFameList(); track hof.id; let i = $index) {
-          <div class="hof-row" (click)="openListingDirect(hof.url, hof.id)">
-            <div class="hof-row__left">
-              <span class="hof-rank" [class.hof-rank--gold]="i === 0" [class.hof-rank--silver]="i === 1"
-                [class.hof-rank--bronze]="i === 2">
-                {{ i + 1 }}
-              </span>
-              <div class="hof-row__info">
-                <span class="hof-name">{{ hof.siteName || hof.name }}</span>
-                <span class="hof-clicks">{{ hof.clickCount | number }} clicks generated</span>
-              </div>
-            </div>
-            <span class="hof-bid">{{ currencySymbol() }}{{ hof.bid | number: '1.0-0' }}</span>
-          </div>
+          @if (hallOfFameMode() === 'alltime') {
+          <span class="side-card__badge side-card__badge--alltime">All-Time Peak</span>
+          } @else {
+          <span class="side-card__badge side-card__badge--live">
+            <span class="pulse-dot pulse-dot--secondary"></span>
+            Today's Live
+          </span>
           }
         </div>
 
-        <a routerLink="/daily" class="side-card__action-link">
-          <span>Explore All Historic Champions</span>
-          <span class="material-symbols-outlined icon-xs">arrow_forward</span>
-        </a>
+        <div class="hof-list">
+          @if (hallOfFameLoading() && hallOfFameList().length === 0) {
+            @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <div class="hof-skeleton-row"></div>
+            }
+          } @else {
+            @for (hof of hallOfFameList(); track hof.id; let i = $index) {
+            <div class="hof-row" (click)="openListingDirect(hof.url, hof.id)">
+              <div class="hof-row__left">
+                <span class="hof-rank" [class.hof-rank--gold]="i === 0" [class.hof-rank--silver]="i === 1"
+                  [class.hof-rank--bronze]="i === 2">
+                  {{ i + 1 }}
+                </span>
+                <div class="hof-row__info">
+                  <span class="hof-name">{{ hof.siteName || hof.name }}</span>
+                  <span class="hof-clicks">{{ hof.clickCount | number }} clicks generated</span>
+                </div>
+              </div>
+              <span class="hof-bid">{{ currencySymbol() }}{{ hof.bid | number: '1.0-0' }}</span>
+            </div>
+            } @empty {
+            <div class="hof-empty">
+              <span class="material-symbols-outlined icon-sm">
+                {{ hallOfFameMode() === 'alltime' ? 'emoji_events' : 'gavel' }}
+              </span>
+              <span>
+                {{ hallOfFameMode() === 'alltime' ? 'No all-time champions found yet.' : 'No bids placed in today\'s auction yet.' }}
+              </span>
+            </div>
+            }
+          }
+        </div>
+
+        <div class="side-card__actions-wrap">
+          <button type="button" class="side-card__action-btn" (click)="toggleLeaderboardTimeMode()" id="hof-toggle-mode-btn">
+            <span>
+              {{ hallOfFameMode() === 'alltime' ? 'Switch View to All-Time Pantheon' : 'Switch View to Today\'s Auction' }}
+            </span>
+            <span class="material-symbols-outlined icon-xs">swap_horiz</span>
+          </button>
+
+          @if (hallOfFameMode() === 'alltime') {
+          <a routerLink="/daily" class="side-card__sub-link">
+            <span>Explore All Historic Champions</span>
+            <span class="material-symbols-outlined icon-xs">arrow_forward</span>
+          </a>
+          }
+        </div>
       </section>
 
       <!-- CARD 3: Live Activity Ticker (Instant Stream) -->
