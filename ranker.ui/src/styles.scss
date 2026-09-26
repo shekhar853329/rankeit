@@ -90,7 +90,7 @@
   --shadow-modal: 0 20px 60px rgba(21, 28, 34, 0.2);
   --shadow-accent: 0 4px 16px rgba(249, 87, 56, 0.35);
 
-  --header-height: 64px;
+  --header-height: 72px;
 
   color-scheme: light;
 }
@@ -491,3 +491,67 @@ select {
 *::-webkit-scrollbar {
   display: none;                /* Chrome / Safari / new Edge */
 }
+
+/* ══════════════════════════════════════════════════════════════
+   STITCH DESIGN SYSTEM: DARK MODE HEADER GLOBAL OVERRIDES
+   ══════════════════════════════════════════════════════════════ */
+html.dark .site-header,
+:root.dark .site-header {
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .site-header__brand-title,
+:root.dark .site-header__brand-title {
+  color: #ffffff !important;
+}
+
+html.dark .site-header__tagline,
+:root.dark .site-header__tagline {
+  color: #949db2 !important;
+}
+
+html.dark .site-header__stats,
+:root.dark .site-header__stats {
+  background: #151d2e !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark .site-header__nav a,
+:root.dark .site-header__nav a {
+  color: #94a3b8 !important;
+}
+
+html.dark .site-header__nav a:hover,
+:root.dark .site-header__nav a:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark .site-header__nav a.active,
+:root.dark .site-header__nav a.active {
+  color: #ffffff !important;
+  background: #1e273a !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+html.dark .site-header__theme-toggle,
+:root.dark .site-header__theme-toggle {
+  background: #151d2e !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #fbbf24 !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.dark .site-header__claim-btn,
+:root.dark .site-header__claim-btn {
+  background: linear-gradient(135deg, #ff5a36 0%, #ff3811 100%) !important;
+  border-color: rgba(255, 90, 54, 0.4) !important;
+  box-shadow: 0 0 20px rgba(255, 90, 54, 0.35) !important;
+}
+

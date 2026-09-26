@@ -38,7 +38,8 @@
           <!-- Estimated ROI Value Pill -->
           <div class="roi-pill" title="Avg direct views for today's leader">
             <span class="material-symbols-outlined roi-pill__icon">visibility</span>
-            <span class="roi-pill__number">~{{ (platformStats()?.avgLeaderViews ?? (reigningChampion()?.clickCount || 0)) | number }}</span>
+            <span class="roi-pill__number">~{{ (platformStats()?.avgLeaderViews ?? (reigningChampion()?.clickCount ||
+              0)) | number }}</span>
             <span class="roi-pill__label">avg views</span>
           </div>
 
@@ -124,11 +125,6 @@
         (click)="selectTab(null)">
         <span>All Categories</span>
         <span class="cat-chip__count">{{ rows().length }}</span>
-      </button>
-
-      <button type="button" class="cat-chip" [class.cat-chip--active]="selectedSlug() === 'top-bids'"
-        (click)="selectTab(null)">
-        <span>👑 Top Bids</span>
       </button>
 
       @for (cat of tabs(); track cat.slug) {
@@ -556,7 +552,7 @@
       </section>
 
       <!-- CARD 2: All-Time Highest Bids Hall of Fame -->
-      <section class="side-card">
+      <section class="side-card" id="hall-of-fame">
         <div class="side-card__header">
           <div class="side-card__title-group">
             <span class="material-symbols-outlined icon-sm text-tertiary">emoji_events</span>
