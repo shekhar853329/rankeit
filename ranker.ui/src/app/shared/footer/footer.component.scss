@@ -62,14 +62,24 @@
     .verifiable-badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.2rem 0.6rem;
+      gap: 0.35rem;
+      padding: 0.2rem 0.65rem;
       border-radius: 9999px;
       font-size: 0.72rem;
       font-weight: 700;
-      background: var(--color-secondary-container, rgba(16, 185, 129, 0.1));
-      color: var(--color-secondary, #10b981);
+      letter-spacing: 0.01em;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-on-secondary-container);
       border: 1px solid rgba(16, 185, 129, 0.25);
+      line-height: 1;
+      transition: all 0.2s ease;
+
+      .material-symbols-outlined {
+        font-size: 14px;
+        line-height: 1;
+        display: inline-flex;
+        vertical-align: middle;
+      }
     }
   }
 
@@ -240,12 +250,27 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.5;
     transform: scale(0.9);
+  }
+}
+
+/* ── Dark Mode Overrides ─────────────────────────────────────── */
+:host-context(.dark),
+:host-context(html.dark),
+:root.dark,
+html.dark {
+  .verifiable-badge {
+    background: rgba(78, 222, 163, 0.14);
+    color: #4edea3;
+    border-color: rgba(78, 222, 163, 0.35);
   }
 }

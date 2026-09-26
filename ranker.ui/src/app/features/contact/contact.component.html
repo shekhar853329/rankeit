@@ -3,24 +3,86 @@
   <header class="contact-header">
     <div class="badge-row">
       <span class="badge-pill badge-pill--accent">
-        <span class="material-symbols-outlined text-[14px]">headset_mic</span>
-        Direct Communications
+        <span class="material-symbols-outlined text-[14px]">person</span>
+        Creator Direct
       </span>
       <span class="badge-pill">
-        <span class="material-symbols-outlined text-[14px]">schedule</span>
-        24/7 Monitoring
+        <span class="material-symbols-outlined text-[14px]">history_edu</span>
+        Est. September 2026
       </span>
     </div>
 
-    <h1 class="contact-title">Get in Touch with the Protocol Team</h1>
+    <h1 class="contact-title">Get in Touch & About the Project</h1>
     <p class="contact-subtitle">
-      Whether you have a payment inquiry, need metadata assistance, or wish to propose an enterprise category arena, we're ready to assist.
+      Welcome to RankUp! Whether you have questions about your bids, need help with a listing, want to explore a
+      partnership, or simply want to share feedback—reach out directly to the creator.
     </p>
   </header>
 
-  <!-- Contact Cards Grid -->
+  <!-- Creator & Project Spotlight Card -->
+  <div class="founder-card card">
+    <div class="founder-card__main">
+      <div class="founder-avatar">
+        <span class="material-symbols-outlined avatar-icon">code</span>
+      </div>
+
+      <div class="founder-info">
+        <div class="founder-meta-row">
+          <div class="founder-names">
+            <h2>Shekhar</h2>
+            <span class="founder-role">Creator &amp; Solo Developer of RankUp</span>
+          </div>
+          <span class="live-tag">
+            <span class="live-dot"></span>
+            Open for Feedback &amp; Inquiries
+          </span>
+        </div>
+
+        <p class="founder-bio">
+          I started building <strong>RankUp</strong> on <strong>September 22, 2026</strong> with a clear mission: to
+          replace black-box advertising algorithms with a 100% transparent, real-time discovery engine.
+          Founders, indie hackers, and creators shouldn't have to guess why their product isn't seen.
+          On RankUp, rankings are open, predictable, and fair—you only pay the difference to upgrade, and early
+          supporters always retain their tiebreaker advantage.
+        </p>
+
+        <div class="founder-chips">
+          <div class="chip">
+            <span class="material-symbols-outlined chip-icon">event</span>
+            <span>Created: <strong>September 22, 2026</strong></span>
+          </div>
+          <div class="chip">
+            <span class="material-symbols-outlined chip-icon">mail</span>
+            <span>Email: <strong>{{ email }}</strong></span>
+          </div>
+          <div class="chip">
+            <span class="material-symbols-outlined chip-icon">rocket_launch</span>
+            <span>Project: <strong>RankUp Discovery Engine</strong></span>
+          </div>
+          <div class="chip">
+            <span class="material-symbols-outlined chip-icon">bolt</span>
+            <span>Tech: <strong>.NET 9 + Angular 19 + SignalR</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="founder-actions">
+      <a [href]="'mailto:' + email + '?subject=[RankUp Inquiries]'" class="btn-email-primary">
+        <span class="material-symbols-outlined text-[18px]">send</span>
+        <span>Send Email to Shekhar</span>
+      </a>
+
+      <button type="button" class="btn-copy-email" (click)="copyEmail()">
+        <span class="material-symbols-outlined text-[18px]">{{ copied() ? 'check' : 'content_copy' }}</span>
+        <span>{{ copied() ? 'Copied to Clipboard!' : 'Copy Email Address' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Contact Channels Grid -->
   <div class="contact-grid">
-    <!-- Card 1: Support -->
+    <!-- Channel 1: Listing & Billing Support -->
     <div class="contact-card card">
       <div class="contact-card__icon-wrap">
         <span class="material-symbols-outlined text-[26px]">support_agent</span>
@@ -28,23 +90,24 @@
 
       <div class="contact-card__body">
         <div class="card-top-row">
-          <h3>General & Billing Support</h3>
-          <span class="sla-badge">Avg SLA &lt; 4h</span>
+          <h3>General &amp; Listing Support</h3>
+          <span class="sla-badge">Fast Response</span>
         </div>
         <p>
-          Assistance with payment reconciliation, transaction receipts, listing re-bids, or automated metadata scraping corrections.
+          Need assistance with payment reconciliation, raising an active bid, updating your product title or logo, or
+          verifying your listing email? Contact me directly.
         </p>
 
         <div class="channel-action">
-          <a href="mailto:support@rankit.app" class="contact-link">
+          <a [href]="'mailto:' + email + '?subject=[RankUp Support Request]'" class="contact-link">
             <span class="material-symbols-outlined text-[16px]">mail</span>
-            <span>support&#64;rankit.app</span>
+            <span>{{ email }}</span>
           </a>
         </div>
       </div>
     </div>
 
-    <!-- Card 2: Partnerships -->
+    <!-- Channel 2: Partnerships & Custom Arenas -->
     <div class="contact-card card">
       <div class="contact-card__icon-wrap contact-card__icon-wrap--emerald">
         <span class="material-symbols-outlined text-[26px]">handshake</span>
@@ -52,68 +115,76 @@
 
       <div class="contact-card__body">
         <div class="card-top-row">
-          <h3>Partnerships & Ecosystem</h3>
-          <span class="sla-badge sla-badge--emerald">Priority</span>
+          <h3>Partnerships &amp; Custom Categories</h3>
+          <span class="sla-badge sla-badge--emerald">Collaboration</span>
         </div>
         <p>
-          Custom category arena sponsorships, API syndication access, VC/accelerator batch listings, and ecosystem integrations.
+          Interested in creating a dedicated category arena for your incubator, developer community, or startup batch?
+          Let's discuss custom categories and collaborations.
         </p>
 
         <div class="channel-action">
-          <a href="mailto:partners@rankit.app" class="contact-link">
+          <a [href]="'mailto:' + email + '?subject=[RankUp Partnership]'" class="contact-link">
             <span class="material-symbols-outlined text-[16px]">mail</span>
-            <span>partners&#64;rankit.app</span>
+            <span>{{ email }}</span>
           </a>
         </div>
       </div>
     </div>
 
-    <!-- Card 3: Security & Fraud -->
+    <!-- Channel 3: Feedback & Feature Requests -->
     <div class="contact-card card">
       <div class="contact-card__icon-wrap contact-card__icon-wrap--gold">
-        <span class="material-symbols-outlined text-[26px]">shield_with_heart</span>
+        <span class="material-symbols-outlined text-[26px]">lightbulb</span>
       </div>
 
       <div class="contact-card__body">
         <div class="card-top-row">
-          <h3>Security & Protocol Trust</h3>
-          <span class="sla-badge sla-badge--gold">Critical</span>
+          <h3>Ideas, Feedback &amp; Bug Reports</h3>
+          <span class="sla-badge sla-badge--gold">Community</span>
         </div>
         <p>
-          Vulnerability disclosures, click-fraud detection reports, sybil attack mitigations, and protocol audit verification inquiries.
+          RankUp is actively evolving. If you have an idea for a feature, spotted a bug, or want to suggest new category
+          verticals, your input is deeply appreciated!
         </p>
 
         <div class="channel-action">
-          <a href="mailto:security@rankit.app" class="contact-link">
-            <span class="material-symbols-outlined text-[16px]">verified</span>
-            <span>security&#64;rankit.app</span>
+          <a [href]="'mailto:' + email + '?subject=[RankUp Feedback]'" class="contact-link">
+            <span class="material-symbols-outlined text-[16px]">feedback</span>
+            <span>{{ email }}</span>
           </a>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Realtime Network Status Panel -->
-  <div class="status-panel card">
-    <div class="status-left">
-      <div class="live-beacon-wrap">
-        <span class="beacon-pulse"></span>
-        <span class="beacon-core"></span>
-      </div>
+  <!-- About the Project Philosophy Card -->
+  <div class="about-project-card card">
+    <div class="about-header">
+      <span class="material-symbols-outlined icon">explore</span>
       <div>
-        <h4>RankUp Network Status</h4>
-        <p>Auction engine, SignalR streaming hubs, and Razorpay gateways are operating at 100% capacity.</p>
+        <h3>About the RankUp Vision</h3>
+        <p>Three core promises that define how this platform is built and operated:</p>
       </div>
     </div>
 
-    <div class="status-metrics">
-      <div class="metric-pill">
-        <span class="metric-lbl">WebSocket Hub</span>
-        <span class="metric-val text-secondary">Active (2ms)</span>
+    <div class="pillars-grid">
+      <div class="pillar-item">
+        <div class="pillar-num">01</div>
+        <h4>100% Transparent</h4>
+        <p>No secret algorithms deciding who gets seen. Every rank position is determined strictly by public, visible
+          bids.</p>
       </div>
-      <div class="metric-pill">
-        <span class="metric-lbl">Payment Gateway</span>
-        <span class="metric-val text-secondary">Operational</span>
+      <div class="pillar-item">
+        <div class="pillar-num">02</div>
+        <h4>Fair Difference Billing</h4>
+        <p>You never pay full price twice. Upgrading your spot always credits 100% of your previous active bid.</p>
+      </div>
+      <div class="pillar-item">
+        <div class="pillar-num">03</div>
+        <h4>Direct Traffic to Creators</h4>
+        <p>Every visitor click routes straight to your product URL. No intermediate redirect walls or trapped audiences.
+        </p>
       </div>
     </div>
   </div>
