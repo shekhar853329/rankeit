@@ -33,7 +33,7 @@
       <div class="arena-headline-row">
         <div class="arena-headline-copy">
           <h1 class="arena-headline-title">
-            Claim {{ categoryName() }} #{{ targetRank() }} Spot for
+            Claim {{ categoryName() }} Spot for
           </h1>
           <div class="bid-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()"
@@ -58,7 +58,7 @@
       </div>
 
       <!-- Command Bar Form -->
-      <div class="command-bar-wrapper">
+      <div class="command-bar-wrapper" id="claim-rank-section">
         <form class="command-bar" (submit)="$event.preventDefault(); initiateClaim()">
           <div class="command-bar__field command-bar__field--url">
             @if (faviconDisplayUrl()) {
@@ -87,9 +87,34 @@
             </div>
           </div>
 
+          <!-- Bid Amount Stepper/Input -->
+          <div class="command-bar__field command-bar__field--amount">
+            <span class="material-symbols-outlined field-icon">payments</span>
+            <div class="field-content">
+              <span class="field-label">Bid Amount</span>
+              <div class="amount-stepper-row">
+                <span class="amount-currency">$</span>
+                <input id="category-claim-amount" type="number" class="field-input field-input--amount"
+                  [value]="effectiveClaimAmount() ?? minStartingBid()"
+                  (input)="onClaimAmountInput($any($event.target).value)"
+                  [min]="minStartingBid()"
+                  step="1"
+                  required />
+                <div class="stepper-actions">
+                  <button type="button" class="stepper-arrow-btn" (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
+                    <span class="material-symbols-outlined">remove</span>
+                  </button>
+                  <button type="button" class="stepper-arrow-btn" (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
+                    <span class="material-symbols-outlined">add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="command-bar__action">
-            <button type="submit" class="claim-submit-btn" [disabled]="!isSidebarUrlValid()">
-              <span>Claim Rank #{{ targetRank() }}</span>
+            <button type="submit" class="claim-submit-btn">
+              <span>Claim Rank</span>
               <span class="material-symbols-outlined icon-sm">bolt</span>
             </button>
           </div>
@@ -113,7 +138,13 @@
               Live Order
             </span>
           </div>
-          <span class="feed-count">{{ totalCount() }} competitors</span>
+          <div class="feed-header__right">
+            <button type="button" class="btn btn-primary claim-feed-head-btn" (click)="moveToClaimRank()">
+              <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+              <span>Claim This Position</span>
+            </button>
+            <span class="feed-count">{{ totalCount() }} competitors</span>
+          </div>
         </div>
 
         @if (loading()) {
@@ -192,9 +223,9 @@
                   <span class="price-val text-primary">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="outbid-action-btn outbid-action-btn--primary"
-                  (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), 1); $event.stopPropagation()">
-                  <span class="material-symbols-outlined icon-sm">trending_up</span>
-                  <span>Outbid for ${{ entry.currentBidAmount + minBidIncrement() | number: '1.0-0' }}</span>
+                  (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), 1); $event.stopPropagation()">
+                  <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+                  <span>Claim This Position</span>
                 </button>
               </div>
             </div>
@@ -236,8 +267,9 @@
                   <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
-                  (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), 2); $event.stopPropagation()">
-                  <span>Outbid for ${{ entry.currentBidAmount + minBidIncrement() | number: '1.0-0' }}</span>
+                  (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), 2); $event.stopPropagation()">
+                  <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+                  <span>Claim This Position</span>
                 </button>
               </div>
             </div>
@@ -279,8 +311,9 @@
                   <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
-                  (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), 3); $event.stopPropagation()">
-                  <span>Outbid for ${{ entry.currentBidAmount + minBidIncrement() | number: '1.0-0' }}</span>
+                  (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), 3); $event.stopPropagation()">
+                  <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+                  <span>Claim This Position</span>
                 </button>
               </div>
             </div>
@@ -306,8 +339,8 @@
             <div class="compact-entry-right">
               <span class="compact-bid">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
               <button type="button" class="compact-btn"
-                (click)="prepareOutbid(entry, entry.currentBidAmount + minBidIncrement(), entry.rank); $event.stopPropagation()">
-                Outbid
+                (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), entry.rank); $event.stopPropagation()">
+                Claim This Position
               </button>
             </div>
           </article>
@@ -362,10 +395,9 @@
             <p class="spotlight-sub">Reigning #1 in {{ categoryName() }}</p>
 
             <button type="button" class="spotlight-claim-btn"
-              (click)="prepareOutbid(reigningChampion()!, (reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement(), 1)">
-              <span class="material-symbols-outlined icon-sm">swords</span>
-              <span>Claim #1 for ${{ (reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement() |
-                number: '1.0-0' }}</span>
+              (click)="moveToClaimRank((reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement(), 1)">
+              <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+              <span>Claim This Position</span>
             </button>
           </div>
         </section>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { catchError, of, switchMap } from 'rxjs';
 import { ListingDetailDto } from '../../core/models/listing-detail.model';
@@ -19,6 +19,7 @@ import { SignalrService } from '../../core/services/signalr.service';
 })
 export class ListingDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly listingService = inject(ListingService);
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly modalService = inject(ModalService);
@@ -81,6 +82,14 @@ export class ListingDetailComponent implements OnInit {
     }
   }
 
+  claimThisPosition(): void {
+    const l = this.listing();
+    if (!l) return;
+    void this.router.navigate(['/leaderboard', l.categorySlug], {
+      fragment: 'claim-rank-section'
+    });
+  }
+
   openOutbidModal(): void {
     const l = this.listing();
     if (!l) return;
@@ -88,13 +97,19 @@ export class ListingDetailComponent implements OnInit {
     this.leaderboardService.getCategoryLeaderboard(l.categorySlug).subscribe({
       next: (catData) => {
         const minInc = catData.minBidIncrement || 1;
+        const currentTop = catData.leaderboard.items[0]?.currentBidAmount;
+        const minReq = currentTop !== undefined ? currentTop + minInc : catData.minStartingBid;
+        const targetAmount = Math.max(minReq, l.currentBidAmount + minInc);
+
         this.modalService.openClaimModal({
-          rank: l.currentRankInCategory,
+          rank: 1,
           categoryName: l.categoryName,
-          amount: l.currentBidAmount + minInc,
+          amount: targetAmount,
           categoryId: catData.categoryId,
           minStartingBid: catData.minStartingBid,
           minBidIncrement: minInc,
+          currentTopBid: currentTop ?? null,
+          currentBidAmount: l.currentBidAmount,
           listingId: l.listingId,
           listingName: l.listingName,
           listingUrl: l.listingUrl,
@@ -102,17 +117,20 @@ export class ListingDetailComponent implements OnInit {
           logoUrl: l.logoUrl,
           description: l.description,
           faviconUrl: l.faviconUrl,
+          categorySlug: l.categorySlug,
           onSuccess: () => this.refreshListing(),
         });
       },
       error: () => {
         this.modalService.openClaimModal({
-          rank: l.currentRankInCategory,
+          rank: 1,
           categoryName: l.categoryName,
           amount: l.currentBidAmount + 1,
           categoryId: 0,
           minStartingBid: 1,
           minBidIncrement: 1,
+          currentTopBid: null,
+          currentBidAmount: l.currentBidAmount,
           listingId: l.listingId,
           listingName: l.listingName,
           listingUrl: l.listingUrl,
@@ -120,6 +138,7 @@ export class ListingDetailComponent implements OnInit {
           logoUrl: l.logoUrl,
           description: l.description,
           faviconUrl: l.faviconUrl,
+          categorySlug: l.categorySlug,
           onSuccess: () => this.refreshListing(),
         });
       }

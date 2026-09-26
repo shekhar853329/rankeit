@@ -60,6 +60,23 @@ public class PlaceBidCommandHandler(
                 return Failure(BidFailureReason.OwnerEmailMismatch, "OwnerContactEmail does not match the listing on record.");
             }
         }
+        else if (!string.IsNullOrWhiteSpace(command.ListingUrl))
+        {
+            var trimmedUrl = command.ListingUrl.Trim();
+            var matchedListing = await dbContext.Listings
+                .FirstOrDefaultAsync(l => l.CategoryId == command.CategoryId && l.Url == trimmedUrl, ct);
+
+            if (matchedListing != null)
+            {
+                if (!string.Equals(matchedListing.OwnerContactEmail.Trim(), command.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    await transaction.RollbackAsync(ct);
+                    return Failure(BidFailureReason.OwnerEmailMismatch, "This listing URL is already registered under a different owner contact email.");
+                }
+
+                existingListing = matchedListing;
+            }
+        }
 
         // Reads the category's current #1 row; the Serializable transaction guarantees a concurrent
         // bidder targeting the same category can't commit a conflicting change underneath us.
@@ -143,6 +160,11 @@ public class PlaceBidCommandHandler(
             listing = existingListing;
             listing.CurrentBidAmount = decision.NewCurrentBidAmount;
             listing.LastBidAt = now;
+            if (!string.IsNullOrWhiteSpace(command.ListingName)) listing.Name = command.ListingName;
+            if (!string.IsNullOrWhiteSpace(command.SiteName)) listing.SiteName = command.SiteName;
+            if (!string.IsNullOrWhiteSpace(command.LogoUrl)) listing.LogoUrl = command.LogoUrl;
+            if (!string.IsNullOrWhiteSpace(command.Description)) listing.Description = command.Description;
+            if (!string.IsNullOrWhiteSpace(command.FaviconUrl)) listing.FaviconUrl = command.FaviconUrl;
         }
 
         bidRepository.Add(new Bid

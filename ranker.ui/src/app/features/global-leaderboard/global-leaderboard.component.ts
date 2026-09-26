@@ -322,10 +322,19 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   /* ── Pricing & Validation ── */
   readonly claimPrice = computed<number | null>(() => {
+    const slug = this.claimSlug();
+    if (!slug) return null;
+
     const data = this.claimCategoryData();
-    if (this.claimSlug() === null || !data) return null;
-    const currentTop = data.leaderboard.items[0]?.currentBidAmount;
-    return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
+    if (data && data.categorySlug === slug) {
+      const currentTop = data.leaderboard.items[0]?.currentBidAmount;
+      return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
+    }
+
+    const cat =
+      this.allCategories().find((c) => c.slug === slug) ??
+      this.tabs().find((c) => c.slug === slug);
+    return cat ? cat.minStartingBid : null;
   });
 
   readonly globalDefaultPrice = computed<number | null>(() => {
@@ -359,7 +368,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   });
 
   readonly canClaimRank = computed(() => {
-    const hasCategory = !!(this.claimSlug() || this.claimPositionSlug() || this.allCategories().length > 0);
+    const hasCategory = !!this.claimSlug();
     return !!(hasCategory && this.isHeroUrlValid());
   });
 
@@ -393,9 +402,6 @@ export class GlobalLeaderboardComponent implements OnInit {
 
     this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
       this.allCategories.set(result.items);
-      if (!this.claimSlug() && result.items.length > 0) {
-        this.selectClaimCategory(result.items[0].slug);
-      }
     });
 
     this.loadSelection();
@@ -604,14 +610,23 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.claimSlug.set(slug);
     this.claimAmount.set(null);
     this.targetRank.set(1);
+    this.claimCategoryData.set(null);
 
     if (!slug) {
-      this.claimCategoryData.set(null);
       return;
     }
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20).subscribe((data) =>
-      this.claimCategoryData.set(data)
-    );
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20, this.timeMode()).subscribe((data) => {
+      this.claimCategoryData.set(data);
+      this.claimAmount.set(null);
+
+      const minInc = data.minBidIncrement || 1;
+      const currentTop = data.leaderboard.items[0]?.currentBidAmount ?? null;
+      const minReq = currentTop !== null ? currentTop + minInc : data.minStartingBid;
+
+      this.showToastNotification(
+        `Selected ${data.categoryName}. Amount to claim Rank #1 is ${this.currencySymbol()}${minReq}.`
+      );
+    });
   }
 
   toggleCategoryDropdown(event?: Event): void {
@@ -629,8 +644,17 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   selectDropdownCategory(slug: string, event?: Event): void {
     event?.stopPropagation();
-    this.selectClaimCategory(slug);
+    if (this.claimSlug() === slug) {
+      this.selectClaimCategory(null);
+    } else {
+      this.selectClaimCategory(slug);
+    }
     this.closeCategoryDropdown();
+  }
+
+  clearCategorySelection(event?: Event): void {
+    event?.stopPropagation();
+    this.selectClaimCategory(null);
   }
 
   onCategorySearch(event: Event): void {
@@ -667,24 +691,46 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.claimAmount.set(Math.max(current - Math.max(step, 1), floor));
   }
 
-  prepareOutbid(productName: string, minAmount: number, categorySlug?: string, rank?: number): void {
-    this.claimAmount.set(minAmount);
+  onClaimAmountInput(val: string): void {
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      this.claimAmount.set(num);
+    }
+  }
+
+  claimThisPosition(targetAmount?: number, rank?: number): void {
+    // On Global Leaderboard: NEVER auto populate category, website url, or title
     if (rank !== undefined) {
       this.targetRank.set(rank);
+    } else {
+      this.targetRank.set(1);
     }
-    if (categorySlug) {
-      this.selectClaimCategory(categorySlug);
+
+    if (targetAmount !== undefined && targetAmount > 0) {
+      this.claimAmount.set(targetAmount);
+    }
+
+    // Move / scroll to Claim Rank section
+    const el = document.getElementById('claim-rank-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('command-bar-wrapper--highlight');
+      setTimeout(() => el.classList.remove('command-bar-wrapper--highlight'), 2200);
     }
 
     const urlInput = document.getElementById('claim-url') as HTMLInputElement | null;
     if (urlInput) {
-      urlInput.focus();
-      urlInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => urlInput.focus(), 350);
     }
 
+    const amountVal = targetAmount ?? this.effectiveClaimAmount() ?? 10;
     this.showToastNotification(
-      `Outbid staged against ${productName} for ${this.currencySymbol()}${minAmount}`
+      `Staged at ${this.currencySymbol()}${amountVal}. Select your category and enter domain to claim.`
     );
+  }
+
+  prepareOutbid(productName: string, minAmount: number, categorySlug?: string, rank?: number): void {
+    this.claimThisPosition(minAmount, rank);
   }
 
   showToastNotification(message: string): void {
@@ -695,46 +741,60 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   claimRank(): void {
-    let slug = this.claimSlug() ?? this.claimPositionSlug();
-    if (!slug && this.allCategories().length > 0) {
-      slug = this.allCategories()[0].slug;
-      this.selectClaimCategory(slug);
-    }
-
+    const slug = this.claimSlug();
     if (!slug) {
-      this.toast.show('Choose a category first', 'info');
+      this.showToastNotification('Please select a category first');
+      this.toggleCategoryDropdown();
       return;
     }
 
-    const data = this.claimCategoryData() ?? this.claimPositionData();
-    if (!data) {
-      void this.router.navigate(['/leaderboard', slug]);
-      return;
+    const launchModal = (data: CategoryLeaderboardResponseDto) => {
+      const minInc = data.minBidIncrement || 1;
+      const currentTop = data.leaderboard.items[0]?.currentBidAmount ?? null;
+      const minReq = currentTop !== null ? currentTop + minInc : data.minStartingBid;
+      const amount = Math.max(this.effectiveClaimAmount() ?? minReq, minReq);
+
+      const url = this.heroUrl();
+      const meta = this.urlMetadata();
+      const title = this.productTitle() || meta?.siteName || '';
+
+      const enteredUrl = url.trim().toLowerCase();
+      const existing = data.leaderboard.items.find(
+        (e) => e.listingUrl.trim().toLowerCase() === enteredUrl
+      );
+
+      this.modalService.openClaimModal({
+        rank: this.targetRank(),
+        categoryName: data.categoryName,
+        amount,
+        categoryId: data.categoryId,
+        minStartingBid: data.minStartingBid,
+        minBidIncrement: minInc,
+        currentTopBid: currentTop,
+        currentBidAmount: existing?.currentBidAmount ?? 0,
+        listingId: existing?.listingId ?? null,
+        listingName: existing?.listingName || title,
+        listingUrl: url,
+        siteName: existing?.siteName || title || null,
+        logoUrl: (existing?.logoUrl || meta?.logoUrl) ?? null,
+        description: (existing?.description || meta?.description) ?? null,
+        faviconUrl: (existing?.faviconUrl || meta?.faviconUrl) ?? null,
+        categorySlug: slug,
+        onSuccess: () => {
+          void this.router.navigate(['/leaderboard', slug]);
+        },
+      });
+    };
+
+    const cachedData = this.claimCategoryData() ?? this.claimPositionData();
+    if (cachedData) {
+      launchModal(cachedData);
+    } else {
+      this.leaderboardService.getCategoryLeaderboard(slug).subscribe({
+        next: (data) => launchModal(data),
+        error: () => void this.router.navigate(['/leaderboard', slug]),
+      });
     }
-
-    const amount = this.effectiveClaimAmount() ?? 10;
-    const url = this.heroUrl();
-    const meta = this.urlMetadata();
-    const title = this.productTitle() || meta?.siteName || '';
-
-    this.modalService.openClaimModal({
-      rank: this.targetRank(),
-      categoryName: data.categoryName,
-      amount,
-      categoryId: data.categoryId,
-      minStartingBid: data.minStartingBid,
-      minBidIncrement: data.minBidIncrement,
-      listingId: null,
-      listingName: title,
-      listingUrl: url,
-      siteName: title || null,
-      logoUrl: meta?.logoUrl ?? null,
-      description: meta?.description ?? null,
-      faviconUrl: meta?.faviconUrl ?? null,
-      onSuccess: () => {
-        void this.router.navigate(['/leaderboard', slug]);
-      },
-    });
   }
 
   openListing(row: FeedRow): void {

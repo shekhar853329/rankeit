@@ -28,4 +28,17 @@ public class BidsController(ISender sender) : ControllerBase
 
         return result.Success ? Ok(result) : BadRequest(result);
     }
+
+    [HttpPost("calculate")]
+    public async Task<ActionResult<CalculateBidQuoteResponseDto>> CalculateBid([FromBody] CalculateBidQuoteRequestDto request, CancellationToken ct)
+    {
+        var result = await sender.Send(new CalculateBidQuoteQuery(
+            request.CategoryId,
+            request.ListingId,
+            request.ListingUrl,
+            request.OwnerContactEmail,
+            request.TargetBidAmount), ct);
+
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }

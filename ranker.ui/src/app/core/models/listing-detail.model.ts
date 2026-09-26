@@ -21,3 +21,17 @@ export interface ListingDetailDto {
   faviconUrl: string | null;
   bids: BidHistoryEntryDto[];
 }
+
+export interface ListingLookupResultDto {
+  found: boolean;
+  listingId: number | null;
+  listingName: string | null;
+  listingUrl: string | null;
+  currentBidAmount: number;
+  currentRankInCategory: number | null;
+  ownerContactEmailMasked: string | null;
+  siteName: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  faviconUrl: string | null;
+}

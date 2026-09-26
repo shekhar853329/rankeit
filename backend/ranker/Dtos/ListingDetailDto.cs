@@ -23,3 +23,16 @@ public sealed record ListingDetailDto(
     string? Description,
     string? FaviconUrl,
     IReadOnlyList<BidHistoryEntryDto> Bids);
+
+public sealed record ListingLookupResultDto(
+    bool Found,
+    int? ListingId,
+    string? ListingName,
+    string? ListingUrl,
+    decimal CurrentBidAmount,
+    int? CurrentRankInCategory,
+    string? OwnerContactEmailMasked,
+    string? SiteName,
+    string? LogoUrl,
+    string? Description,
+    string? FaviconUrl);

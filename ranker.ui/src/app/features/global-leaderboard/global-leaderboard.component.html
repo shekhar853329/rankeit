@@ -14,7 +14,7 @@
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
-            Claim Today's #{{ targetRank() }} Spot for
+            Claim Today's Spot for
           </h1>
           <div class="bid-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease bid"
@@ -58,7 +58,7 @@
       </div>
 
       <!-- ── Master Interactive Claim / Outbid Command Center Bar ── -->
-      <div class="command-bar-wrapper">
+      <div class="command-bar-wrapper" id="claim-rank-section">
         <form class="command-bar" (submit)="$event.preventDefault(); claimRank()">
           <!-- URL / @Handle Input -->
           <div class="command-bar__field command-bar__field--url">
@@ -107,6 +107,9 @@
                 <span class="custom-select-val">
                   <span class="cat-icon">{{ cat.icon }}</span>
                   <span class="cat-name">{{ cat.name }}</span>
+                  <button type="button" class="cat-clear-btn" title="Clear category" (click)="clearCategorySelection($event)">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
                 </span>
                 } @else {
                 <span class="custom-select-placeholder">Select Category</span>
@@ -134,6 +137,14 @@
               </div>
 
               <div class="custom-dropdown-scroll">
+                @if (claimSlug()) {
+                <button type="button" class="custom-dropdown-item custom-dropdown-item--clear"
+                  (click)="clearCategorySelection($event); closeCategoryDropdown()"
+                  role="option">
+                  <span class="material-symbols-outlined item-icon">close</span>
+                  <span class="item-name">Clear Category (Blank)</span>
+                </button>
+                }
                 @for (cat of filteredClaimCategories(); track cat.slug) {
                 <button type="button" class="custom-dropdown-item"
                   [class.custom-dropdown-item--selected]="cat.slug === claimSlug()"
@@ -156,10 +167,40 @@
             }
           </div>
 
+          <!-- Bid Amount Stepper/Input -->
+          <div class="command-bar__field command-bar__field--amount">
+            <span class="material-symbols-outlined field-icon">payments</span>
+            <div class="field-content">
+              <div class="field-label-row">
+                <span class="field-label">Bid Amount</span>
+                @if (claimPrice(); as minRank1) {
+                <span class="field-badge-rank1" title="Minimum required to claim Rank #1 in this category">#1: {{ currencySymbol() }}{{ minRank1 }}</span>
+                }
+              </div>
+              <div class="amount-stepper-row">
+                <span class="amount-currency">{{ currencySymbol() }}</span>
+                <input id="claim-amount" type="number" class="field-input field-input--amount"
+                  [value]="effectiveClaimAmount() ?? claimPrice() ?? 10"
+                  (input)="onClaimAmountInput($any($event.target).value)"
+                  [min]="claimPrice() ?? 1"
+                  step="1"
+                  required />
+                <div class="stepper-actions">
+                  <button type="button" class="stepper-arrow-btn" (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
+                    <span class="material-symbols-outlined">remove</span>
+                  </button>
+                  <button type="button" class="stepper-arrow-btn" (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
+                    <span class="material-symbols-outlined">add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Primary Claim CTA Button -->
           <div class="command-bar__action">
             <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()">
-              <span>Claim Rank #{{ targetRank() }}</span>
+              <span>Claim Rank</span>
               <span class="material-symbols-outlined icon-sm">bolt</span>
             </button>
           </div>
@@ -255,14 +296,14 @@
         } @else if (selectedSlug() === null && timeMode() === 'today') {
         <h3 class="feed-empty-card__title">No bids placed in today's auction yet</h3>
         <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
-        <button type="button" class="btn btn-primary" (click)="prepareOutbid('Rank #1', effectiveClaimAmount() ?? 10)">
-          Claim Spot Now
+        <button type="button" class="btn btn-primary" (click)="claimThisPosition()">
+          Claim This Position
         </button>
         } @else {
         <h3 class="feed-empty-card__title">No listings found in this category yet</h3>
         <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
-        <button type="button" class="btn btn-primary" (click)="prepareOutbid('Rank #1', effectiveClaimAmount() ?? 10)">
-          Claim Spot Now
+        <button type="button" class="btn btn-primary" (click)="claimThisPosition()">
+          Claim This Position
         </button>
         }
       </div>
@@ -347,10 +388,9 @@
                   '1.0-0' }}</span>
               </div>
               <button type="button" class="outbid-btn outbid-btn--primary"
-                (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, 1); $event.stopPropagation()">
-                <span class="material-symbols-outlined icon-sm">trending_up</span>
-                <span>Outbid for {{ currencySymbol() }}{{ (row.currentBidAmount +
-                  incrementForCategory(row.categorySlug)) | number: '1.0-0' }}</span>
+                (click)="claimThisPosition(row.currentBidAmount + incrementForCategory(row.categorySlug), 1); $event.stopPropagation()">
+                <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+                <span>Claim This Position</span>
               </button>
             </div>
           </div>
@@ -408,9 +448,9 @@
                 <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
               </div>
               <button type="button" class="outbid-btn outbid-btn--secondary"
-                (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, 2); $event.stopPropagation()">
-                <span>Outbid for {{ currencySymbol() }}{{ (row.currentBidAmount +
-                  incrementForCategory(row.categorySlug)) | number: '1.0-0' }}</span>
+                (click)="claimThisPosition(row.currentBidAmount + incrementForCategory(row.categorySlug), 2); $event.stopPropagation()">
+                <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+                <span>Claim This Position</span>
               </button>
             </div>
           </div>
@@ -468,9 +508,9 @@
                 <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
               </div>
               <button type="button" class="outbid-btn outbid-btn--secondary"
-                (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, 3); $event.stopPropagation()">
-                <span>Outbid for {{ currencySymbol() }}{{ (row.currentBidAmount +
-                  incrementForCategory(row.categorySlug)) | number: '1.0-0' }}</span>
+                (click)="claimThisPosition(row.currentBidAmount + incrementForCategory(row.categorySlug), 3); $event.stopPropagation()">
+                <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+                <span>Claim This Position</span>
               </button>
             </div>
           </div>
@@ -502,8 +542,8 @@
           <div class="compact-rank-card__right">
             <span class="compact-price">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
             <button type="button" class="compact-outbid-btn"
-              (click)="prepareOutbid(row.siteName || row.listingName, row.currentBidAmount + incrementForCategory(row.categorySlug), row.categorySlug, row.rank); $event.stopPropagation()">
-              Outbid
+              (click)="claimThisPosition(row.currentBidAmount + incrementForCategory(row.categorySlug), row.rank); $event.stopPropagation()">
+              Claim This Position
             </button>
           </div>
         </article>
@@ -629,10 +669,9 @@
           </div>
 
           <button type="button" class="claim-throne-btn"
-            (click)="prepareOutbid(reigningChampion()?.listingName || 'Champion', (reigningChampion()?.currentBidAmount ?? 10) + 1, reigningChampion()?.categorySlug, 1)">
-            <span class="material-symbols-outlined icon-sm">swords</span>
-            <span>Claim Throne for {{ currencySymbol() }}{{ (reigningChampion()?.currentBidAmount ?? 10) + 1 | number:
-              '1.0-0' }}</span>
+            (click)="claimThisPosition((reigningChampion()?.currentBidAmount ?? 10) + 1, 1)">
+            <span class="material-symbols-outlined icon-sm">workspace_premium</span>
+            <span>Claim This Position</span>
           </button>
         </div>
       </section>

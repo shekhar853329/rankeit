@@ -16,6 +16,12 @@ export interface ClaimModalPayload {
   logoUrl: string | null;
   description: string | null;
   faviconUrl: string | null;
+  /** Current bid amount on this listing (if raising an existing bid; 0 for new listing). */
+  currentBidAmount?: number;
+  /** Current highest bid in this category (null if category empty). */
+  currentTopBid?: number | null;
+  /** Category slug for routing or listings lookup. */
+  categorySlug?: string;
   /** Called after a successful bid so the leaderboard can refresh. */
   onSuccess: () => void;
 }

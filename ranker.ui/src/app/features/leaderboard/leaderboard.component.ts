@@ -96,6 +96,21 @@ export class LeaderboardComponent implements OnInit {
 
     this.loadTop3Bidders();
 
+    this.route.fragment.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((fragment) => {
+      if (fragment === 'claim-rank-section') {
+        setTimeout(() => {
+          const el = document.getElementById('claim-rank-section');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('command-bar-wrapper--highlight');
+            setTimeout(() => el.classList.remove('command-bar-wrapper--highlight'), 2200);
+          }
+          const input = document.getElementById('category-claim-url') as HTMLInputElement | null;
+          if (input) input.focus();
+        }, 400);
+      }
+    });
+
     // Watch route param changes
     this.route.paramMap
       .pipe(
@@ -246,24 +261,58 @@ export class LeaderboardComponent implements OnInit {
     this.claimAmount.set(Math.max(current - Math.max(this.minBidIncrement(), 1), floor));
   }
 
-  prepareOutbid(entry: LeaderboardEntryDto, minAmount: number, rank?: number): void {
-    this.claimAmount.set(minAmount);
-    if (rank !== undefined) {
-      this.targetRank.set(rank);
-    }
-    const input = document.getElementById('category-claim-url') as HTMLInputElement | null;
-    if (input) {
-      input.focus();
-      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  onClaimAmountInput(val: string): void {
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      this.claimAmount.set(num);
     }
   }
 
-  initiateClaim(): void {
+  moveToClaimRank(targetAmount?: number, rank?: number): void {
+    const minInc = this.minBidIncrement() || 1;
+    const currentTop = this.entries()[0]?.currentBidAmount;
+    const minReq = currentTop !== undefined ? currentTop + minInc : this.minStartingBid();
+    const amount = targetAmount ?? minReq;
+
+    this.claimAmount.set(Math.max(amount, minReq));
+    this.targetRank.set(rank ?? 1);
+
+    // NEVER auto populate website URL or product title!
+
+    const section = document.getElementById('claim-rank-section');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      section.classList.add('command-bar-wrapper--highlight');
+      setTimeout(() => section.classList.remove('command-bar-wrapper--highlight'), 2200);
+    }
+
+    const input = document.getElementById('category-claim-url') as HTMLInputElement | null;
+    if (input) {
+      setTimeout(() => input.focus(), 350);
+    }
+  }
+
+  prepareOutbid(entry: LeaderboardEntryDto, minAmount?: number, rank?: number): void {
+    this.moveToClaimRank(minAmount, rank);
+  }
+
+  initiateClaim(targetListingUrl?: string): void {
     const categoryId = this.categoryId();
     if (categoryId === null) return;
-    const amount = this.effectiveClaimAmount() ?? 10;
+    const minInc = this.minBidIncrement() || 1;
+    const currentTop = this.entries()[0]?.currentBidAmount ?? null;
+    const minReq = currentTop !== null ? currentTop + minInc : this.minStartingBid();
+    const amount = Math.max(this.effectiveClaimAmount() ?? minReq, minReq);
+
     const meta = this.urlMetadata();
     const title = this.productTitle() || meta?.siteName || '';
+    const url = targetListingUrl || this.sidebarUrl() || '';
+    const enteredUrl = url.trim().toLowerCase();
+
+    // Check if this URL already exists in this category
+    const existing = this.entries().find(
+      (e) => e.listingUrl.trim().toLowerCase() === enteredUrl
+    );
 
     this.modalService.openClaimModal({
       rank: this.targetRank(),
@@ -271,14 +320,17 @@ export class LeaderboardComponent implements OnInit {
       amount,
       categoryId,
       minStartingBid: this.minStartingBid(),
-      minBidIncrement: this.minBidIncrement(),
-      listingId: null,
-      listingName: title,
-      listingUrl: this.sidebarUrl(),
-      siteName: title || null,
-      logoUrl: meta?.logoUrl ?? null,
-      description: meta?.description ?? null,
-      faviconUrl: meta?.faviconUrl ?? null,
+      minBidIncrement: minInc,
+      currentTopBid: currentTop,
+      currentBidAmount: existing?.currentBidAmount ?? 0,
+      listingId: existing?.listingId ?? null,
+      listingName: existing?.listingName || title,
+      listingUrl: url,
+      siteName: existing?.siteName || title || null,
+      logoUrl: (existing?.logoUrl || meta?.logoUrl) ?? null,
+      description: (existing?.description || meta?.description) ?? null,
+      faviconUrl: (existing?.faviconUrl || meta?.faviconUrl) ?? null,
+      categorySlug: this.categorySlug(),
       onSuccess: () => this.refresh(),
     });
   }

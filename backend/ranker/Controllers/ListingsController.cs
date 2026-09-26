@@ -16,6 +16,13 @@ public class ListingsController(ISender sender) : ControllerBase
         return result is null ? NotFound() : Ok(result);
     }
 
+    [HttpGet("lookup")]
+    public async Task<ActionResult<ListingLookupResultDto>> LookupListing([FromQuery] int categoryId, [FromQuery] string url, CancellationToken ct)
+    {
+        var result = await sender.Send(new LookupListingQuery(categoryId, url), ct);
+        return Ok(result);
+    }
+
     [HttpPost("{id:int}/click")]
     public async Task<ActionResult<int>> RecordClick(int id, CancellationToken ct)
     {

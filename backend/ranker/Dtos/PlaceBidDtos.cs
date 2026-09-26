@@ -21,3 +21,29 @@ public sealed record PlaceBidResultDto(
     int? ListingId,
     decimal? NewCurrentBidAmount,
     decimal? AmountCharged);
+
+public sealed record CalculateBidQuoteRequestDto(
+    int CategoryId,
+    int? ListingId,
+    string? ListingUrl,
+    string? OwnerContactEmail,
+    decimal TargetBidAmount);
+
+public sealed record CalculateBidQuoteResponseDto(
+    bool Success,
+    string? ErrorCode,
+    string? ErrorMessage,
+    int CategoryId,
+    string CategoryName,
+    decimal CategoryMinStartingBid,
+    decimal CategoryMinBidIncrement,
+    decimal? CurrentTopBidInCategory,
+    int? CurrentTopListingId,
+    string? CurrentTopListingName,
+    int? ListingId,
+    string? ListingName,
+    decimal ExistingListingCurrentBid,
+    decimal TargetBidAmount,
+    decimal RequiredMinimumBid,
+    decimal ExpectedChargeAmount,
+    bool BecameCategoryTop);
