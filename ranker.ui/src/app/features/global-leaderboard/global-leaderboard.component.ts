@@ -169,6 +169,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   readonly claimSlug = signal<string | null>(null);
   readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
   readonly claimAmount = signal<number | null>(null);
+  readonly isAmountFieldFocused = signal(false);
   readonly targetRank = signal(1);
 
   private readonly claimPositionSlug = signal<string | null>(null);
@@ -588,20 +589,25 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   selectTab(slug: string | null): void {
-    if (slug === this.selectedSlug()) return;
-    this.selectedSlug.set(slug);
-    this.visibleCount.set(10);
-    this.hasMoreProducts.set(true);
-    this.loading.set(true);
-    this.loadSelection(10);
+    const isSameSlug = slug === this.selectedSlug();
+    if (!isSameSlug) {
+      this.selectedSlug.set(slug);
+      this.visibleCount.set(10);
+      this.hasMoreProducts.set(true);
+      this.loading.set(true);
+      this.loadSelection(10);
 
-    if (this.joinedCategoryGroup) {
-      void this.signalr.leaveCategoryGroup(this.joinedCategoryGroup);
-      this.joinedCategoryGroup = null;
+      if (this.joinedCategoryGroup) {
+        void this.signalr.leaveCategoryGroup(this.joinedCategoryGroup);
+        this.joinedCategoryGroup = null;
+      }
+      if (slug) {
+        this.joinedCategoryGroup = slug;
+        void this.signalr.joinCategoryGroup(slug);
+      }
     }
+
     if (slug) {
-      this.joinedCategoryGroup = slug;
-      void this.signalr.joinCategoryGroup(slug);
       this.selectClaimCategory(slug);
     } else {
       this.selectClaimCategory(null);
@@ -609,7 +615,6 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   selectClaimCategory(slug: string | null): void {
-    if (slug === this.claimSlug() && this.claimCategoryData()) return;
     this.claimSlug.set(slug);
     this.targetRank.set(1);
 
@@ -622,7 +627,16 @@ export class GlobalLeaderboardComponent implements OnInit {
     const cat =
       this.allCategories().find((c) => c.slug === slug) ??
       this.tabs().find((c) => c.slug === slug);
-    if (cat && this.claimAmount() === null) {
+
+    // If we have cached category data for this slug, use its Rank #1 price immediately
+    const cached = this.claimCategoryData();
+    if (cached && cached.categorySlug === slug) {
+      const minInc = cached.minBidIncrement || 1;
+      const currentTop = cached.leaderboard.items[0]?.currentBidAmount ?? null;
+      const rank1Amount = currentTop !== null ? currentTop + minInc : cached.minStartingBid;
+      this.claimAmount.set(rank1Amount);
+    } else if (cat) {
+      // Immediately show category minStartingBid while fetching alltime champion
       this.claimAmount.set(cat.minStartingBid);
     }
 
@@ -666,16 +680,16 @@ export class GlobalLeaderboardComponent implements OnInit {
   selectDropdownCategory(slug: string, event?: Event): void {
     event?.stopPropagation();
     if (this.claimSlug() === slug) {
-      this.selectClaimCategory(null);
+      this.clearCategorySelection();
     } else {
-      this.selectClaimCategory(slug);
+      this.selectTab(slug);
     }
     this.closeCategoryDropdown();
   }
 
   clearCategorySelection(event?: Event): void {
     event?.stopPropagation();
-    this.selectClaimCategory(null);
+    this.selectTab(null);
   }
 
   onCategorySearch(event: Event): void {
@@ -709,15 +723,28 @@ export class GlobalLeaderboardComponent implements OnInit {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
     const floor = 1;
     const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
-    this.claimAmount.set(Math.max(current - Math.max(step, 1), floor));
+    const inc = Math.max(step, 1);
+    const nextVal = current > inc ? current - inc : (current > floor ? floor : floor);
+    this.claimAmount.set(Math.max(nextVal, floor));
   }
 
   onClaimAmountInput(val: string): void {
     const num = parseFloat(val);
-    if (!isNaN(num) && num > 0) {
+    if (!isNaN(num)) {
       this.claimAmount.set(num);
-    } else if (val === '') {
+    } else {
       this.claimAmount.set(null);
+    }
+  }
+
+  onClaimAmountBlur(val: string): void {
+    this.isAmountFieldFocused.set(false);
+    const num = parseFloat(val);
+    if (isNaN(num) || num < 1) {
+      const fallback = this.claimPrice() ?? this.globalDefaultPrice() ?? 10;
+      this.claimAmount.set(fallback);
+    } else {
+      this.claimAmount.set(Math.max(1, Math.round(num * 100) / 100));
     }
   }
 

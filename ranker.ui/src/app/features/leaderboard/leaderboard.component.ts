@@ -73,6 +73,7 @@ export class LeaderboardComponent implements OnInit {
   private readonly urlChange$ = new Subject<string>();
   readonly claimCategoryData = signal<CategoryLeaderboardResponseDto | null>(null);
   readonly claimAmount = signal<number | null>(null);
+  readonly isAmountFieldFocused = signal(false);
   readonly targetRank = signal(1);
 
   readonly claimPrice = computed<number | null>(() => {
@@ -266,15 +267,28 @@ export class LeaderboardComponent implements OnInit {
   decrementClaimAmount(): void {
     const floor = 1;
     const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
-    this.claimAmount.set(Math.max(current - Math.max(this.minBidIncrement(), 1), floor));
+    const inc = Math.max(this.minBidIncrement(), 1);
+    const nextVal = current > inc ? current - inc : (current > floor ? floor : floor);
+    this.claimAmount.set(Math.max(nextVal, floor));
   }
 
   onClaimAmountInput(val: string): void {
     const num = parseFloat(val);
-    if (!isNaN(num) && num > 0) {
+    if (!isNaN(num)) {
       this.claimAmount.set(num);
-    } else if (val === '') {
+    } else {
       this.claimAmount.set(null);
+    }
+  }
+
+  onClaimAmountBlur(val: string): void {
+    this.isAmountFieldFocused.set(false);
+    const num = parseFloat(val);
+    if (isNaN(num) || num < 1) {
+      const fallback = this.claimPrice() ?? this.minStartingBid() ?? 10;
+      this.claimAmount.set(fallback);
+    } else {
+      this.claimAmount.set(Math.max(1, Math.round(num * 100) / 100));
     }
   }
 

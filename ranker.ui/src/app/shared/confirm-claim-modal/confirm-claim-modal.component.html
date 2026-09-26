@@ -173,6 +173,15 @@
           <button
             type="button"
             class="chip-btn"
+            (click)="subtractIncrement(minBidIncrement())"
+            [disabled]="submitting() || (targetAmount() ?? 0) <= absoluteMinimumBid()"
+            title="Decrease bid"
+          >
+            −₹{{ minBidIncrement() | number: '1.0-0' }}
+          </button>
+          <button
+            type="button"
+            class="chip-btn"
             (click)="addIncrement(minBidIncrement())"
             [disabled]="submitting()"
           >

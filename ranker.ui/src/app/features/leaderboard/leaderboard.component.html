@@ -100,8 +100,10 @@
               <div class="amount-stepper-row">
                 <span class="amount-currency">$</span>
                 <input id="category-claim-amount" type="number" class="field-input field-input--amount"
-                  [value]="effectiveClaimAmount() ?? minStartingBid()"
-                  (input)="onClaimAmountInput($any($event.target).value)" [min]="1" step="1" required />
+                  [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingBid())"
+                  (focus)="isAmountFieldFocused.set(true)"
+                  (input)="onClaimAmountInput($any($event.target).value)"
+                  (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
                 <div class="stepper-actions">
                   <button type="button" class="stepper-arrow-btn"
                     (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">

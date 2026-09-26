@@ -177,7 +177,9 @@ export class ConfirmClaimModalComponent implements OnInit {
       const minReq = payload.currentTopBid !== null && payload.currentTopBid !== undefined
         ? payload.currentTopBid + payload.minBidIncrement
         : payload.minStartingBid;
-      const initialTarget = Math.max(payload.amount || minReq, minReq);
+      const initialTarget = payload.amount !== undefined && payload.amount !== null && payload.amount > 0
+        ? payload.amount
+        : minReq;
       this.targetAmount.set(initialTarget);
     });
   }
@@ -307,6 +309,13 @@ export class ConfirmClaimModalComponent implements OnInit {
   protected addIncrement(amount: number): void {
     const current = this.targetAmount() ?? this.minRank1Bid();
     this.targetAmount.set(current + amount);
+    this.quoteError.set(null);
+  }
+
+  protected subtractIncrement(amount: number): void {
+    const current = this.targetAmount() ?? this.minRank1Bid();
+    const floor = this.absoluteMinimumBid();
+    this.targetAmount.set(Math.max(floor, current - amount));
     this.quoteError.set(null);
   }
 
