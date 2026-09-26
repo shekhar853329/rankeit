@@ -25,12 +25,21 @@
    ══════════════════════════════════════════════════════════════ */
 .hero-station {
   position: relative;
+  z-index: 30;
   width: 100%;
   border-radius: 1.5rem;
   background: var(--color-surface-container-lowest);
   border: 1px solid var(--border);
   box-shadow: 0 4px 24px rgba(21, 28, 34, 0.05);
-  overflow: hidden;
+
+  &__orbs-wrap {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    pointer-events: none;
+    z-index: 0;
+  }
 
   &__orb {
     position: absolute;
@@ -57,7 +66,7 @@
 
   &__inner {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -317,6 +326,8 @@
 
 /* ── Master Command Bar Form ── */
 .command-bar-wrapper {
+  position: relative;
+  z-index: 5;
   background: var(--color-surface-container-low);
   padding: 0.35rem;
   border-radius: 1rem;
@@ -324,6 +335,7 @@
 }
 
 .command-bar {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.45rem;
@@ -344,9 +356,25 @@
     transition: all 0.2s ease;
     min-width: 0;
 
-    &:focus-within {
+    &:focus-within,
+    &--open {
       border-color: var(--color-primary);
       box-shadow: 0 0 0 3px rgba(249, 87, 56, 0.2);
+    }
+
+    &--category {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      z-index: 10;
+
+      &:hover {
+        background: var(--color-surface-container);
+      }
+
+      &.command-bar__field--open {
+        z-index: 100;
+      }
     }
   }
 
@@ -386,8 +414,7 @@
   margin-bottom: 1px;
 }
 
-.field-input,
-.field-select {
+.field-input {
   border: none;
   background: transparent;
   font-family: inherit;
@@ -404,9 +431,221 @@
   }
 }
 
-.field-select {
+/* ── Custom Category Dropdown Trigger & Panel ── */
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 1.35rem;
   cursor: pointer;
-  appearance: none;
+}
+
+.custom-select-val {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  min-width: 0;
+  overflow: hidden;
+
+  .cat-icon {
+    font-size: 1rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .cat-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.custom-select-placeholder {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  opacity: 0.65;
+}
+
+.custom-select-arrow {
+  font-size: 20px;
+  color: var(--color-on-surface-variant);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+
+  &--open {
+    transform: rotate(180deg);
+    color: var(--color-primary);
+  }
+}
+
+.custom-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  min-width: 290px;
+  z-index: 9999;
+  background: var(--color-surface-container-lowest);
+  border: 1.5px solid var(--border);
+  border-radius: 1.15rem;
+  box-shadow: 0 20px 48px -6px rgba(0, 0, 0, 0.28), 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 0.5rem;
+  backdrop-filter: blur(16px);
+  animation: dropdownSlideIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.custom-dropdown-search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--color-surface-container);
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.75rem;
+  margin-bottom: 0.35rem;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+    background: var(--color-surface-container-high);
+  }
+
+  .search-icon {
+    font-size: 16px;
+    color: var(--color-on-surface-variant);
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-on-surface);
+    outline: none;
+    width: 100%;
+
+    &::placeholder {
+      color: var(--color-on-surface-variant);
+      opacity: 0.6;
+    }
+  }
+
+  .search-clear {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--color-on-surface-variant);
+    display: flex;
+    align-items: center;
+
+    span {
+      font-size: 15px;
+    }
+
+    &:hover {
+      color: var(--color-on-surface);
+    }
+  }
+}
+
+.custom-dropdown-scroll {
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-container-high) transparent;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-surface-container-high);
+    border-radius: 9999px;
+  }
+}
+
+.custom-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.65rem;
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+  width: 100%;
+  text-align: left;
+
+  .item-icon {
+    font-size: 1.05rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .item-check {
+    font-size: 16px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  &:hover {
+    background: var(--color-surface-container-high);
+    color: var(--color-primary);
+  }
+
+  &--selected {
+    background: rgba(249, 87, 56, 0.1);
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+}
+
+.custom-dropdown-empty {
+  padding: 1.25rem 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .field-spinner {

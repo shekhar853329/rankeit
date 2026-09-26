@@ -3,9 +3,11 @@
        TOP COMMAND & URGENCY HERO STATION
        ═══════════════════════════════════════════════════════════ -->
   <section class="hero-station">
-    <!-- Ambient decorative orbs -->
-    <div class="hero-station__orb hero-station__orb--primary" aria-hidden="true"></div>
-    <div class="hero-station__orb hero-station__orb--gold" aria-hidden="true"></div>
+    <!-- Ambient decorative orbs (isolated in dedicated overflow-clipped wrapper) -->
+    <div class="hero-station__orbs-wrap" aria-hidden="true">
+      <div class="hero-station__orb hero-station__orb--primary"></div>
+      <div class="hero-station__orb hero-station__orb--gold"></div>
+    </div>
 
     <div class="hero-station__inner">
       <!-- ── Central Claim Top Row: Headline + Stepper & Live Auction Metadata ── -->
@@ -87,19 +89,71 @@
             </div>
           </div>
 
-          <!-- Category Picker Dropdown -->
-          <div class="command-bar__field command-bar__field--category">
+          <!-- Custom Category Picker Dropdown -->
+          <div class="command-bar__field command-bar__field--category"
+            [class.command-bar__field--open]="categoryDropdownOpen()"
+            (click)="toggleCategoryDropdown($event)"
+            tabindex="0"
+            role="combobox"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="categoryDropdownOpen()"
+            (keydown.enter)="toggleCategoryDropdown($event)"
+            (keydown.space)="toggleCategoryDropdown($event); $event.preventDefault()">
             <span class="material-symbols-outlined field-icon">category</span>
             <div class="field-content">
-              <label for="claim-category" class="field-label">Category Slot</label>
-              <select id="claim-category" class="field-select" [value]="claimSlug() || ''"
-                (change)="selectClaimCategory($any($event.target).value)">
-                <option value="" disabled [selected]="!claimSlug()">Select Category</option>
-                @for (cat of claimHeroCategories(); track cat.slug) {
-                <option [value]="cat.slug">{{ cat.icon }} {{ cat.name }}</option>
+              <span class="field-label">Category Slot</span>
+              <div class="custom-select-trigger">
+                @if (selectedClaimCategory(); as cat) {
+                <span class="custom-select-val">
+                  <span class="cat-icon">{{ cat.icon }}</span>
+                  <span class="cat-name">{{ cat.name }}</span>
+                </span>
+                } @else {
+                <span class="custom-select-placeholder">Select Category</span>
                 }
-              </select>
+                <span class="material-symbols-outlined custom-select-arrow"
+                  [class.custom-select-arrow--open]="categoryDropdownOpen()">
+                  keyboard_arrow_down
+                </span>
+              </div>
             </div>
+
+            <!-- Custom Floating Dropdown Menu -->
+            @if (categoryDropdownOpen()) {
+            <div class="custom-dropdown-panel" (click)="$event.stopPropagation()" role="listbox">
+              <div class="custom-dropdown-search">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-input" placeholder="Search categories..."
+                  [value]="categorySearchQuery()" (input)="onCategorySearch($event)"
+                  (click)="$event.stopPropagation()" />
+                @if (categorySearchQuery()) {
+                <button type="button" class="search-clear" (click)="categorySearchQuery.set(''); $event.stopPropagation()">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+                }
+              </div>
+
+              <div class="custom-dropdown-scroll">
+                @for (cat of filteredClaimCategories(); track cat.slug) {
+                <button type="button" class="custom-dropdown-item"
+                  [class.custom-dropdown-item--selected]="cat.slug === claimSlug()"
+                  (click)="selectDropdownCategory(cat.slug, $event)"
+                  role="option"
+                  [attr.aria-selected]="cat.slug === claimSlug()">
+                  <span class="item-icon">{{ cat.icon }}</span>
+                  <span class="item-name">{{ cat.name }}</span>
+                  @if (cat.slug === claimSlug()) {
+                  <span class="material-symbols-outlined item-check">check</span>
+                  }
+                </button>
+                } @empty {
+                <div class="custom-dropdown-empty">
+                  <span>No matching categories</span>
+                </div>
+                }
+              </div>
+            </div>
+            }
           </div>
 
           <!-- Primary Claim CTA Button -->

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -70,6 +70,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly modalService = inject(ModalService);
+  private readonly elementRef = inject(ElementRef);
 
   private joinedCategoryGroup: string | null = null;
   private countdownTimerId: ReturnType<typeof setInterval> | null = null;
@@ -104,6 +105,23 @@ export class GlobalLeaderboardComponent implements OnInit {
     }))
   );
   readonly selectedSlug = signal<string | null>(null);
+
+  /* ── Custom Category Dropdown State ── */
+  readonly categoryDropdownOpen = signal(false);
+  readonly categorySearchQuery = signal('');
+
+  readonly selectedClaimCategory = computed(() => {
+    const slug = this.claimSlug();
+    if (!slug) return null;
+    return this.claimHeroCategories().find((c) => c.slug === slug) ?? null;
+  });
+
+  readonly filteredClaimCategories = computed(() => {
+    const q = this.categorySearchQuery().trim().toLowerCase();
+    const all = this.claimHeroCategories();
+    if (!q) return all;
+    return all.filter((c) => c.name.toLowerCase().includes(q));
+  });
 
   /* ── Hero / Command Bar Form State ── */
   readonly heroUrl = signal('');
@@ -547,6 +565,46 @@ export class GlobalLeaderboardComponent implements OnInit {
     this.leaderboardService.getCategoryLeaderboard(slug, 1, 20).subscribe((data) =>
       this.claimCategoryData.set(data)
     );
+  }
+
+  toggleCategoryDropdown(event?: Event): void {
+    event?.stopPropagation();
+    this.categoryDropdownOpen.update((v) => !v);
+    if (!this.categoryDropdownOpen()) {
+      this.categorySearchQuery.set('');
+    }
+  }
+
+  closeCategoryDropdown(): void {
+    this.categoryDropdownOpen.set(false);
+    this.categorySearchQuery.set('');
+  }
+
+  selectDropdownCategory(slug: string, event?: Event): void {
+    event?.stopPropagation();
+    this.selectClaimCategory(slug);
+    this.closeCategoryDropdown();
+  }
+
+  onCategorySearch(event: Event): void {
+    this.categorySearchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.categoryDropdownOpen()) {
+      const field = this.elementRef.nativeElement.querySelector('.command-bar__field--category');
+      if (field && !field.contains(event.target as Node)) {
+        this.closeCategoryDropdown();
+      }
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.categoryDropdownOpen()) {
+      this.closeCategoryDropdown();
+    }
   }
 
   incrementClaimAmount(): void {
