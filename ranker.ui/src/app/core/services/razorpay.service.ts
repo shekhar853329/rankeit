@@ -134,7 +134,7 @@ export class RazorpayService {
         return body['detail'] ? `${body['error']} ${body['detail']}` : body['error'];
       }
       if (err.status === 401) return 'Payment gateway authentication failed. Please contact support.';
-      if (err.status === 0)   return 'Could not reach the server. Check your connection.';
+      if (err.status === 0) return 'Could not reach the server. Check your connection.';
       return `${fallback} (${err.status})`;
     }
     return err instanceof Error ? err.message : fallback;
@@ -155,7 +155,7 @@ export class RazorpayService {
         key: opts.keyId,
         amount: opts.amount,
         currency: opts.currency,
-        name: 'RankIt',
+        name: 'RankUp',
         description: opts.description,
         order_id: opts.orderId,
         prefill: { email: opts.email },

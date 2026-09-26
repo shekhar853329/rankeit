@@ -1,5 +1,5 @@
 /* ============================================================
-   RankIt – Global Design System  (Warm Cream)
+   RankUp – Global Design System  (Warm Cream)
    ============================================================ */
 
 /* ── Design Tokens – Light Mode ────────────────────────────── */
@@ -96,7 +96,8 @@
 }
 
 /* ── Design Tokens – Dark Mode ─────────────────────────────── */
-:root.dark, html.dark {
+:root.dark,
+html.dark {
   /* Stitch Dark Color Tokens */
   --color-primary: #ff5a36;
   --color-primary-hover: #ff7455;
@@ -459,8 +460,13 @@ select {
 
 /* ── Skeleton loading ───────────────────────────────────────── */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .skeleton {
@@ -484,12 +490,15 @@ select {
 
 /* ── Scrollbar — hidden globally ───────────────────────────── */
 * {
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE / Edge legacy */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE / Edge legacy */
 }
 
 *::-webkit-scrollbar {
-  display: none;                /* Chrome / Safari / new Edge */
+  display: none;
+  /* Chrome / Safari / new Edge */
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -554,4 +563,3 @@ html.dark .site-header__claim-btn,
   border-color: rgba(255, 90, 54, 0.4) !important;
   box-shadow: 0 0 20px rgba(255, 90, 54, 0.35) !important;
 }
-
