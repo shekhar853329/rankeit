@@ -119,8 +119,17 @@
 }
 
 @keyframes pulseBeacon {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.15); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(1.15);
+  }
 }
 
 .countdown-badge {
@@ -163,7 +172,9 @@
 }
 
 @keyframes spinClock {
-  100% { transform: rotate(360deg); }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .currency-group {
@@ -529,6 +540,10 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
+  &--active:hover {
+    color: var(--color-surface-container-lowest);
+  }
+
   &__count {
     font-size: 0.68rem;
     padding: 1px 5px;
@@ -570,8 +585,15 @@
 
 .search-box__input {
   width: 140px;
-  @media (min-width: 640px) { width: 180px; }
-  &::placeholder { color: var(--color-on-surface-variant); opacity: 0.6; }
+
+  @media (min-width: 640px) {
+    width: 180px;
+  }
+
+  &::placeholder {
+    color: var(--color-on-surface-variant);
+    opacity: 0.6;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -678,9 +700,17 @@
 }
 
 @keyframes shimmer {
-  0% { opacity: 0.6; }
-  50% { opacity: 0.9; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
 }
 
 .feed-empty-card {
@@ -900,7 +930,9 @@
 }
 
 @keyframes pingBeacon {
-  75%, 100% {
+
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -979,7 +1011,10 @@
 
   &--link {
     transition: color 0.15s ease;
-    &:hover { color: var(--color-on-surface); }
+
+    &:hover {
+      color: var(--color-on-surface);
+    }
   }
 
   &--clicks {
@@ -1140,7 +1175,10 @@
   font-size: 0.82rem;
   color: var(--color-on-surface-variant);
   display: none;
-  @media (min-width: 640px) { display: inline; }
+
+  @media (min-width: 640px) {
+    display: inline;
+  }
 }
 
 .compact-chip {
@@ -1162,7 +1200,10 @@
 .compact-link {
   color: var(--color-primary);
   text-decoration: none;
-  &:hover { text-decoration: underline; }
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .compact-price {
@@ -1628,9 +1669,17 @@
   width: 20px;
   color: var(--color-on-surface-variant);
 
-  &--gold { color: var(--color-tertiary); }
-  &--silver { color: var(--color-outline); }
-  &--bronze { color: var(--color-outline-variant); }
+  &--gold {
+    color: var(--color-tertiary);
+  }
+
+  &--silver {
+    color: var(--color-outline);
+  }
+
+  &--bronze {
+    color: var(--color-outline-variant);
+  }
 }
 
 .hof-name {
@@ -1736,9 +1785,17 @@
   }
 }
 
-.stream-icon--primary { color: var(--color-primary); }
-.stream-icon--secondary { color: var(--color-secondary); }
-.stream-icon--tertiary { color: var(--color-tertiary); }
+.stream-icon--primary {
+  color: var(--color-primary);
+}
+
+.stream-icon--secondary {
+  color: var(--color-secondary);
+}
+
+.stream-icon--tertiary {
+  color: var(--color-tertiary);
+}
 
 /* ── Economics Card ── */
 .economics-desc {
@@ -1784,7 +1841,10 @@
   font-weight: 700;
   color: var(--color-primary);
   text-decoration: none;
-  &:hover { text-decoration: underline; }
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1847,12 +1907,34 @@
 }
 
 /* ── Utility Icons ── */
-.icon-xxs { font-size: 12px !important; }
-.icon-xs  { font-size: 14px !important; }
-.icon-sm  { font-size: 18px !important; }
-.icon-md  { font-size: 24px !important; }
+.icon-xxs {
+  font-size: 12px !important;
+}
 
-.text-primary   { color: var(--color-primary) !important; }
-.text-secondary { color: var(--color-secondary) !important; }
-.text-tertiary  { color: var(--color-tertiary) !important; }
-.text-on-surface { color: var(--color-on-surface) !important; }
+.icon-xs {
+  font-size: 14px !important;
+}
+
+.icon-sm {
+  font-size: 18px !important;
+}
+
+.icon-md {
+  font-size: 24px !important;
+}
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-secondary {
+  color: var(--color-secondary) !important;
+}
+
+.text-tertiary {
+  color: var(--color-tertiary) !important;
+}
+
+.text-on-surface {
+  color: var(--color-on-surface) !important;
+}
