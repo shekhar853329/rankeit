@@ -5,7 +5,6 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [RouterLink],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
