@@ -10,7 +10,8 @@
           AUCTION SURGE
         </span>
         <span class="notice-text">
-          High contention recorded across <strong>AI</strong>, <strong>SEO</strong>, and <strong>Dev Tools</strong> categories. Thresholds updating in real time.
+          High contention recorded across <strong>AI</strong>, <strong>SEO</strong>, and <strong>Dev Tools</strong>
+          categories. Thresholds updating in real time.
         </span>
       </div>
       <div class="notice-strip__right">
@@ -42,10 +43,10 @@
             <span class="material-symbols-outlined icon-xs text-secondary">grid_view</span>
             <strong>{{ totalCount() }}</strong> Active Arenas
           </div>
-          <div class="stat-pill stat-pill--highlight">
+          <!-- <div class="stat-pill stat-pill--highlight">
             <span class="material-symbols-outlined icon-xs">payments</span>
             <strong>Decentralized</strong> Bidding
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -64,25 +65,14 @@
         <div class="filter-matrix" id="quick-filter">
           <!-- Time Mode Pills -->
           <div class="time-pills">
-            <button
-              type="button"
-              class="time-pill"
-              [class.time-pill--active]="timeMode() === 'alltime'"
-              (click)="setTimeMode('alltime')"
-              id="category-time-alltime"
-              title="Show all-time rankings including past bids"
-            >
+            <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
+              (click)="setTimeMode('alltime')" id="category-time-alltime"
+              title="Show all-time rankings including past bids">
               <span class="material-symbols-outlined icon-xs">history</span>
               All-Time
             </button>
-            <button
-              type="button"
-              class="time-pill"
-              [class.time-pill--active]="timeMode() === 'today'"
-              (click)="setTimeMode('today')"
-              id="category-time-today"
-              title="Show bids placed today"
-            >
+            <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
+              (click)="setTimeMode('today')" id="category-time-today" title="Show bids placed today">
               <span class="material-symbols-outlined icon-xs">today</span>
               Today
             </button>
@@ -91,26 +81,17 @@
           <!-- Search Input -->
           <div class="search-box">
             <span class="material-symbols-outlined search-icon">search</span>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Search niche categories or projects..."
-              [value]="searchTerm()"
-              (input)="searchTerm.set($any($event.target).value)"
-            />
+            <input type="text" class="search-input" placeholder="Search niche categories or projects..."
+              [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)" />
           </div>
 
           <!-- Sort Select -->
           <div class="sort-box">
             <label for="category-sort" class="sort-label">Sort:</label>
-            <select
-              id="category-sort"
-              class="sort-select"
-              [value]="sortBy()"
-              (change)="setSortBy($any($event.target).value)"
-            >
+            <select id="category-sort" class="sort-select" [value]="sortBy()"
+              (change)="setSortBy($any($event.target).value)">
               @for (opt of sortOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
+              <option [value]="opt.value">{{ opt.label }}</option>
               }
             </select>
           </div>
@@ -123,126 +104,125 @@
        FEATURED SECTOR: HOT CONTENTION ARENAS
        ═══════════════════════════════════════════════════════════ -->
   @if (hotCategories().length > 0 && !searchTerm()) {
-    <section class="hot-sectors-section">
-      <div class="section-container">
-        <div class="hot-sectors-header">
-          <div class="hot-title-group">
-            <span class="live-dot-ping">
-              <span class="live-dot-ping__anim"></span>
-              <span class="live-dot-ping__dot"></span>
-            </span>
-            <div>
-              <h2 class="hot-title">Hot Contention Sectors</h2>
-              <span class="hot-sub">Highest bidding velocity and rank changes today</span>
-            </div>
-          </div>
-          <div class="hot-tag">
-            <span class="material-symbols-outlined icon-xs text-tertiary">local_fire_department</span>
-            <span>Automatic rank updates every 15 seconds</span>
+  <section class="hot-sectors-section">
+    <div class="section-container">
+      <div class="hot-sectors-header">
+        <div class="hot-title-group">
+          <span class="live-dot-ping">
+            <span class="live-dot-ping__anim"></span>
+            <span class="live-dot-ping__dot"></span>
+          </span>
+          <div>
+            <h2 class="hot-title">Hot Contention Sectors</h2>
+            <span class="hot-sub">Highest bidding velocity and rank changes today</span>
           </div>
         </div>
-
-        <!-- 3 Top Featured Cards -->
-        <div class="hot-cards-grid">
-          @for (card of hotCategories(); track card.category.id; let i = $index) {
-            <div class="hot-card">
-              <div class="hot-card__top">
-                <div class="hot-card__badge-row">
-                  <span class="hot-pill" [class.hot-pill--1]="i === 0" [class.hot-pill--2]="i === 1" [class.hot-pill--3]="i === 2">
-                    <span class="material-symbols-outlined icon-xs">
-                      {{ i === 0 ? 'local_fire_department' : (i === 1 ? 'electric_bolt' : 'code') }}
-                    </span>
-                    #{{ i + 1 }} {{ i === 0 ? 'HOTTEST' : (i === 1 ? 'TRENDING' : 'SURGING') }}
-                  </span>
-                  <span class="hot-card__time">{{ card.topEntries[0] ? timeAgo(card.topEntries[0].lastBidAt) : 'Active' }}</span>
-                </div>
-
-                <h3 class="hot-card__title">
-                  {{ categoryIcon(card.category.id) }} {{ card.category.name }}
-                </h3>
-
-                <div class="hot-card__stats">
-                  <span><strong>{{ listingCountFor(card.category) }}</strong> {{ timeMode() === 'today' ? 'today' : 'total' }} claims</span>
-                  <span>•</span>
-                  <span class="text-secondary font-semibold">
-                    <span class="material-symbols-outlined icon-xs">bolt</span> High Yield
-                  </span>
-                </div>
-              </div>
-
-              <!-- Sector King Banner -->
-              @if (card.topEntries[0]) {
-                <a
-                  class="sector-king-banner sector-king-banner--clickable"
-                  [href]="resolveUrl(card.topEntries[0].listingUrl)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  (click)="onBidderClick($event, card.topEntries[0])"
-                  [title]="'Visit ' + (card.topEntries[0].siteName || card.topEntries[0].listingName) + ' (' + card.topEntries[0].listingUrl + ')'"
-                >
-                  <div class="sector-king-banner__left">
-                    <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
-                      @if (card.topEntries[0].logoUrl || card.topEntries[0].faviconUrl) {
-                        <img [src]="card.topEntries[0].logoUrl || card.topEntries[0].faviconUrl" alt="" class="king-avatar-img" (error)="$any($event.target).style.display = 'none'" />
-                      } @else {
-                        <span class="material-symbols-outlined icon-sm">
-                          {{ i === 0 ? 'rocket_launch' : (i === 1 ? 'smart_toy' : 'terminal') }}
-                        </span>
-                      }
-                    </div>
-                    <div class="king-meta">
-                      <span class="king-label">Current Sector King</span>
-                      <span class="king-name">
-                        {{ card.topEntries[0].siteName || card.topEntries[0].listingName }}
-                        <span class="material-symbols-outlined link-icon">open_in_new</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="sector-king-banner__right">
-                    <span class="king-bid text-primary">
-                      ${{ card.topEntries[0].currentBidAmount | number: '1.0-0' }}
-                    </span>
-                    @if (card.topEntries[0].clickCount) {
-                      <span class="king-clicks text-secondary">+{{ card.topEntries[0].clickCount }} clicks</span>
-                    }
-                  </div>
-                </a>
-              } @else {
-                <div class="sector-king-banner">
-                  <div class="sector-king-banner__left">
-                    <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
-                      <span class="material-symbols-outlined icon-sm">
-                        {{ i === 0 ? 'rocket_launch' : (i === 1 ? 'smart_toy' : 'terminal') }}
-                      </span>
-                    </div>
-                    <div class="king-meta">
-                      <span class="king-label">Current Sector King</span>
-                      <span class="king-name">Unclaimed</span>
-                    </div>
-                  </div>
-                  <div class="sector-king-banner__right">
-                    <span class="king-bid text-primary">
-                      ${{ card.category.minStartingBid | number: '1.0-0' }}
-                    </span>
-                  </div>
-                </div>
-              }
-
-              <!-- Action Buttons -->
-              <div class="hot-card__actions">
-                <a [routerLink]="['/leaderboard', card.category.slug]" class="btn-enter-arena">
-                  Enter Arena
-                </a>
-                <a [routerLink]="['/leaderboard', card.category.slug]" class="btn-claim-hot">
-                  <span class="material-symbols-outlined icon-xs">gavel</span>
-                  <span>Claim #1</span>
-                </a>
-              </div>
-            </div>
-          }
+        <div class="hot-tag">
+          <span class="material-symbols-outlined icon-xs text-tertiary">local_fire_department</span>
+          <span>Automatic rank updates every 15 seconds</span>
         </div>
       </div>
-    </section>
+
+      <!-- 3 Top Featured Cards -->
+      <div class="hot-cards-grid">
+        @for (card of hotCategories(); track card.category.id; let i = $index) {
+        <div class="hot-card">
+          <div class="hot-card__top">
+            <div class="hot-card__badge-row">
+              <span class="hot-pill" [class.hot-pill--1]="i === 0" [class.hot-pill--2]="i === 1"
+                [class.hot-pill--3]="i === 2">
+                <span class="material-symbols-outlined icon-xs">
+                  {{ i === 0 ? 'local_fire_department' : (i === 1 ? 'electric_bolt' : 'code') }}
+                </span>
+                #{{ i + 1 }} {{ i === 0 ? 'HOTTEST' : (i === 1 ? 'TRENDING' : 'SURGING') }}
+              </span>
+              <span class="hot-card__time">{{ card.topEntries[0] ? timeAgo(card.topEntries[0].lastBidAt) : 'Active'
+                }}</span>
+            </div>
+
+            <h3 class="hot-card__title">
+              {{ categoryIcon(card.category.id) }} {{ card.category.name }}
+            </h3>
+
+            <div class="hot-card__stats">
+              <span><strong>{{ listingCountFor(card.category) }}</strong> {{ timeMode() === 'today' ? 'today' : 'total'
+                }} claims</span>
+              <span>•</span>
+              <span class="text-secondary font-semibold">
+                <span class="material-symbols-outlined icon-xs">bolt</span> High Yield
+              </span>
+            </div>
+          </div>
+
+          <!-- Sector King Banner -->
+          @if (card.topEntries[0]) {
+          <a class="sector-king-banner sector-king-banner--clickable" [href]="resolveUrl(card.topEntries[0].listingUrl)"
+            target="_blank" rel="noopener noreferrer" (click)="onBidderClick($event, card.topEntries[0])"
+            [title]="'Visit ' + (card.topEntries[0].siteName || card.topEntries[0].listingName) + ' (' + card.topEntries[0].listingUrl + ')'">
+            <div class="sector-king-banner__left">
+              <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
+                @if (card.topEntries[0].logoUrl || card.topEntries[0].faviconUrl) {
+                <img [src]="card.topEntries[0].logoUrl || card.topEntries[0].faviconUrl" alt="" class="king-avatar-img"
+                  (error)="$any($event.target).style.display = 'none'" />
+                } @else {
+                <span class="material-symbols-outlined icon-sm">
+                  {{ i === 0 ? 'rocket_launch' : (i === 1 ? 'smart_toy' : 'terminal') }}
+                </span>
+                }
+              </div>
+              <div class="king-meta">
+                <span class="king-label">Current Sector King</span>
+                <span class="king-name">
+                  {{ card.topEntries[0].siteName || card.topEntries[0].listingName }}
+                  <span class="material-symbols-outlined link-icon">open_in_new</span>
+                </span>
+              </div>
+            </div>
+            <div class="sector-king-banner__right">
+              <span class="king-bid text-primary">
+                ${{ card.topEntries[0].currentBidAmount | number: '1.0-0' }}
+              </span>
+              @if (card.topEntries[0].clickCount) {
+              <span class="king-clicks text-secondary">+{{ card.topEntries[0].clickCount }} clicks</span>
+              }
+            </div>
+          </a>
+          } @else {
+          <div class="sector-king-banner">
+            <div class="sector-king-banner__left">
+              <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
+                <span class="material-symbols-outlined icon-sm">
+                  {{ i === 0 ? 'rocket_launch' : (i === 1 ? 'smart_toy' : 'terminal') }}
+                </span>
+              </div>
+              <div class="king-meta">
+                <span class="king-label">Current Sector King</span>
+                <span class="king-name">Unclaimed</span>
+              </div>
+            </div>
+            <div class="sector-king-banner__right">
+              <span class="king-bid text-primary">
+                ${{ card.category.minStartingBid | number: '1.0-0' }}
+              </span>
+            </div>
+          </div>
+          }
+
+          <!-- Action Buttons -->
+          <div class="hot-card__actions">
+            <a [routerLink]="['/leaderboard', card.category.slug]" class="btn-enter-arena">
+              Enter Arena
+            </a>
+            <a [routerLink]="['/leaderboard', card.category.slug]" class="btn-claim-hot">
+              <span class="material-symbols-outlined icon-xs">gavel</span>
+              <span>Claim #1</span>
+            </a>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </section>
   }
 
   <!-- ═══════════════════════════════════════════════════════════
@@ -259,110 +239,99 @@
       </div>
 
       @if (loading()) {
-        <div class="arenas-skeleton-grid">
-          @for (_ of [1,2,3,4,5,6]; track $index) {
-            <div class="skeleton-arena-card"></div>
-          }
-        </div>
-      } @else if (filteredCards.length === 0) {
-        <div class="arenas-empty-state">
-          <span class="material-symbols-outlined empty-icon">search_off</span>
-          <h3>No categories found</h3>
-          <p>Try searching for a different keyword or view all categories.</p>
-          <button type="button" class="btn btn-primary" (click)="searchTerm.set('')">Clear Search</button>
-        </div>
-      } @else {
-        <div class="arenas-grid">
-          @for (card of filteredCards; track card.category.id) {
-            <article class="arena-card">
-              <div class="arena-card__header">
-                <div class="arena-card__icon-name">
-                  <span class="arena-icon">{{ categoryIcon(card.category.id) }}</span>
-                  <div class="arena-title-wrap">
-                    <h3 class="arena-name">{{ card.category.name }}</h3>
-                    <span class="arena-count">{{ listingCountFor(card.category) }} {{ listingCountFor(card.category) === 1 ? 'competitor' : 'competitors' }}</span>
-                  </div>
-                </div>
-                <div class="arena-min-bid">
-                  <span class="min-bid-label">Floor</span>
-                  <span class="min-bid-val">${{ card.category.minStartingBid | number: '1.0-0' }}</span>
-                </div>
-              </div>
-
-              <!-- Top 3 Leaders in this Arena -->
-              <div class="arena-leaders">
-                @if (card.topEntries.length > 0) {
-                  @for (entry of card.topEntries; track entry.listingId; let rankIdx = $index) {
-                    <a
-                      class="arena-leader-row"
-                      [href]="resolveUrl(entry.listingUrl)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      (click)="onBidderClick($event, entry)"
-                      [title]="'Visit ' + (entry.siteName || entry.listingName) + ' (' + entry.listingUrl + ')'"
-                    >
-                      <div class="arena-leader-left">
-                        <span class="arena-medal" [class.arena-medal--gold]="rankIdx === 0" [class.arena-medal--silver]="rankIdx === 1" [class.arena-medal--bronze]="rankIdx === 2">
-                          {{ rankIdx + 1 }}
-                        </span>
-                        @if (entry.faviconUrl || entry.logoUrl) {
-                          <img [src]="entry.faviconUrl || entry.logoUrl" alt="" class="arena-leader-favicon" (error)="$any($event.target).style.display = 'none'" />
-                        }
-                        <span class="arena-leader-name">{{ entry.siteName || entry.listingName }}</span>
-                        <span class="material-symbols-outlined arena-leader-ext-icon">open_in_new</span>
-                      </div>
-                      <span class="arena-leader-bid">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
-                    </a>
-                  }
-                } @else {
-                  <div class="arena-unclaimed-notice">
-                    <span class="material-symbols-outlined icon-xs text-primary">local_fire_department</span>
-                    <span>
-                      @if (timeMode() === 'today') {
-                        No active bids today. First bidder secures Rank #1 today!
-                      } @else {
-                        No active bids. First bidder secures Rank #1 at minimum starting bid!
-                      }
-                    </span>
-                  </div>
-                }
-              </div>
-
-              <!-- Card Action -->
-              <div class="arena-card__footer">
-                <a [routerLink]="['/leaderboard', card.category.slug]" class="arena-action-link">
-                  <span>Enter {{ card.category.name }} Arena</span>
-                  <span class="material-symbols-outlined icon-xs">arrow_forward</span>
-                </a>
-              </div>
-            </article>
-          }
-        </div>
-
-        <!-- Pagination -->
-        @if (totalCount() > pageSize() && !searchTerm()) {
-          <div class="pagination-bar">
-            <button
-              type="button"
-              class="page-btn"
-              [disabled]="page() <= 1"
-              (click)="goToPage(page() - 1)"
-            >
-              Previous
-            </button>
-            <span class="page-indicator">
-              Page {{ page() }} of {{ Math.ceil(totalCount() / pageSize()) }}
-            </span>
-            <button
-              type="button"
-              class="page-btn"
-              [disabled]="page() >= Math.ceil(totalCount() / pageSize())"
-              (click)="goToPage(page() + 1)"
-            >
-              Next
-            </button>
-          </div>
+      <div class="arenas-skeleton-grid">
+        @for (_ of [1,2,3,4,5,6]; track $index) {
+        <div class="skeleton-arena-card"></div>
         }
+      </div>
+      } @else if (filteredCards.length === 0) {
+      <div class="arenas-empty-state">
+        <span class="material-symbols-outlined empty-icon">search_off</span>
+        <h3>No categories found</h3>
+        <p>Try searching for a different keyword or view all categories.</p>
+        <button type="button" class="btn btn-primary" (click)="searchTerm.set('')">Clear Search</button>
+      </div>
+      } @else {
+      <div class="arenas-grid">
+        @for (card of filteredCards; track card.category.id) {
+        <article class="arena-card">
+          <div class="arena-card__header">
+            <div class="arena-card__icon-name">
+              <span class="arena-icon">{{ categoryIcon(card.category.id) }}</span>
+              <div class="arena-title-wrap">
+                <h3 class="arena-name">{{ card.category.name }}</h3>
+                <span class="arena-count">{{ listingCountFor(card.category) }} {{ listingCountFor(card.category) === 1 ?
+                  'competitor' : 'competitors' }}</span>
+              </div>
+            </div>
+            <div class="arena-min-bid">
+              <span class="min-bid-label">Floor</span>
+              <span class="min-bid-val">${{ card.category.minStartingBid | number: '1.0-0' }}</span>
+            </div>
+          </div>
+
+          <!-- Top 3 Leaders in this Arena -->
+          <div class="arena-leaders">
+            @if (card.topEntries.length > 0) {
+            @for (entry of card.topEntries; track entry.listingId; let rankIdx = $index) {
+            <a class="arena-leader-row" [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="noopener noreferrer"
+              (click)="onBidderClick($event, entry)"
+              [title]="'Visit ' + (entry.siteName || entry.listingName) + ' (' + entry.listingUrl + ')'">
+              <div class="arena-leader-left">
+                <span class="arena-medal" [class.arena-medal--gold]="rankIdx === 0"
+                  [class.arena-medal--silver]="rankIdx === 1" [class.arena-medal--bronze]="rankIdx === 2">
+                  {{ rankIdx + 1 }}
+                </span>
+                @if (entry.faviconUrl || entry.logoUrl) {
+                <img [src]="entry.faviconUrl || entry.logoUrl" alt="" class="arena-leader-favicon"
+                  (error)="$any($event.target).style.display = 'none'" />
+                }
+                <span class="arena-leader-name">{{ entry.siteName || entry.listingName }}</span>
+                <span class="material-symbols-outlined arena-leader-ext-icon">open_in_new</span>
+              </div>
+              <span class="arena-leader-bid">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+            </a>
+            }
+            } @else {
+            <div class="arena-unclaimed-notice">
+              <span class="material-symbols-outlined icon-xs text-primary">local_fire_department</span>
+              <span>
+                @if (timeMode() === 'today') {
+                No active bids today. First bidder secures Rank #1 today!
+                } @else {
+                No active bids. First bidder secures Rank #1 at minimum starting bid!
+                }
+              </span>
+            </div>
+            }
+          </div>
+
+          <!-- Card Action -->
+          <div class="arena-card__footer">
+            <a [routerLink]="['/leaderboard', card.category.slug]" class="arena-action-link">
+              <span>Enter {{ card.category.name }} Arena</span>
+              <span class="material-symbols-outlined icon-xs">arrow_forward</span>
+            </a>
+          </div>
+        </article>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalCount() > pageSize() && !searchTerm()) {
+      <div class="pagination-bar">
+        <button type="button" class="page-btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">
+          Previous
+        </button>
+        <span class="page-indicator">
+          Page {{ page() }} of {{ Math.ceil(totalCount() / pageSize()) }}
+        </span>
+        <button type="button" class="page-btn" [disabled]="page() >= Math.ceil(totalCount() / pageSize())"
+          (click)="goToPage(page() + 1)">
+          Next
+        </button>
+      </div>
+      }
       }
     </div>
   </section>

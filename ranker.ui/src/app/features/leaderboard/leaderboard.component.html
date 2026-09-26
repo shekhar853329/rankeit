@@ -20,7 +20,7 @@
           <span class="breadcrumb-current text-primary font-bold">{{ categoryName() || 'Arena' }}</span>
         </nav>
 
-        <div class="arena-badges">
+        <!-- <div class="arena-badges">
           <span class="arena-badge arena-badge--contention">
             <span class="material-symbols-outlined icon-xs text-primary">local_fire_department</span>
             Live Contested Arena
@@ -29,7 +29,7 @@
             <span class="material-symbols-outlined icon-xs text-secondary">payments</span>
             Floor ${{ minStartingBid() | number: '1.0-0' }} · +${{ minBidIncrement() | number: '1.0-0' }} Step
           </span>
-        </div>
+        </div> -->
       </div>
 
       <!-- ── Central Claim Top Row: Headline + Stepper & Live Auction Metadata ── -->
@@ -74,8 +74,8 @@
             <div class="field-content">
               <label for="category-claim-url" class="field-label">Website or @X Handle</label>
               <input id="category-claim-url" type="text" class="field-input" placeholder="https://yourapp.io or @maker"
-                [value]="sidebarUrl()" (input)="onSidebarUrlChange($any($event.target).value)" (blur)="sidebarUrlDirty.set(true)"
-                autocomplete="off" required />
+                [value]="sidebarUrl()" (input)="onSidebarUrlChange($any($event.target).value)"
+                (blur)="sidebarUrlDirty.set(true)" autocomplete="off" required />
             </div>
             @if (metadataLoading()) {
             <span class="field-spinner" title="Fetching URL metadata..."></span>
@@ -100,15 +100,15 @@
               <div class="field-label-row">
                 <span class="field-label">Bid Amount</span>
                 @if (claimPrice(); as minRank1) {
-                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: ${{ minRank1 }}</span>
+                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: ${{
+                  minRank1 }}</span>
                 }
               </div>
               <div class="amount-stepper-row">
                 <span class="amount-currency">$</span>
                 <input id="category-claim-amount" type="number" class="field-input field-input--amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingBid())"
-                  (focus)="isAmountFieldFocused.set(true)"
-                  (input)="onClaimAmountInput($any($event.target).value)"
+                  (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
                 <div class="stepper-actions">
                   <button type="button" class="stepper-arrow-btn"
