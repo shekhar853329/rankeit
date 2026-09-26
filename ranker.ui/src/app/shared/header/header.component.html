@@ -6,9 +6,9 @@
       <a routerLink="/" class="site-header__brand" aria-label="RankUp Home">
         <div class="site-header__logo-wrap">
           <svg class="site-header__logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="9" fill="var(--color-primary, #ff5a36)"/>
-            <path d="M16 7L24 20H8L16 7Z" fill="#FFFFFF"/>
-            <rect x="10.5" y="22" width="11" height="2.5" rx="1" fill="#FFFFFF" fill-opacity="0.85"/>
+            <rect width="32" height="32" rx="9" fill="var(--color-primary, #ff5a36)" />
+            <path d="M16 7L24 20H8L16 7Z" fill="#FFFFFF" />
+            <rect x="10.5" y="22" width="11" height="2.5" rx="1" fill="#FFFFFF" fill-opacity="0.85" />
           </svg>
         </div>
         <div class="site-header__brand-info">
@@ -26,9 +26,9 @@
         <span class="site-header__stats-text">
           <strong class="stats-online-count">{{ onlineUsers() }}</strong> online
           @if (visitsToday() !== null) {
-            <span class="site-header__stats-sep" aria-hidden="true">•</span>
-            <strong class="stats-views-count">{{ visitsToday() }}</strong> views today
-            <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+          <span class="site-header__stats-sep" aria-hidden="true">•</span>
+          <strong class="stats-views-count">{{ visitsToday() }}</strong> views today
+          <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
           }
         </span>
       </div>
@@ -38,14 +38,15 @@
     <nav class="site-header__nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Leaderboards</a>
       <a routerLink="/categories" routerLinkActive="active">Categories</a>
-      <a routerLink="/daily" routerLinkActive="active">Live Bids</a>
+      <a routerLink="/daily" routerLinkActive="active">Live Claims</a>
       <a routerLink="/rules" routerLinkActive="active">Rules & FAQ</a>
-      <a routerLink="/" fragment="hall-of-fame" routerLinkActive="active">Hall of Fame</a>
+      <a routerLink="/contact" routerLinkActive="active">Contact</a>
     </nav>
 
     <!-- ── Actions: Theme & Claim Spot ── -->
     <div class="site-header__actions">
-      <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()" [attr.aria-label]="theme.dark() ? 'Switch to light mode' : 'Switch to dark mode'">
+      <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()"
+        [attr.aria-label]="theme.dark() ? 'Switch to light mode' : 'Switch to dark mode'">
         <span class="material-symbols-outlined icon-toggle">
           {{ theme.dark() ? 'dark_mode' : 'light_mode' }}
         </span>

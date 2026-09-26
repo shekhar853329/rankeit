@@ -597,9 +597,8 @@
 
 .stage-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
   gap: 1rem;
   padding: 0 4px 4px 4px;
 
@@ -613,8 +612,23 @@
   &__right {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
+    width: 100%;
+
+    .search-box {
+      margin-left: auto;
+
+      @media (max-width: 640px) {
+        width: 100%;
+        margin-left: 0;
+
+        .search-box__input {
+          width: 100%;
+        }
+      }
+    }
   }
 }
 
