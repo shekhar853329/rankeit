@@ -91,7 +91,7 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   /* ── Search & Filter Controls ── */
   readonly searchQuery = signal('');
-  readonly showAllRows = signal(false);
+  readonly visibleCount = signal(10);
 
   /* ── Categories & Tabs ── */
   readonly tabs = signal<CategoryDto[]>([]);
@@ -272,11 +272,16 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   readonly displayedRows = computed<FeedRow[]>(() => {
     const list = this.allMatchingRows();
-    if (this.showAllRows() || list.length <= 6) {
-      return list;
-    }
-    return list.slice(0, 6);
+    return list.slice(0, this.visibleCount());
   });
+
+  readonly nextChunkCount = computed(() => {
+    const remaining = this.allMatchingRows().length - this.visibleCount();
+    return remaining > 0 ? Math.min(10, remaining) : 0;
+  });
+
+  readonly hasMoreBidders = computed(() => this.nextChunkCount() > 0);
+  readonly showAllRows = computed(() => !this.hasMoreBidders());
 
   readonly reigningChampion = computed<FeedRow | null>(() => {
     const r = this.rows();
@@ -449,6 +454,7 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   setTimeMode(mode: 'today' | 'alltime'): void {
     this.timeMode.set(mode);
+    this.visibleCount.set(10);
     this.loadSelection();
     if (mode === 'today' && this.allTimeHallOfFame().length === 0) {
       this.loadAllTimeHallOfFame();
@@ -469,10 +475,23 @@ export class GlobalLeaderboardComponent implements OnInit {
   /* ── Interactive Actions ── */
   onSearchChange(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);
+    this.visibleCount.set(10);
+  }
+
+  loadNextBidders(): void {
+    this.visibleCount.update((count) => count + 10);
+  }
+
+  collapseToTop10(): void {
+    this.visibleCount.set(10);
   }
 
   toggleShowAll(): void {
-    this.showAllRows.update((v) => !v);
+    if (this.hasMoreBidders()) {
+      this.loadNextBidders();
+    } else {
+      this.collapseToTop10();
+    }
   }
 
   onHeroUrlChange(value: string): void {
@@ -502,6 +521,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   selectTab(slug: string | null): void {
     if (slug === this.selectedSlug()) return;
     this.selectedSlug.set(slug);
+    this.visibleCount.set(10);
     this.loadSelection();
 
     if (this.joinedCategoryGroup) {
@@ -669,7 +689,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   private loadGlobal(): void {
-    this.leaderboardService.getGlobalLeaderboard(50, this.timeMode()).subscribe({
+    this.leaderboardService.getGlobalLeaderboard(100, this.timeMode()).subscribe({
       next: (entries) => {
         this.globalEntries.set(entries);
         this.loading.set(false);
@@ -810,7 +830,7 @@ export class GlobalLeaderboardComponent implements OnInit {
   }
 
   private loadCategory(slug: string): void {
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, 50).subscribe({
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, 100).subscribe({
       next: (data) => {
         this.categoryData.set(data);
         this.loading.set(false);

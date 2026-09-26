@@ -438,16 +438,24 @@
         }
       </div>
 
-      <!-- View all / Collapse trigger -->
-      @if (allMatchingRows().length > 6) {
+      <!-- Progressive Load / Collapse trigger -->
+      @if (allMatchingRows().length > 10) {
       <div class="view-all-wrap">
-        <button type="button" class="view-all-btn" (click)="toggleShowAll()">
-          <span>{{ showAllRows() ? 'Show top 6 projects only' : ('View all ' + allMatchingRows().length + ' ranked
-            products today') }}</span>
-          <span class="material-symbols-outlined icon-sm" [class.icon--rotated]="showAllRows()">
+        @if (hasMoreBidders()) {
+        <button type="button" class="view-all-btn" (click)="loadNextBidders()">
+          <span>View next {{ nextChunkCount() }} products</span>
+          <span class="material-symbols-outlined icon-sm">
             keyboard_arrow_down
           </span>
         </button>
+        } @else {
+        <button type="button" class="view-all-btn" (click)="collapseToTop10()">
+          <span>Show top 10 products only</span>
+          <span class="material-symbols-outlined icon-sm icon--rotated">
+            keyboard_arrow_down
+          </span>
+        </button>
+        }
       </div>
       }
       }
