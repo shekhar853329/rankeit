@@ -56,12 +56,12 @@ public class CalculateBidQuoteCalculationTests
     }
 
     [Theory]
-    [InlineData(209, false)]
-    [InlineData(210, true)]
+    [InlineData(0, false)]
+    [InlineData(1, true)]
     [InlineData(250, true)]
     public void Quote_TargetAmountMeetsMinimumCheck(decimal target, bool expectedValid)
     {
-        const decimal requiredMinimum = 210m;
+        const decimal requiredMinimum = 1m;
         var isValid = target >= requiredMinimum;
 
         Assert.Equal(expectedValid, isValid);

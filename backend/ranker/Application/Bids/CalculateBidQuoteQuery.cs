@@ -75,7 +75,7 @@ public class CalculateBidQuoteQueryHandler(
 
         var existingListingCurrentBid = existingListing?.CurrentBidAmount ?? 0m;
 
-        var requiredMinimum = topListing != null
+        var rank1Minimum = topListing != null
             ? topListing.CurrentBidAmount + category.MinBidIncrement
             : category.MinStartingBid;
 
@@ -85,12 +85,12 @@ public class CalculateBidQuoteQueryHandler(
                         request.TargetBidAmount > topListing.CurrentBidAmount ||
                         (existingListing != null && existingListing.Id == topListing.Id);
 
-        if (request.TargetBidAmount < requiredMinimum)
+        if (request.TargetBidAmount < 1m)
         {
             return new CalculateBidQuoteResponseDto(
                 Success: false,
                 ErrorCode: "BidTooLow",
-                ErrorMessage: $"Target bid must be at least ₹{requiredMinimum:0.00} to claim Rank #1.",
+                ErrorMessage: "Target bid must be at least ₹1.00.",
                 CategoryId: category.Id,
                 CategoryName: category.Name,
                 CategoryMinStartingBid: category.MinStartingBid,
@@ -102,7 +102,7 @@ public class CalculateBidQuoteQueryHandler(
                 ListingName: existingListing?.Name,
                 ExistingListingCurrentBid: existingListingCurrentBid,
                 TargetBidAmount: request.TargetBidAmount,
-                RequiredMinimumBid: requiredMinimum,
+                RequiredMinimumBid: 1m,
                 ExpectedChargeAmount: expectedCharge,
                 BecameCategoryTop: becameTop);
         }
@@ -124,7 +124,7 @@ public class CalculateBidQuoteQueryHandler(
                 ListingName: existingListing.Name,
                 ExistingListingCurrentBid: existingListingCurrentBid,
                 TargetBidAmount: request.TargetBidAmount,
-                RequiredMinimumBid: requiredMinimum,
+                RequiredMinimumBid: rank1Minimum,
                 ExpectedChargeAmount: expectedCharge,
                 BecameCategoryTop: becameTop);
         }
@@ -144,7 +144,7 @@ public class CalculateBidQuoteQueryHandler(
             ListingName: existingListing?.Name,
             ExistingListingCurrentBid: existingListingCurrentBid,
             TargetBidAmount: request.TargetBidAmount,
-            RequiredMinimumBid: requiredMinimum,
+            RequiredMinimumBid: rank1Minimum,
             ExpectedChargeAmount: expectedCharge,
             BecameCategoryTop: becameTop);
     }

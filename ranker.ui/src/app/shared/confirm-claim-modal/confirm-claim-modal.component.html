@@ -61,7 +61,7 @@
           </div>
           <div class="benchmark-item benchmark-item--highlight">
             <span class="benchmark-label">MIN TO TAKE #1</span>
-            <span class="benchmark-val font-numeric text-primary">₹{{ requiredMinimumBid() | number: '1.2-2' }}</span>
+            <span class="benchmark-val font-numeric text-primary">₹{{ minRank1Bid() | number: '1.2-2' }}</span>
           </div>
         </div>
       </div>
@@ -155,7 +155,7 @@
             [ngModel]="targetAmount()"
             (ngModelChange)="targetAmount.set($event ? +$event : null)"
             placeholder="0.00"
-            [min]="requiredMinimumBid()"
+            [min]="absoluteMinimumBid()"
             [step]="minBidIncrement()"
             [disabled]="submitting()"
           />
@@ -165,10 +165,10 @@
           <button
             type="button"
             class="chip-btn chip-btn--accent"
-            (click)="setMinTarget()"
+            (click)="setRank1Target()"
             [disabled]="submitting()"
           >
-            Match Min (₹{{ requiredMinimumBid() | number: '1.0-0' }})
+            Rank #1 (₹{{ minRank1Bid() | number: '1.0-0' }})
           </button>
           <button
             type="button"
@@ -248,7 +248,14 @@
       @if (isBelowMinimum()) {
         <div class="alert-box alert-box--warning">
           <span class="material-symbols-outlined icon-sm">warning</span>
-          <span>Target bid must be at least ₹{{ requiredMinimumBid() | number: '1.2-2' }} to claim Rank #1.</span>
+          <span>Target bid must be at least ₹{{ absoluteMinimumBid() | number: '1.2-2' }}.</span>
+        </div>
+      }
+
+      @if (isBelowRank1() && !isBelowMinimum()) {
+        <div class="alert-box alert-box--info">
+          <span class="material-symbols-outlined icon-sm">info</span>
+          <span>Your bid of ₹{{ (targetAmount() ?? 0) | number: '1.2-2' }} will place you below Rank #1 (Rank #1 currently requires ₹{{ minRank1Bid() | number: '1.2-2' }}).</span>
         </div>
       }
 

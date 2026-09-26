@@ -41,15 +41,21 @@ public static class BidDecisionEngine
         decimal targetBidAmount,
         decimal confirmedPaymentAmount)
     {
-        // Rule B1/B2: a brand-new listing must clear MinStartingBid when the category is empty; once a
-        // top bid exists, every bid (new or re-bid) must clear top + MinBidIncrement.
-        var requiredMinimum = currentTopBidInCategory.HasValue
+        // Amount required to take or maintain Rank #1
+        var rank1Minimum = currentTopBidInCategory.HasValue
             ? currentTopBidInCategory.Value + categoryMinBidIncrement
             : categoryMinStartingBid;
 
-        if (targetBidAmount < requiredMinimum)
+        const decimal absoluteFloor = 1m;
+        if (targetBidAmount < absoluteFloor)
         {
-            return BidDecision.Fail(BidFailureReason.BidTooLow, requiredMinimum);
+            return BidDecision.Fail(BidFailureReason.BidTooLow, absoluteFloor);
+        }
+
+        // A listing cannot lower its active bid
+        if (existingListingId.HasValue && targetBidAmount < existingListingCurrentBid)
+        {
+            return BidDecision.Fail(BidFailureReason.BidTooLow, existingListingCurrentBid);
         }
 
         // Rule B3: a listing reclaiming/raising its own bid pays only the difference from its current bid;
@@ -58,7 +64,7 @@ public static class BidDecisionEngine
 
         if (confirmedPaymentAmount != expectedCharge)
         {
-            return BidDecision.Fail(BidFailureReason.PaymentAmountMismatch, requiredMinimum, expectedCharge);
+            return BidDecision.Fail(BidFailureReason.PaymentAmountMismatch, rank1Minimum, expectedCharge);
         }
 
         // Mirrors the tie-break rule (CurrentBidAmount DESC, FirstBidAt ASC): a strictly higher bid always
@@ -67,8 +73,8 @@ public static class BidDecisionEngine
         var becameTop =
             currentTopBidInCategory is null ||
             targetBidAmount > currentTopBidInCategory.Value ||
-            existingListingId == currentTopListingId;
+            (existingListingId == currentTopListingId && targetBidAmount >= currentTopBidInCategory.Value);
 
-        return new BidDecision(true, BidFailureReason.None, requiredMinimum, expectedCharge, targetBidAmount, becameTop);
+        return new BidDecision(true, BidFailureReason.None, rank1Minimum, expectedCharge, targetBidAmount, becameTop);
     }
 }

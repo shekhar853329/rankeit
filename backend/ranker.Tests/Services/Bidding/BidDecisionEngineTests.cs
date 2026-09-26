@@ -8,7 +8,7 @@ public class BidDecisionEngineTests
     // --- Min-increment / min-starting-bid validation (rule B1/B2) ---
 
     [Fact]
-    public void Evaluate_NewListing_EmptyCategory_MustMeetMinStartingBid()
+    public void Evaluate_NewListing_BelowMinimumOneRupee_Fails()
     {
         var decision = BidDecisionEngine.Evaluate(
             categoryMinBidIncrement: 10m,
@@ -17,16 +17,16 @@ public class BidDecisionEngineTests
             currentTopListingId: null,
             existingListingId: null,
             existingListingCurrentBid: 0m,
-            targetBidAmount: 99m,
-            confirmedPaymentAmount: 99m);
+            targetBidAmount: 0m,
+            confirmedPaymentAmount: 0m);
 
         Assert.False(decision.Success);
         Assert.Equal(BidFailureReason.BidTooLow, decision.FailureReason);
-        Assert.Equal(100m, decision.RequiredMinimumBid);
+        Assert.Equal(1m, decision.RequiredMinimumBid);
     }
 
     [Fact]
-    public void Evaluate_NewListing_EmptyCategory_ExactlyMinStartingBid_Succeeds()
+    public void Evaluate_NewListing_AnyValidAmount_Succeeds()
     {
         var decision = BidDecisionEngine.Evaluate(
             categoryMinBidIncrement: 10m,
@@ -35,19 +35,20 @@ public class BidDecisionEngineTests
             currentTopListingId: null,
             existingListingId: null,
             existingListingCurrentBid: 0m,
-            targetBidAmount: 100m,
-            confirmedPaymentAmount: 100m);
+            targetBidAmount: 50m,
+            confirmedPaymentAmount: 50m);
 
         Assert.True(decision.Success);
         Assert.True(decision.BecameCategoryTop);
-        Assert.Equal(100m, decision.NewCurrentBidAmount);
+        Assert.Equal(50m, decision.NewCurrentBidAmount);
     }
 
     [Theory]
-    [InlineData(109, false)] // below top(100) + increment(10)
-    [InlineData(110, true)]  // exactly top + increment
-    [InlineData(150, true)]  // comfortably above
-    public void Evaluate_BidBelowTopPlusIncrement_IsRejected(decimal target, bool expectedSuccess)
+    [InlineData(50, false)]  // below top(100) -> succeeds, but does not become top
+    [InlineData(100, false)] // equal to top(100) -> succeeds, but does not become top
+    [InlineData(110, true)]  // above top(100) -> succeeds and becomes top
+    [InlineData(150, true)]  // comfortably above -> succeeds and becomes top
+    public void Evaluate_BidBelowTopPlusIncrement_SucceedsAndDeterminesBecameTop(decimal target, bool expectedBecameTop)
     {
         var decision = BidDecisionEngine.Evaluate(
             categoryMinBidIncrement: 10m,
@@ -59,11 +60,8 @@ public class BidDecisionEngineTests
             targetBidAmount: target,
             confirmedPaymentAmount: target);
 
-        Assert.Equal(expectedSuccess, decision.Success);
-        if (!expectedSuccess)
-        {
-            Assert.Equal(BidFailureReason.BidTooLow, decision.FailureReason);
-        }
+        Assert.True(decision.Success);
+        Assert.Equal(expectedBecameTop, decision.BecameCategoryTop);
     }
 
     // --- Re-bid difference calculation (rule B3) ---
@@ -165,7 +163,7 @@ public class BidDecisionEngineTests
     // --- Race-condition safety: two concurrent bidders targeting the same #1 spot ---
 
     [Fact]
-    public void Evaluate_SecondConcurrentBidder_SeesUpdatedTopAndIsRejected()
+    public void Evaluate_SecondConcurrentBidder_SeesUpdatedTopAndDoesNotBecomeTop()
     {
         // Simulates the outcome of the row-level lock in ListingRepository.GetTopListingForUpdateAsync:
         // bidder A's transaction commits first and becomes the new top; bidder B's transaction only
@@ -180,16 +178,16 @@ public class BidDecisionEngineTests
             targetBidAmount: 120m, confirmedPaymentAmount: 120m);
 
         Assert.True(bidderA.Success);
+        Assert.True(bidderA.BecameCategoryTop);
 
         // Bidder B computed their bid against the same stale snapshot (originalTop = 100) before the lock
-        // serialized them behind bidder A. Once unblocked, they must be evaluated against A's new top (120).
+        // serialized them behind bidder A. Once unblocked, their bid of 120 still succeeds but does not become top.
         var bidderB = BidDecisionEngine.Evaluate(
             minIncrement, minStarting, currentTopBidInCategory: bidderA.NewCurrentBidAmount, currentTopListingId: 2,
             existingListingId: null, existingListingCurrentBid: 0m,
             targetBidAmount: 120m, confirmedPaymentAmount: 120m);
 
-        Assert.False(bidderB.Success);
-        Assert.Equal(BidFailureReason.BidTooLow, bidderB.FailureReason);
-        Assert.Equal(130m, bidderB.RequiredMinimumBid);
+        Assert.True(bidderB.Success);
+        Assert.False(bidderB.BecameCategoryTop);
     }
 }

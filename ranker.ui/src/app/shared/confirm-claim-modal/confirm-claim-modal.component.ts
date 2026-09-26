@@ -87,11 +87,20 @@ export class ConfirmClaimModalComponent implements OnInit {
     this.isRebid() ? this.existingBidAmount() : 0,
   );
 
-  protected readonly requiredMinimumBid = computed(() => {
+  // Minimum required to claim Rank #1
+  protected readonly minRank1Bid = computed(() => {
     const top = this.currentTopBid();
     const inc = this.minBidIncrement();
     const start = this.minStartingBid();
     return top !== null && top !== undefined ? top + inc : start;
+  });
+
+  // Minimum bid allowed to enter this arena or raise bid
+  protected readonly absoluteMinimumBid = computed(() => {
+    if (this.isRebid()) {
+      return this.existingBidAmount() + this.minBidIncrement();
+    }
+    return 1;
   });
 
   protected readonly payableAmount = computed(() => {
@@ -103,7 +112,13 @@ export class ConfirmClaimModalComponent implements OnInit {
   protected readonly isBelowMinimum = computed(() => {
     const target = this.targetAmount();
     if (target === null || target === undefined) return false;
-    return target < this.requiredMinimumBid();
+    return target < this.absoluteMinimumBid();
+  });
+
+  protected readonly isBelowRank1 = computed(() => {
+    const target = this.targetAmount();
+    if (target === null || target === undefined) return false;
+    return target < this.minRank1Bid();
   });
 
   protected readonly isNotHigherThanExisting = computed(() => {
@@ -209,8 +224,7 @@ export class ConfirmClaimModalComponent implements OnInit {
             if (lookup.faviconUrl) this.faviconUrl.set(lookup.faviconUrl);
 
             // Ensure target is above current bid
-            const minReq = this.requiredMinimumBid();
-            const nextTarget = Math.max(minReq, lookup.currentBidAmount + this.minBidIncrement());
+            const nextTarget = lookup.currentBidAmount + this.minBidIncrement();
             if ((this.targetAmount() ?? 0) < nextTarget) {
               this.targetAmount.set(nextTarget);
             }
@@ -285,13 +299,13 @@ export class ConfirmClaimModalComponent implements OnInit {
     });
   }
 
-  protected setMinTarget(): void {
-    this.targetAmount.set(this.requiredMinimumBid());
+  protected setRank1Target(): void {
+    this.targetAmount.set(this.minRank1Bid());
     this.quoteError.set(null);
   }
 
   protected addIncrement(amount: number): void {
-    const current = this.targetAmount() ?? this.requiredMinimumBid();
+    const current = this.targetAmount() ?? this.minRank1Bid();
     this.targetAmount.set(current + amount);
     this.quoteError.set(null);
   }

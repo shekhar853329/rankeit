@@ -259,13 +259,13 @@ export class LeaderboardComponent implements OnInit {
   }
 
   incrementClaimAmount(): void {
-    const current = this.effectiveClaimAmount() ?? 0;
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
     this.claimAmount.set(current + Math.max(this.minBidIncrement(), 1));
   }
 
   decrementClaimAmount(): void {
-    const floor = this.claimPrice() ?? 1;
-    const current = this.effectiveClaimAmount() ?? floor;
+    const floor = 1;
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
     this.claimAmount.set(Math.max(current - Math.max(this.minBidIncrement(), 1), floor));
   }
 
@@ -273,6 +273,8 @@ export class LeaderboardComponent implements OnInit {
     const num = parseFloat(val);
     if (!isNaN(num) && num > 0) {
       this.claimAmount.set(num);
+    } else if (val === '') {
+      this.claimAmount.set(null);
     }
   }
 
@@ -282,8 +284,8 @@ export class LeaderboardComponent implements OnInit {
     const minReq = currentTop !== undefined ? currentTop + minInc : this.minStartingBid();
     const amount = targetAmount ?? minReq;
 
-    this.claimAmount.set(Math.max(amount, minReq));
-    this.targetRank.set(rank ?? 1);
+    this.claimAmount.set(Math.max(amount, 1));
+    this.targetRank.set(rank ?? (amount >= minReq ? 1 : 2));
 
     // NEVER auto populate website URL or product title!
 
@@ -310,7 +312,13 @@ export class LeaderboardComponent implements OnInit {
     const minInc = this.minBidIncrement() || 1;
     const currentTop = this.entries()[0]?.currentBidAmount ?? null;
     const minReq = currentTop !== null ? currentTop + minInc : this.minStartingBid();
-    const amount = Math.max(this.effectiveClaimAmount() ?? minReq, minReq);
+    const amount = Math.max(this.effectiveClaimAmount() ?? minReq, 1);
+
+    let rank = 1;
+    if (currentTop !== null && amount <= currentTop) {
+      const higherCount = this.entries().filter((e) => e.currentBidAmount >= amount).length;
+      rank = higherCount + 1;
+    }
 
     const meta = this.urlMetadata();
     const title = this.productTitle() || meta?.siteName || '';
@@ -323,7 +331,7 @@ export class LeaderboardComponent implements OnInit {
     );
 
     this.modalService.openClaimModal({
-      rank: this.targetRank(),
+      rank,
       categoryName: this.categoryName(),
       amount,
       categoryId,

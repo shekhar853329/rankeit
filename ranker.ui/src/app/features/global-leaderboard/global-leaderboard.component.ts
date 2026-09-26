@@ -602,30 +602,51 @@ export class GlobalLeaderboardComponent implements OnInit {
     if (slug) {
       this.joinedCategoryGroup = slug;
       void this.signalr.joinCategoryGroup(slug);
+      this.selectClaimCategory(slug);
+    } else {
+      this.selectClaimCategory(null);
     }
   }
 
   selectClaimCategory(slug: string | null): void {
-    if (slug === this.claimSlug()) return;
+    if (slug === this.claimSlug() && this.claimCategoryData()) return;
     this.claimSlug.set(slug);
-    this.claimAmount.set(null);
     this.targetRank.set(1);
-    this.claimCategoryData.set(null);
 
     if (!slug) {
+      this.claimCategoryData.set(null);
+      this.claimAmount.set(null);
       return;
     }
-    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20, this.timeMode()).subscribe((data) => {
-      this.claimCategoryData.set(data);
-      this.claimAmount.set(null);
 
-      const minInc = data.minBidIncrement || 1;
-      const currentTop = data.leaderboard.items[0]?.currentBidAmount ?? null;
-      const minReq = currentTop !== null ? currentTop + minInc : data.minStartingBid;
+    const cat =
+      this.allCategories().find((c) => c.slug === slug) ??
+      this.tabs().find((c) => c.slug === slug);
+    if (cat && this.claimAmount() === null) {
+      this.claimAmount.set(cat.minStartingBid);
+    }
 
-      this.showToastNotification(
-        `Selected ${data.categoryName}. Amount to claim Rank #1 is ${this.currencySymbol()}${minReq}.`
-      );
+    // Always fetch alltime to get true reigning Rank 1 champion regardless of today filter
+    this.leaderboardService.getCategoryLeaderboard(slug, 1, 20, 'alltime').subscribe({
+      next: (data) => {
+        this.claimCategoryData.set(data);
+
+        const minInc = data.minBidIncrement || 1;
+        const currentTop = data.leaderboard.items[0]?.currentBidAmount ?? null;
+        const rank1Amount = currentTop !== null ? currentTop + minInc : data.minStartingBid;
+
+        // Default the bid amount to what is required to get Rank 1
+        this.claimAmount.set(rank1Amount);
+
+        this.showToastNotification(
+          `Selected ${data.categoryName}. Amount to claim Rank #1 is ${this.currencySymbol()}${rank1Amount}.`
+        );
+      },
+      error: () => {
+        if (cat) {
+          this.claimAmount.set(cat.minStartingBid);
+        }
+      },
     });
   }
 
@@ -680,14 +701,14 @@ export class GlobalLeaderboardComponent implements OnInit {
 
   incrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
-    const current = this.effectiveClaimAmount() ?? 0;
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
     this.claimAmount.set(current + Math.max(step, 1));
   }
 
   decrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
-    const floor = this.claimPrice() ?? 1;
-    const current = this.effectiveClaimAmount() ?? floor;
+    const floor = 1;
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
     this.claimAmount.set(Math.max(current - Math.max(step, 1), floor));
   }
 
@@ -695,6 +716,8 @@ export class GlobalLeaderboardComponent implements OnInit {
     const num = parseFloat(val);
     if (!isNaN(num) && num > 0) {
       this.claimAmount.set(num);
+    } else if (val === '') {
+      this.claimAmount.set(null);
     }
   }
 
@@ -751,8 +774,14 @@ export class GlobalLeaderboardComponent implements OnInit {
     const launchModal = (data: CategoryLeaderboardResponseDto) => {
       const minInc = data.minBidIncrement || 1;
       const currentTop = data.leaderboard.items[0]?.currentBidAmount ?? null;
-      const minReq = currentTop !== null ? currentTop + minInc : data.minStartingBid;
-      const amount = Math.max(this.effectiveClaimAmount() ?? minReq, minReq);
+      const rank1Req = currentTop !== null ? currentTop + minInc : data.minStartingBid;
+      const amount = Math.max(this.effectiveClaimAmount() ?? rank1Req, 1);
+
+      let rank = 1;
+      if (currentTop !== null && amount <= currentTop) {
+        const higherCount = data.leaderboard.items.filter((item) => item.currentBidAmount >= amount).length;
+        rank = higherCount + 1;
+      }
 
       const url = this.heroUrl();
       const meta = this.urlMetadata();
@@ -764,7 +793,7 @@ export class GlobalLeaderboardComponent implements OnInit {
       );
 
       this.modalService.openClaimModal({
-        rank: this.targetRank(),
+        rank,
         categoryName: data.categoryName,
         amount,
         categoryId: data.categoryId,
@@ -790,7 +819,7 @@ export class GlobalLeaderboardComponent implements OnInit {
     if (cachedData) {
       launchModal(cachedData);
     } else {
-      this.leaderboardService.getCategoryLeaderboard(slug).subscribe({
+      this.leaderboardService.getCategoryLeaderboard(slug, 1, 20, 'alltime').subscribe({
         next: (data) => launchModal(data),
         error: () => void this.router.navigate(['/leaderboard', slug]),
       });

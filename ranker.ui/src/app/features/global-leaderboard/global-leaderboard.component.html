@@ -174,7 +174,7 @@
               <div class="field-label-row">
                 <span class="field-label">Bid Amount</span>
                 @if (claimPrice(); as minRank1) {
-                <span class="field-badge-rank1" title="Minimum required to claim Rank #1 in this category">#1: {{ currencySymbol() }}{{ minRank1 }}</span>
+                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">#1: {{ currencySymbol() }}{{ minRank1 }}</span>
                 }
               </div>
               <div class="amount-stepper-row">
@@ -182,7 +182,7 @@
                 <input id="claim-amount" type="number" class="field-input field-input--amount"
                   [value]="effectiveClaimAmount() ?? claimPrice() ?? 10"
                   (input)="onClaimAmountInput($any($event.target).value)"
-                  [min]="claimPrice() ?? 1"
+                  [min]="1"
                   step="1"
                   required />
                 <div class="stepper-actions">
