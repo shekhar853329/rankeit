@@ -65,8 +65,14 @@ export class LeaderboardComponent implements OnInit {
   // ── Stats bar: top 3 bidders of today ─────────────────────
   readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
 
+  // ── Timer & Clock ──────────────────────────────────────────
+  private countdownTimerId: ReturnType<typeof setInterval> | null = null;
+  readonly countdownText = signal('00h : 00m : 00s');
+  readonly currentUtcTime = signal('00:00 UTC');
+
   // ── Command bar form state ─────────────────────────────────
   readonly sidebarUrl = signal('');
+  readonly sidebarUrlDirty = signal(false);
   readonly productTitle = signal('');
   readonly urlMetadata = signal<UrlMetadataDto | null>(null);
   readonly metadataLoading = signal(false);
@@ -91,6 +97,8 @@ export class LeaderboardComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.startCountdownTimer();
+
     // Load trending categories for the sidebar
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 6 }).subscribe((result) => {
       this.trendingCategories.set(result.items);
@@ -154,7 +162,10 @@ export class LeaderboardComponent implements OnInit {
       this.clickCounts.update((map) => ({ ...map, [listingId]: clickCount }));
     });
 
-    this.destroyRef.onDestroy(() => void this.signalr.leaveCategoryGroup(this.categorySlug()));
+    this.destroyRef.onDestroy(() => {
+      void this.signalr.leaveCategoryGroup(this.categorySlug());
+      if (this.countdownTimerId) clearInterval(this.countdownTimerId);
+    });
 
     // Debounced URL metadata fetch for the field
     this.urlChange$
@@ -243,6 +254,7 @@ export class LeaderboardComponent implements OnInit {
 
   onSidebarUrlChange(value: string): void {
     this.sidebarUrl.set(value);
+    this.sidebarUrlDirty.set(true);
     if (this.isSidebarUrlValid()) {
       this.urlChange$.next(value.trim());
     } else {
@@ -388,5 +400,35 @@ export class LeaderboardComponent implements OnInit {
     } catch {
       return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
     }
+  }
+
+  /* ── Timer & Dropdown Helpers ── */
+  private startCountdownTimer(): void {
+    const tick = () => {
+      const now = new Date();
+      const utcMidnight = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0)
+      );
+      const diff = Math.max(0, utcMidnight.getTime() - now.getTime());
+      const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+      const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
+      const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+      this.countdownText.set(`${hours}h : ${minutes}m : ${seconds}s`);
+
+      const utcHours = String(now.getUTCHours()).padStart(2, '0');
+      const utcMins = String(now.getUTCMinutes()).padStart(2, '0');
+      this.currentUtcTime.set(`${utcHours}:${utcMins} UTC`);
+    };
+
+    tick();
+    this.countdownTimerId = setInterval(tick, 1000);
+  }
+
+  onProductTitleChange(value: string): void {
+    this.productTitle.set(value);
+  }
+
+  canClaimRank(): boolean {
+    return this.isSidebarUrlValid() && this.categoryId() !== null;
   }
 }

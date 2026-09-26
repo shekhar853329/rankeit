@@ -3,8 +3,11 @@
        CATEGORY COMMAND & URGENCY HERO STATION
        ═══════════════════════════════════════════════════════════ -->
   <section class="arena-hero">
-    <div class="arena-hero__orb arena-hero__orb--primary" aria-hidden="true"></div>
-    <div class="arena-hero__orb arena-hero__orb--gold" aria-hidden="true"></div>
+    <!-- Ambient decorative orbs (isolated in dedicated overflow-clipped wrapper) -->
+    <div class="arena-hero__orbs-wrap" aria-hidden="true">
+      <div class="arena-hero__orb arena-hero__orb--primary"></div>
+      <div class="arena-hero__orb arena-hero__orb--gold"></div>
+    </div>
 
     <div class="arena-hero__inner">
       <!-- Breadcrumb & Arena Badges -->
@@ -29,37 +32,39 @@
         </div>
       </div>
 
-      <!-- Headline & Stepper -->
-      <div class="arena-headline-row">
-        <div class="arena-headline-copy">
-          <h1 class="arena-headline-title">
+      <!-- ── Central Claim Top Row: Headline + Stepper & Live Auction Metadata ── -->
+      <div class="hero-top-row">
+        <div class="headline-title-wrap">
+          <h1 class="headline-title">
             Claim {{ categoryName() }} Spot for
           </h1>
           <div class="bid-stepper">
-            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()"
-              aria-label="Decrease bid">−</button>
-            <span class="stepper-display">
+            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease bid"
+              id="bid-decrement">−</button>
+            <span class="stepper-display" id="target-bid-display">
               ${{ effectiveClaimAmount() ?? minStartingBid() | number: '1.0-0' }}
             </span>
-            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()"
-              aria-label="Increase bid">+</button>
+            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase bid"
+              id="bid-increment">+</button>
           </div>
         </div>
 
-        <div class="arena-roi-card">
-          <div class="arena-roi-card__icon">
-            <span class="material-symbols-outlined icon-md">trending_up</span>
-          </div>
-          <div>
-            <span class="arena-roi-card__val">#1 Dominance</span>
-            <span class="arena-roi-card__sub">Redirects category discovery</span>
+        <div class="hero-meta-group">
+          <!-- Countdown Urgency Ticker -->
+          <div class="countdown-badge">
+            <span class="material-symbols-outlined countdown-badge__icon">timer</span>
+            <span class="countdown-badge__label">Resets:</span>
+            <span class="countdown-badge__time" id="auction-countdown">{{ countdownText() }}</span>
+            <span class="countdown-badge__sep">•</span>
+            <span class="countdown-badge__utc">Midnight UTC</span>
           </div>
         </div>
       </div>
 
-      <!-- Command Bar Form -->
+      <!-- ── Master Interactive Claim / Outbid Command Center Bar ── -->
       <div class="command-bar-wrapper" id="claim-rank-section">
         <form class="command-bar" (submit)="$event.preventDefault(); initiateClaim()">
+          <!-- URL / @Handle Input -->
           <div class="command-bar__field command-bar__field--url">
             @if (faviconDisplayUrl()) {
             <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" (error)="onFaviconError($event)" />
@@ -68,22 +73,23 @@
             }
             <div class="field-content">
               <label for="category-claim-url" class="field-label">Website or @X Handle</label>
-              <input id="category-claim-url" type="text" class="field-input" placeholder="https://yourapp.io or @handle"
-                [value]="sidebarUrl()" (input)="onSidebarUrlChange($any($event.target).value)" autocomplete="off"
-                required />
+              <input id="category-claim-url" type="text" class="field-input" placeholder="https://yourapp.io or @maker"
+                [value]="sidebarUrl()" (input)="onSidebarUrlChange($any($event.target).value)" (blur)="sidebarUrlDirty.set(true)"
+                autocomplete="off" required />
             </div>
             @if (metadataLoading()) {
             <span class="field-spinner" title="Fetching URL metadata..."></span>
             }
           </div>
 
+          <!-- Product / Brand Name -->
           <div class="command-bar__field command-bar__field--title">
             <span class="material-symbols-outlined field-icon">badge</span>
             <div class="field-content">
               <label for="category-claim-title" class="field-label">Product Title</label>
               <input id="category-claim-title" type="text" class="field-input" placeholder="e.g. AtlasAI Studio"
                 [value]="productTitle() || urlMetadata()?.siteName || ''"
-                (input)="productTitle.set($any($event.target).value)" autocomplete="off" />
+                (input)="onProductTitleChange($any($event.target).value)" autocomplete="off" />
             </div>
           </div>
 
@@ -94,7 +100,7 @@
               <div class="field-label-row">
                 <span class="field-label">Bid Amount</span>
                 @if (claimPrice(); as minRank1) {
-                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">#1: ${{ minRank1 }}</span>
+                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: ${{ minRank1 }}</span>
                 }
               </div>
               <div class="amount-stepper-row">
@@ -119,7 +125,7 @@
           </div>
 
           <div class="command-bar__action">
-            <button type="submit" class="claim-submit-btn">
+            <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()">
               <span>Claim Rank</span>
               <span class="material-symbols-outlined icon-sm">bolt</span>
             </button>
