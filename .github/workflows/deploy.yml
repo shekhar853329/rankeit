@@ -156,7 +156,11 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
         run: |
-          rsync -avz -e "ssh -p ${SERVER_PORT}" --delete \
+          rsync -avz \
+            --no-owner \
+            --no-group \
+            --delete \
+            -e "ssh -p ${SERVER_PORT}" \
             publish/backend/ \
             "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/backend/"
 
@@ -166,9 +170,12 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
         run: |
-          rsync -avz -e "ssh -p ${SERVER_PORT}" \
+          rsync -avz \
+            --no-owner \
+            --no-group \
             --exclude 'node_modules' \
             --exclude '.env' \
+            -e "ssh -p ${SERVER_PORT}" \
             publish/frontend/ \
             "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/frontend/"
 
