@@ -417,7 +417,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   readonly globalDefaultPrice = computed<number | null>(() => {
     const top = this.rows()[0];
-    if (!top) return 10;
+    if (!top) return 1;
     const category =
       this.allCategories().find((c) => c.slug === top.categorySlug) ??
       this.tabs().find((c) => c.slug === top.categorySlug);
@@ -792,14 +792,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   incrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
-    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
     this.claimAmount.set(current + Math.max(step, 1));
   }
 
   decrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
     const floor = 1;
-    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
     const inc = Math.max(step, 1);
     const nextVal = current > inc ? current - inc : (current > floor ? floor : floor);
     this.claimAmount.set(Math.max(nextVal, floor));

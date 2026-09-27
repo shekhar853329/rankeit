@@ -115,7 +115,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   readonly categoryId = signal<number | null>(null);
   readonly categoryName = signal('');
   readonly minBidIncrement = signal(1);
-  readonly minStartingBid = signal(10);
+  readonly minStartingBid = signal(1);
 
   // ── Feed state ─────────────────────────────────────────────
   readonly entries = signal<LeaderboardEntryDto[]>([]);
@@ -348,13 +348,13 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   incrementClaimAmount(): void {
-    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
     this.claimAmount.set(current + Math.max(this.minBidIncrement(), 1));
   }
 
   decrementClaimAmount(): void {
     const floor = 1;
-    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 10);
+    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
     const inc = Math.max(this.minBidIncrement(), 1);
     const nextVal = current > inc ? current - inc : (current > floor ? floor : floor);
     this.claimAmount.set(Math.max(nextVal, floor));
