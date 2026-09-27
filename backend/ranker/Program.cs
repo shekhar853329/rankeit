@@ -20,7 +20,14 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 
 builder.Services.AddDbContext<RankerDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("RankerDb")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("RankerDb"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null
+        )
+    ));
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<PlaceBidCommand>());
 
