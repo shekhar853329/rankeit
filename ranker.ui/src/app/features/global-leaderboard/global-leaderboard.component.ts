@@ -1336,18 +1336,26 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             const utcTimeStr = `${String(date.getUTCHours()).padStart(2, '0')}:${String(
               date.getUTCMinutes()
             ).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')} UTC`;
+            const currentBidDisplay = raw.currentBidLevel ? `
+                  <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px;">
+                    <span style="font-size: 11px; color: ${textColor};">Standing Rank Bid:</span>
+                    <span style="font-size: 14px; font-weight: 700; font-family: 'Space Grotesk', monospace; color: ${headingColor};">
+                      ${currency}${Number(raw.currentBidLevel).toFixed(2)}
+                    </span>
+                  </div>` : '';
             return `
               <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; min-width: 210px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
                   <span style="font-weight: 700; font-size: 13px; color: ${headingColor};">${raw.listingName}</span>
                   <span style="font-size: 10px; padding: 2px 7px; border-radius: 9999px; background: rgba(249,87,56,0.14); color: #f95738; font-weight: 700;">${raw.categoryName}</span>
                 </div>
-                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px;">
-                  <span style="font-size: 11px; color: ${textColor};">Bid Amount:</span>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px;">
+                  <span style="font-size: 11px; color: ${textColor};">Payment Received:</span>
                   <span style="font-size: 20px; font-weight: 800; font-family: 'Space Grotesk', monospace; color: #f95738;">
                     ${currency}${Number(raw.amount).toFixed(2)}
                   </span>
                 </div>
+                ${currentBidDisplay}
                 <div style="font-size: 11px; color: ${textColor}; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid ${gridLineColor}; padding-top: 6px;">
                   <div>🕒 <b>Local:</b> ${timeStr} <span style="opacity: 0.65">(${utcTimeStr})</span></div>
                   ${raw.paymentReference ? `<div>💳 <b>Payment ID:</b> <code style="font-family: monospace; background: rgba(249,87,56,0.08); color: #f95738; padding: 1px 4px; border-radius: 3px;">${raw.paymentReference}</code></div>` : ''}
@@ -1374,7 +1382,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         },
         yAxis: {
           type: 'value',
-          name: `Bid (${currency})`,
+          name: `Payment (${currency})`,
           nameTextStyle: { color: textColor, fontSize: 10 },
           axisLine: { show: false },
           axisLabel: {

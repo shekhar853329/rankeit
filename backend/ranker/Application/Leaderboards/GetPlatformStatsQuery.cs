@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Ranker.Data;
+using Ranker.Domain.Entities;
 using Ranker.Dtos;
 
 namespace Ranker.Application.Leaderboards;
@@ -46,10 +47,48 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         // If listing clicks are low in dev, compute based on total impressions / visits or actual leader clicks
         var avgLeaderViews = topLeaderClicks > 0 ? topLeaderClicks : (todayVisits > 0 ? (int)(todayVisits * 0.6) : 3850);
 
-        // 3. Average CPC today: Total bid capital / Total clicks (from listings active today or all)
-        var totalBidsVolumeToday = await dbContext.Bids
-            .Where(b => b.CreatedAt >= todayUtc)
-            .SumAsync(b => (decimal?)b.Amount, ct) ?? 0m;
+        // Retrieve bids from the past 7 days to calculate true incremental transaction volume
+        // (A re-bid only charges the difference between the new target bid and the previous bid)
+        var sevenDaysAgo = todayUtc.AddDays(-6);
+        var recentBidsForStats = await dbContext.Bids
+            .AsNoTracking()
+            .Include(b => b.Listing)
+                .ThenInclude(l => l!.Category)
+            .Where(b => b.CreatedAt >= sevenDaysAgo)
+            .OrderBy(b => b.ListingId)
+            .ThenBy(b => b.CreatedAt)
+            .ToListAsync(ct);
+
+        // For any listing that had bids before 7 days ago, get their baseline bid amount
+        var activeListingIds = recentBidsForStats.Select(b => b.ListingId).Distinct().ToList();
+        var priorListingBids = await dbContext.Bids
+            .AsNoTracking()
+            .Where(b => activeListingIds.Contains(b.ListingId) && b.CreatedAt < sevenDaysAgo)
+            .GroupBy(b => b.ListingId)
+            .Select(g => new
+            {
+                ListingId = g.Key,
+                LastAmount = g.OrderByDescending(b => b.CreatedAt).Select(b => b.Amount).FirstOrDefault()
+            })
+            .ToDictionaryAsync(x => x.ListingId, x => x.LastAmount, ct);
+
+        var runningBidMap = new Dictionary<int, decimal>(priorListingBids);
+        var processedBids = new List<(Bid Bid, decimal ActualPaid)>(recentBidsForStats.Count);
+
+        foreach (var b in recentBidsForStats)
+        {
+            var prevAmount = runningBidMap.GetValueOrDefault(b.ListingId, 0m);
+            var paid = Math.Max(0m, b.Amount - prevAmount);
+            runningBidMap[b.ListingId] = b.Amount;
+            processedBids.Add((b, paid));
+        }
+
+        var todayProcessedBids = processedBids
+            .Where(x => x.Bid.CreatedAt >= todayUtc)
+            .ToList();
+
+        // 3. Average CPC today: Total actual payment volume / Total clicks
+        var totalBidsVolumeToday = todayProcessedBids.Sum(x => x.ActualPaid);
 
         var totalClicks = await dbContext.Listings.SumAsync(l => (int?)l.ClickCount, ct) ?? 0;
 
@@ -80,18 +119,16 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         var totalReconciliationsCount = await dbContext.BidReconciliations.CountAsync(ct);
         var protocolAuditId = $"#{(totalBidsCount + totalReconciliationsCount + 400)}-B";
 
-        // 6. Hourly Bid Pressure (Today)
-        var hourlyBids = await dbContext.Bids
-            .AsNoTracking()
-            .Where(b => b.CreatedAt >= todayUtc)
-            .GroupBy(b => b.CreatedAt.Hour)
+        // 6. Hourly Bid Pressure (Today) - Using actual payment volume received per hour
+        var hourlyBids = todayProcessedBids
+            .GroupBy(x => x.Bid.CreatedAt.Hour)
             .Select(g => new
             {
                 Hour = g.Key,
-                Volume = g.Sum(b => b.Amount),
+                Volume = g.Sum(x => x.ActualPaid),
                 Count = g.Count()
             })
-            .ToListAsync(ct);
+            .ToList();
 
         var hourlyMap = hourlyBids.ToDictionary(h => h.Hour, h => (h.Volume, h.Count));
         var hourlyPoints = new List<HourlyBidPointDto>(24);
@@ -109,49 +146,26 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
             }
         }
 
-        // 7. Recent Bids Timeline (Individual bid payments for fine-grained real-time charts)
-        var sinceUtc = todayUtc.AddDays(-2);
-        var timelineBids = await dbContext.Bids
-            .AsNoTracking()
-            .Include(b => b.Listing)
-                .ThenInclude(l => l!.Category)
-            .Where(b => b.CreatedAt >= sinceUtc)
-            .OrderBy(b => b.CreatedAt)
+        // 7. Recent Bids Timeline (Individual bid payments with actual charged amount and resulting bid level)
+        var timelineSource = todayProcessedBids.Count > 0 ? todayProcessedBids : processedBids;
+        var recentTimeline = timelineSource
+            .OrderBy(x => x.Bid.CreatedAt)
             .Take(150)
-            .ToListAsync(ct);
-
-        if (timelineBids.Count == 0)
-        {
-            timelineBids = await dbContext.Bids
-                .AsNoTracking()
-                .Include(b => b.Listing)
-                    .ThenInclude(l => l!.Category)
-                .OrderByDescending(b => b.CreatedAt)
-                .Take(25)
-                .ToListAsync(ct);
-            timelineBids = timelineBids.OrderBy(b => b.CreatedAt).ToList();
-        }
-
-        var recentTimeline = timelineBids.Select(b => new BidTimelinePointDto(
-            b.Id,
-            b.ListingId,
-            b.Listing?.Name ?? "Listing",
-            b.Listing?.Category?.Name ?? "General",
-            b.Amount,
-            b.CreatedAt,
-            b.PaymentReference)).ToList();
+            .Select(x => new BidTimelinePointDto(
+                x.Bid.Id,
+                x.Bid.ListingId,
+                x.Bid.Listing?.Name ?? "Listing",
+                x.Bid.Listing?.Category?.Name ?? "General",
+                x.ActualPaid,
+                x.Bid.CreatedAt,
+                x.Bid.PaymentReference,
+                x.Bid.Amount))
+            .ToList();
 
         // 8. Daily Bid Pressure (Last 7 Days)
-        var sevenDaysAgo = todayUtc.AddDays(-6);
-        var rawDailyBids = await dbContext.Bids
-            .AsNoTracking()
-            .Where(b => b.CreatedAt >= sevenDaysAgo)
-            .Select(b => new { b.CreatedAt, b.Amount })
-            .ToListAsync(ct);
-
-        var dailyMap = rawDailyBids
-            .GroupBy(b => DateOnly.FromDateTime(b.CreatedAt))
-            .ToDictionary(g => g.Key, g => (Volume: g.Sum(x => x.Amount), Count: g.Count()));
+        var dailyMap = processedBids
+            .GroupBy(x => DateOnly.FromDateTime(x.Bid.CreatedAt))
+            .ToDictionary(g => g.Key, g => (Volume: g.Sum(x => x.ActualPaid), Count: g.Count()));
 
         var dailyPoints = new List<DailyBidPointDto>(7);
         for (var i = 6; i >= 0; i--)

@@ -60,6 +60,7 @@ export interface BidTimelinePointDto {
   amount: number;
   createdAt: string;
   paymentReference: string | null;
+  currentBidLevel?: number;
 }
 
 export interface DailyBidPointDto {
