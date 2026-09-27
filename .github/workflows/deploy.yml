@@ -119,6 +119,37 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p "${SERVER_PORT}" -H "${SERVER_HOST}" >> ~/.ssh/known_hosts
 
+      - name: Generate Backend Production Environment File
+        env:
+          PROD_CONNECTION_STRING: ${{ secrets.PROD_CONNECTION_STRING }}
+          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+        run: |
+          python3 - << 'PYEOF'
+          import os
+
+          conn = os.environ.get('PROD_CONNECTION_STRING', '').strip()
+          rzp_id = os.environ.get('RAZORPAY_KEY_ID', '').strip()
+          rzp_sec = os.environ.get('RAZORPAY_KEY_SECRET', '').strip()
+
+          lines = [
+              "ASPNETCORE_ENVIRONMENT=Production",
+              "ASPNETCORE_URLS=http://127.0.0.1:5000",
+              "ASPNETCORE_HTTP_PORTS=5000",
+              f"ConnectionStrings__RankerDb={conn}",
+              f"Razorpay__KeyId={rzp_id}",
+              f"Razorpay__KeySecret={rzp_sec}",
+              ""
+          ]
+
+          with open("publish/backend/.env", "w", encoding="utf-8") as f:
+              f.write("\n".join(lines))
+
+          print("Generated publish/backend/.env successfully.")
+          if not conn:
+              print("::warning::PROD_CONNECTION_STRING is not set in GitHub Secrets! Backend will run in Degraded mode without DB.")
+          PYEOF
+
       - name: Sync Backend Files via Rsync
         env:
           SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -126,7 +157,6 @@ jobs:
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
         run: |
           rsync -avz -e "ssh -p ${SERVER_PORT}" --delete \
-            --exclude '.env' \
             publish/backend/ \
             "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/backend/"
 
@@ -142,28 +172,20 @@ jobs:
             publish/frontend/ \
             "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/frontend/"
 
-      - name: Configure Secrets, Install Dependencies & Restart Services
+      - name: Configure Permissions, Install Dependencies & Restart Services
         env:
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
-          PROD_CONNECTION_STRING: ${{ secrets.PROD_CONNECTION_STRING }}
-          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
-          RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
         run: |
           ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" bash -s << 'EOF'
             set -euo pipefail
 
-            # 1. Update backend .env file if secrets are configured in GitHub Actions
-            if [ -n "${PROD_CONNECTION_STRING:-}" ]; then
-              cat << ENVFILE > /var/www/ranker/backend/.env
-          ASPNETCORE_ENVIRONMENT=Production
-          ASPNETCORE_URLS=http://127.0.0.1:5000
-          ConnectionStrings__RankerDb="${PROD_CONNECTION_STRING}"
-          Razorpay__KeyId="${RAZORPAY_KEY_ID:-}"
-          Razorpay__KeySecret="${RAZORPAY_KEY_SECRET:-}"
-          ENVFILE
-              chmod 600 /var/www/ranker/backend/.env
+            # 1. Fix directory ownership & permissions for www-data execution
+            sudo chown -R www-data:www-data /var/www/ranker
+            sudo chmod -R 775 /var/www/ranker
+            if [ -f /var/www/ranker/backend/.env ]; then
+              sudo chmod 644 /var/www/ranker/backend/.env
             fi
 
             # 2. Install production dependencies for frontend SSR
@@ -176,7 +198,7 @@ jobs:
             sudo systemctl restart ranker-frontend
 
             # 4. Verify systemd service status
-            sleep 4
+            sleep 3
             if ! sudo systemctl is-active --quiet ranker-backend; then
               echo "ERROR: ranker-backend failed to start!"
               sudo journalctl -u ranker-backend -n 50 --no-pager
@@ -198,6 +220,27 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
         run: |
-          ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" \
-            'curl -fsS http://127.0.0.1:5000/api/health || (echo "Health check failed!" && exit 1)'
-          echo "Health check passed!"
+          ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" bash -s << 'EOF'
+            set -euo pipefail
+
+            echo "Polling http://127.0.0.1:5000/api/health..."
+            for attempt in {1..12}; do
+              if curl -s -f http://127.0.0.1:5000/api/health > /dev/null 2>&1; then
+                echo "--> Backend responded successfully on attempt $attempt!"
+                curl -s http://127.0.0.1:5000/api/health
+                echo ""
+                exit 0
+              fi
+              echo "Waiting for backend on port 5000... (attempt $attempt/12)"
+              sleep 2
+            done
+
+            echo "============================================="
+            echo " ERROR: Backend did not respond on port 5000"
+            echo "============================================="
+            echo "--> Systemd service status:"
+            sudo systemctl status ranker-backend --no-pager || true
+            echo "--> Recent application logs (journalctl):"
+            sudo journalctl -u ranker-backend -n 60 --no-pager || true
+            exit 1
+          EOF

@@ -102,17 +102,41 @@ app.UseForwardedHeaders();
 using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    try
+    var rawConnStr = builder.Configuration.GetConnectionString("RankerDb");
+
+    if (string.IsNullOrWhiteSpace(rawConnStr))
     {
-        logger.LogInformation("Checking database connectivity and applying migrations...");
-        var dbContext = scope.ServiceProvider.GetRequiredService<RankerDbContext>();
-        await dbContext.Database.MigrateAsync();
-        await DbSeeder.SeedAsync(dbContext);
-        logger.LogInformation("Database migration and seeding completed successfully.");
+        logger.LogWarning("No connection string configured for 'RankerDb'. Database migration skipped. Server running in Degraded mode.");
     }
-    catch (Exception ex)
+    else
     {
-        logger.LogError(ex, "Database migration failed on startup. Server will continue running in Degraded mode so health check and diagnostics are available.");
+        try
+        {
+            var csb = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(rawConnStr);
+            logger.LogInformation("Database configured: Host='{DataSource}', Database='{InitialCatalog}', Auth='{AuthType}', Encrypt={Encrypt}, TrustServerCertificate={TrustServerCertificate}",
+                csb.DataSource,
+                csb.InitialCatalog,
+                csb.IntegratedSecurity ? "Windows Integrated" : $"SQL User '{csb.UserID}'",
+                csb.Encrypt,
+                csb.TrustServerCertificate);
+        }
+        catch
+        {
+            logger.LogWarning("ConnectionString 'RankerDb' is present but could not be parsed by SqlConnectionStringBuilder.");
+        }
+
+        try
+        {
+            logger.LogInformation("Checking database connectivity and applying migrations...");
+            var dbContext = scope.ServiceProvider.GetRequiredService<RankerDbContext>();
+            await dbContext.Database.MigrateAsync();
+            await DbSeeder.SeedAsync(dbContext);
+            logger.LogInformation("Database migration and seeding completed successfully.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database migration failed on startup. Server will continue running in Degraded mode so health check and diagnostics are available.");
+        }
     }
 }
 
