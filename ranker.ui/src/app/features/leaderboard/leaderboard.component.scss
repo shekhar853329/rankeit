@@ -1270,3 +1270,278 @@
 
 .text-primary   { color: var(--color-primary) !important; }
 .text-secondary { color: var(--color-secondary) !important; }
+
+/* ── Real-Time Category Liquidity Chart Card ── */
+.liquidity-chart-card {
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 1.25rem 1.4rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 1.25rem;
+
+  &:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    border-color: var(--border-strong);
+  }
+}
+
+.liquidity-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.liquidity-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.liquidity-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.liquidity-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.liquidity-sub {
+  font-size: 0.76rem;
+  color: var(--color-on-surface-variant);
+  line-height: 1.3;
+}
+
+.live-pulse-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  font-family: var(--font-numeric);
+}
+
+.live-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseBeacon 1.5s infinite;
+}
+
+@keyframes pulseBeacon {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+.liquidity-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.liquidity-stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.65rem;
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--border);
+
+  &--highlight {
+    background: rgba(249, 87, 56, 0.08);
+    border-color: rgba(249, 87, 56, 0.25);
+    .stat-pill-val {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.stat-pill-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-on-surface-variant);
+  font-weight: 600;
+}
+
+.stat-pill-val {
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-family: var(--font-numeric);
+  color: var(--color-on-surface);
+}
+
+/* ── Controls Toolbar ── */
+.chart-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.control-tab-group {
+  display: flex;
+  align-items: center;
+  background: var(--color-surface-container);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 3px;
+  gap: 2px;
+}
+
+.chart-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--color-on-surface);
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  &--active {
+    background: var(--color-surface-container-lowest);
+    color: var(--color-primary);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.tab-chip {
+  padding: 1px 5px;
+  border-radius: 9999px;
+  background: rgba(249, 87, 56, 0.12);
+  color: var(--color-primary);
+  font-size: 0.65rem;
+  font-family: var(--font-numeric);
+}
+
+.chart-sub-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-filter-group {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 2px;
+  gap: 2px;
+}
+
+.metric-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--color-on-surface);
+  }
+
+  &--active {
+    background: var(--color-surface-container-lowest);
+    color: var(--color-on-surface);
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* ── Interactive Chart Surface ── */
+.interactive-chart-wrapper {
+  width: 100%;
+  height: 260px;
+  position: relative;
+}
+
+.echarts-surface {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+}
+
+/* ── Footer / Meta ── */
+.chart-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  color: var(--color-on-surface-variant);
+  padding-top: 0.25rem;
+}
+
+.footer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.audit-id-badge {
+  font-family: var(--font-numeric);
+  font-weight: 700;
+  font-size: 0.65rem;
+  color: var(--color-primary);
+  background: rgba(249, 87, 56, 0.08);
+  padding: 2px 7px;
+  border-radius: 4px;
+}

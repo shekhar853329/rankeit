@@ -687,6 +687,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         this.joinedCategoryGroup = slug;
         void this.signalr.joinCategoryGroup(slug);
       }
+      this.loadPlatformStats(slug);
     }
   }
 
@@ -1049,8 +1050,9 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadPlatformStats(): void {
-    this.leaderboardService.getPlatformStats().subscribe({
+  private loadPlatformStats(categorySlug?: string | null): void {
+    const targetSlug = categorySlug !== undefined ? categorySlug : this.selectedSlug();
+    this.leaderboardService.getPlatformStats(targetSlug).subscribe({
       next: (stats) => {
         this.platformStats.set(stats);
         if (isPlatformBrowser(this.platformId)) {

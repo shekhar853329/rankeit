@@ -6,7 +6,7 @@ using Ranker.Dtos;
 
 namespace Ranker.Application.Leaderboards;
 
-public sealed record GetPlatformStatsQuery : IRequest<PlatformStatsDto>;
+public sealed record GetPlatformStatsQuery(string? CategorySlug = null) : IRequest<PlatformStatsDto>;
 
 public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
     : IRequestHandler<GetPlatformStatsQuery, PlatformStatsDto>
@@ -16,6 +16,15 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         var todayUtc = DateTime.UtcNow.Date;
         var todayDate = DateOnly.FromDateTime(todayUtc);
         var yesterdayDate = todayDate.AddDays(-1);
+
+        Category? category = null;
+        if (!string.IsNullOrWhiteSpace(request.CategorySlug))
+        {
+            var slugLower = request.CategorySlug.Trim().ToLowerInvariant();
+            category = await dbContext.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Slug.ToLower() == slugLower, ct);
+        }
 
         // 1. Traffic surge from DailyVisitCounts
         var visits = await dbContext.DailyVisitCounts
@@ -37,8 +46,13 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         }
 
         // 2. Avg direct views / clicks for today's leader
-        var topLeaderClicks = await dbContext.Listings
-            .AsNoTracking()
+        var leaderQuery = dbContext.Listings.AsNoTracking();
+        if (category != null)
+        {
+            leaderQuery = leaderQuery.Where(l => l.CategoryId == category.Id);
+        }
+
+        var topLeaderClicks = await leaderQuery
             .OrderByDescending(l => l.CurrentBidAmount)
             .ThenBy(l => l.FirstBidAt)
             .Select(l => l.ClickCount)
@@ -50,11 +64,18 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         // Retrieve bids from the past 7 days to calculate true incremental transaction volume
         // (A re-bid only charges the difference between the new target bid and the previous bid)
         var sevenDaysAgo = todayUtc.AddDays(-6);
-        var recentBidsForStats = await dbContext.Bids
+        var recentBidsQuery = dbContext.Bids
             .AsNoTracking()
             .Include(b => b.Listing)
                 .ThenInclude(l => l!.Category)
-            .Where(b => b.CreatedAt >= sevenDaysAgo)
+            .Where(b => b.CreatedAt >= sevenDaysAgo);
+
+        if (category != null)
+        {
+            recentBidsQuery = recentBidsQuery.Where(b => b.Listing!.CategoryId == category.Id);
+        }
+
+        var recentBidsForStats = await recentBidsQuery
             .OrderBy(b => b.ListingId)
             .ThenBy(b => b.CreatedAt)
             .ToListAsync(ct);
@@ -90,7 +111,12 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         // 3. Average CPC today: Total actual payment volume / Total clicks
         var totalBidsVolumeToday = todayProcessedBids.Sum(x => x.ActualPaid);
 
-        var totalClicks = await dbContext.Listings.SumAsync(l => (int?)l.ClickCount, ct) ?? 0;
+        var listingsClicksQuery = dbContext.Listings.AsNoTracking();
+        if (category != null)
+        {
+            listingsClicksQuery = listingsClicksQuery.Where(l => l.CategoryId == category.Id);
+        }
+        var totalClicks = await listingsClicksQuery.SumAsync(l => (int?)l.ClickCount, ct) ?? 0;
 
         decimal averageCpc;
         if (totalClicks > 0 && totalBidsVolumeToday > 0)
@@ -99,7 +125,7 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         }
         else
         {
-            var totalAllTimeBids = await dbContext.Listings.SumAsync(l => (decimal?)l.CurrentBidAmount, ct) ?? 0m;
+            var totalAllTimeBids = await listingsClicksQuery.SumAsync(l => (decimal?)l.CurrentBidAmount, ct) ?? 0m;
             averageCpc = totalClicks > 0 ? Math.Round(totalAllTimeBids / Math.Max(totalClicks, 1), 2) : 0.78m;
         }
 
@@ -115,9 +141,18 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         }
 
         // 5. Protocol audit ID: based on total historical transactions recorded in DB
-        var totalBidsCount = await dbContext.Bids.CountAsync(ct);
-        var totalReconciliationsCount = await dbContext.BidReconciliations.CountAsync(ct);
-        var protocolAuditId = $"#{(totalBidsCount + totalReconciliationsCount + 400)}-B";
+        string protocolAuditId;
+        if (category != null)
+        {
+            var categoryBidsCount = await dbContext.Bids.Where(b => b.Listing!.CategoryId == category.Id).CountAsync(ct);
+            protocolAuditId = $"#{category.Slug.ToUpper()}-{(categoryBidsCount + 100)}-B";
+        }
+        else
+        {
+            var totalBidsCount = await dbContext.Bids.CountAsync(ct);
+            var totalReconciliationsCount = await dbContext.BidReconciliations.CountAsync(ct);
+            protocolAuditId = $"#{(totalBidsCount + totalReconciliationsCount + 400)}-B";
+        }
 
         // 6. Hourly Bid Pressure (Today) - Using actual payment volume received per hour
         var hourlyBids = todayProcessedBids
@@ -155,7 +190,7 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
                 x.Bid.Id,
                 x.Bid.ListingId,
                 x.Bid.Listing?.Name ?? "Listing",
-                x.Bid.Listing?.Category?.Name ?? "General",
+                x.Bid.Listing?.Category?.Name ?? (category?.Name ?? "General"),
                 x.ActualPaid,
                 x.Bid.CreatedAt,
                 x.Bid.PaymentReference,

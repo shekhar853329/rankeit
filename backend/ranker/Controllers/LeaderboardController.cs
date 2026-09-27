@@ -40,8 +40,16 @@ public class LeaderboardController(ISender sender) : ControllerBase
         Ok(await sender.Send(new GetDailyListingsQuery(page, pageSize), ct));
 
     [HttpGet("stats")]
-    public async Task<ActionResult<PlatformStatsDto>> GetPlatformStats(CancellationToken ct = default) =>
-        Ok(await sender.Send(new GetPlatformStatsQuery(), ct));
+    public async Task<ActionResult<PlatformStatsDto>> GetPlatformStats(
+        [FromQuery] string? categorySlug = null,
+        CancellationToken ct = default) =>
+        Ok(await sender.Send(new GetPlatformStatsQuery(categorySlug), ct));
+
+    [HttpGet("category/{categorySlug}/stats")]
+    public async Task<ActionResult<PlatformStatsDto>> GetCategoryStats(
+        string categorySlug,
+        CancellationToken ct = default) =>
+        Ok(await sender.Send(new GetPlatformStatsQuery(categorySlug), ct));
 
     [HttpGet("live-stream")]
     public async Task<ActionResult<IReadOnlyList<LiveBidEventDto>>> GetLiveStream(

@@ -1,18 +1,23 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   OnInit,
+  PLATFORM_ID,
+  ViewChild,
   computed,
   inject,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, isPlatformBrowser } from '@angular/common';
+import type * as echarts from 'echarts';
 import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
-import { CategoryLeaderboardResponseDto, LeaderboardEntryDto } from '../../core/models/leaderboard.model';
+import { CategoryLeaderboardResponseDto, LeaderboardEntryDto, PlatformStatsDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
 import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
 import { UrlMetadataDto } from '../../core/models/url-metadata.model';
@@ -31,7 +36,7 @@ import { UrlMetadataService } from '../../core/services/url-metadata.service';
   styleUrl: './leaderboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LeaderboardComponent implements OnInit {
+export class LeaderboardComponent implements OnInit, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly categoryService = inject(CategoryService);
@@ -40,6 +45,70 @@ export class LeaderboardComponent implements OnInit {
   private readonly modalService = inject(ModalService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlMetadataService = inject(UrlMetadataService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  @ViewChild('bidChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
+  private echartsModule: typeof import('echarts') | null = null;
+  private echartsInstance: echarts.ECharts | null = null;
+  private chartResizeObserver: ResizeObserver | null = null;
+
+  /* ── Category Bid Pressure Chart State ── */
+  readonly categoryStats = signal<PlatformStatsDto | null>(null);
+  readonly chartViewMode = signal<'timeline' | 'hourly' | 'weekly'>('timeline');
+  readonly chartMetric = signal<'both' | 'volume' | 'count'>('both');
+  readonly chartTimePreset = signal<'1h' | '6h' | 'today' | 'all'>('today');
+
+  readonly todayTotalVolume = computed(() => {
+    const stats = this.categoryStats();
+    if (!stats) return 0;
+    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
+      return stats.recentBidsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
+    }
+    return stats.hourlyBidPressures.reduce((acc, h) => acc + Number(h.volume || 0), 0);
+  });
+
+  readonly todayTotalBids = computed(() => {
+    const stats = this.categoryStats();
+    if (!stats) return 0;
+    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
+      return stats.recentBidsTimeline.length;
+    }
+    return stats.hourlyBidPressures.reduce((acc, h) => acc + h.bidCount, 0);
+  });
+
+  readonly peakBidInfo = computed(() => {
+    const stats = this.categoryStats();
+    if (!stats) return null;
+    const timeline = stats.recentBidsTimeline ?? [];
+    if (timeline.length > 0) {
+      const highest = [...timeline].sort((a, b) => Number(b.amount) - Number(a.amount))[0];
+      return {
+        amount: highest.amount,
+        label: highest.listingName,
+        category: highest.categoryName,
+        paymentRef: highest.paymentReference,
+        time: highest.createdAt,
+      };
+    }
+    const hourly = stats.hourlyBidPressures;
+    const peakHour = [...hourly].sort((a, b) => Number(b.volume) - Number(a.volume))[0];
+    if (peakHour && peakHour.volume > 0) {
+      return {
+        amount: peakHour.volume,
+        label: `${String(peakHour.hour).padStart(2, '0')}:00 UTC`,
+        category: 'Hourly Peak',
+        paymentRef: null,
+        time: null,
+      };
+    }
+    return null;
+  });
+
+  readonly avgBidAmount = computed(() => {
+    const count = this.todayTotalBids();
+    const vol = this.todayTotalVolume();
+    return count > 0 ? vol / count : 0;
+  });
 
   // ── Category metadata ──────────────────────────────────────
   readonly categorySlug = signal('');
@@ -131,6 +200,7 @@ export class LeaderboardComponent implements OnInit {
           this.claimAmount.set(null);
           this.targetRank.set(1);
           void this.joinGroup(slug);
+          this.loadCategoryStats(slug);
           return this.leaderboardService.getCategoryLeaderboard(slug, this.page(), this.pageSize(), this.timeMode()).pipe(
             catchError(() => of(null as CategoryLeaderboardResponseDto | null)),
           );
@@ -154,7 +224,10 @@ export class LeaderboardComponent implements OnInit {
       });
 
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
-      if (payload.categorySlug === this.categorySlug()) this.refresh();
+      if (payload.categorySlug === this.categorySlug()) {
+        this.refresh();
+        this.loadCategoryStats(this.categorySlug());
+      }
       this.loadTop3Bidders();
     });
 
@@ -163,6 +236,9 @@ export class LeaderboardComponent implements OnInit {
     });
 
     this.destroyRef.onDestroy(() => {
+      this.chartResizeObserver?.disconnect();
+      this.echartsInstance?.dispose();
+      this.echartsInstance = null;
       void this.signalr.leaveCategoryGroup(this.categorySlug());
       if (this.countdownTimerId) clearInterval(this.countdownTimerId);
     });
@@ -430,5 +506,472 @@ export class LeaderboardComponent implements OnInit {
 
   canClaimRank(): boolean {
     return this.isSidebarUrlValid() && this.categoryId() !== null;
+  }
+
+  /* ── Interactive Bid Pressure Chart Methods ── */
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      void this.initChart();
+    }
+  }
+
+  setChartViewMode(mode: 'timeline' | 'hourly' | 'weekly'): void {
+    this.chartViewMode.set(mode);
+    this.updateChart();
+  }
+
+  setChartMetric(metric: 'both' | 'volume' | 'count'): void {
+    this.chartMetric.set(metric);
+    this.updateChart();
+  }
+
+  setChartTimePreset(preset: '1h' | '6h' | 'today' | 'all'): void {
+    this.chartTimePreset.set(preset);
+    this.updateChart();
+  }
+
+  loadCategoryStats(slug: string): void {
+    if (!slug) return;
+    this.leaderboardService.getPlatformStats(slug).subscribe({
+      next: (stats) => {
+        this.categoryStats.set(stats);
+        if (isPlatformBrowser(this.platformId)) {
+          setTimeout(() => this.updateChart(), 40);
+        }
+      },
+    });
+  }
+
+  private async initChart(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId) || !this.chartContainerRef?.nativeElement) return;
+
+    if (!this.echartsModule) {
+      this.echartsModule = await import('echarts');
+    }
+
+    if (!this.echartsInstance) {
+      this.echartsInstance = this.echartsModule.init(this.chartContainerRef.nativeElement, undefined, {
+        renderer: 'svg',
+      });
+
+      if (typeof ResizeObserver !== 'undefined') {
+        this.chartResizeObserver = new ResizeObserver(() => {
+          this.echartsInstance?.resize();
+        });
+        this.chartResizeObserver.observe(this.chartContainerRef.nativeElement);
+      }
+    }
+
+    this.updateChart();
+  }
+
+  updateChart(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.chartContainerRef?.nativeElement) return;
+    if (!this.echartsInstance || !this.echartsModule) {
+      void this.initChart();
+      return;
+    }
+
+    const echartsLib = this.echartsModule;
+    const stats = this.categoryStats();
+    if (!stats) return;
+
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+    const currency = '$';
+    const mode = this.chartViewMode();
+    const metric = this.chartMetric();
+
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const headingColor = isDark ? '#f8fafc' : '#0f172a';
+    const gridLineColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+
+    let option: echarts.EChartsOption;
+
+    if (mode === 'timeline') {
+      let bids = stats.recentBidsTimeline ?? [];
+      const preset = this.chartTimePreset();
+      const now = Date.now();
+
+      if (preset === '1h') {
+        const oneHourAgo = now - 60 * 60 * 1000;
+        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= oneHourAgo);
+        if (filtered.length > 0) bids = filtered;
+      } else if (preset === '6h') {
+        const sixHoursAgo = now - 6 * 60 * 60 * 1000;
+        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= sixHoursAgo);
+        if (filtered.length > 0) bids = filtered;
+      } else if (preset === 'today') {
+        const startOfTodayUtc = new Date();
+        startOfTodayUtc.setUTCHours(0, 0, 0, 0);
+        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
+        if (filtered.length > 0) bids = filtered;
+      }
+
+      // Sort bids chronologically
+      const sortedBids = [...bids].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+
+      const seriesData = sortedBids.map((b) => {
+        const t = new Date(b.createdAt).getTime();
+        return {
+          name: b.listingName,
+          value: [t, Number(b.amount)],
+          raw: b,
+        };
+      });
+
+      option = {
+        backgroundColor: 'transparent',
+        grid: {
+          left: '3%',
+          right: '4%',
+          top: '12%',
+          bottom: '22%',
+          containLabel: true,
+        },
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: tooltipBg,
+          borderColor: tooltipBorder,
+          borderWidth: 1,
+          padding: [10, 14],
+          textStyle: { color: textColor },
+          extraCssText:
+            'box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-radius: 12px; backdrop-filter: blur(8px);',
+          formatter: (params: any) => {
+            const raw = params.data?.raw;
+            if (!raw) return '';
+            const date = new Date(raw.createdAt);
+            const timeStr = date.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            });
+            const utcTimeStr = `${String(date.getUTCHours()).padStart(2, '0')}:${String(
+              date.getUTCMinutes()
+            ).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')} UTC`;
+            const currentBidDisplay = raw.currentBidLevel ? `
+                  <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px;">
+                    <span style="font-size: 11px; color: ${textColor};">Standing Rank Bid:</span>
+                    <span style="font-size: 14px; font-weight: 700; font-family: 'Space Grotesk', monospace; color: ${headingColor};">
+                      ${currency}${Number(raw.currentBidLevel).toFixed(2)}
+                    </span>
+                  </div>` : '';
+            return `
+              <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; min-width: 210px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
+                  <span style="font-weight: 700; font-size: 13px; color: ${headingColor};">${raw.listingName}</span>
+                  <span style="font-size: 10px; padding: 2px 7px; border-radius: 9999px; background: rgba(249,87,56,0.14); color: #f95738; font-weight: 700;">${raw.categoryName}</span>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px;">
+                  <span style="font-size: 11px; color: ${textColor};">Payment Received:</span>
+                  <span style="font-size: 20px; font-weight: 800; font-family: 'Space Grotesk', monospace; color: #f95738;">
+                    ${currency}${Number(raw.amount).toFixed(2)}
+                  </span>
+                </div>
+                ${currentBidDisplay}
+                <div style="font-size: 11px; color: ${textColor}; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid ${gridLineColor}; padding-top: 6px;">
+                  <div>🕒 <b>Local:</b> ${timeStr} <span style="opacity: 0.65">(${utcTimeStr})</span></div>
+                  ${raw.paymentReference ? `<div>💳 <b>Payment ID:</b> <code style="font-family: monospace; background: rgba(249,87,56,0.08); color: #f95738; padding: 1px 4px; border-radius: 3px;">${raw.paymentReference}</code></div>` : ''}
+                </div>
+              </div>
+            `;
+          },
+        },
+        xAxis: {
+          type: 'time',
+          axisLine: { lineStyle: { color: gridLineColor } },
+          axisLabel: {
+            color: textColor,
+            fontSize: 10,
+            formatter: (val: number) => {
+              const d = new Date(val);
+              return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(
+                2,
+                '0'
+              )}`;
+            },
+          },
+          splitLine: { lineStyle: { color: gridLineColor, type: 'dashed' } },
+        },
+        yAxis: {
+          type: 'value',
+          name: `Payment (${currency})`,
+          nameTextStyle: { color: textColor, fontSize: 10 },
+          axisLine: { show: false },
+          axisLabel: {
+            color: textColor,
+            fontSize: 10,
+            formatter: (v: number) => `${currency}${v.toFixed(0)}`,
+          },
+          splitLine: { lineStyle: { color: gridLineColor } },
+        },
+        dataZoom: [
+          {
+            type: 'inside',
+            start: 0,
+            end: 100,
+          },
+          {
+            type: 'slider',
+            start: 0,
+            end: 100,
+            height: 18,
+            bottom: 4,
+            borderColor: 'transparent',
+            backgroundColor: isDark ? 'rgba(30, 41, 59, 0.4)' : 'rgba(241, 245, 249, 0.7)',
+            fillerColor: 'rgba(249, 87, 56, 0.2)',
+            handleStyle: { color: '#f95738' },
+            textStyle: { color: textColor, fontSize: 9 },
+          },
+        ],
+        series: [
+          {
+            name: 'Bid Volume',
+            type: 'line',
+            smooth: 0.25,
+            symbol: 'circle',
+            symbolSize: 10,
+            itemStyle: {
+              color: '#f95738',
+              borderColor: isDark ? '#0f172a' : '#ffffff',
+              borderWidth: 2,
+            },
+            lineStyle: {
+              color: '#f95738',
+              width: 3,
+            },
+            areaStyle: {
+              color: new echartsLib.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: 'rgba(249, 87, 56, 0.42)' },
+                { offset: 1, color: 'rgba(249, 87, 56, 0.01)' },
+              ]),
+            },
+            markPoint: {
+              data: [{ type: 'max', name: 'Peak Bid' }],
+              label: {
+                formatter: (p: any) => `${currency}${p.value}`,
+                fontSize: 10,
+                fontWeight: 'bold',
+                color: '#fff',
+              },
+              itemStyle: { color: '#f95738' },
+            },
+            markLine: {
+              data: [{ type: 'average', name: 'Avg' }],
+              lineStyle: { color: '#10b981', type: 'dotted', width: 2 },
+              label: {
+                formatter: (p: any) => `Avg: ${currency}${Number(p.value).toFixed(1)}`,
+                position: 'insideEndTop',
+                fontSize: 10,
+                color: '#10b981',
+                fontWeight: 600,
+              },
+            },
+            data: seriesData,
+          },
+        ],
+      };
+    } else if (mode === 'hourly') {
+      const hours = stats.hourlyBidPressures;
+      const categories = hours.map((h) => `${String(h.hour).padStart(2, '0')}:00`);
+      const volumes = hours.map((h) => Number(h.volume));
+      const counts = hours.map((h) => h.bidCount);
+
+      const series: any[] = [];
+      const yAxes: any[] = [
+        {
+          type: 'value',
+          name: `Volume (${currency})`,
+          nameTextStyle: { color: textColor, fontSize: 10 },
+          axisLabel: {
+            color: textColor,
+            fontSize: 10,
+            formatter: (v: number) => `${currency}${v}`,
+          },
+          splitLine: { lineStyle: { color: gridLineColor } },
+        },
+      ];
+
+      if (metric === 'both' || metric === 'count') {
+        yAxes.push({
+          type: 'value',
+          name: 'Bids (#)',
+          nameTextStyle: { color: textColor, fontSize: 10 },
+          minInterval: 1,
+          axisLabel: { color: textColor, fontSize: 10 },
+          splitLine: { show: false },
+        });
+      }
+
+      if (metric === 'both' || metric === 'volume') {
+        series.push({
+          name: 'Auction Volume',
+          type: 'line',
+          smooth: 0.35,
+          symbol: 'circle',
+          symbolSize: 7,
+          itemStyle: { color: '#f95738' },
+          lineStyle: { width: 3, color: '#f95738' },
+          areaStyle: {
+            color: new echartsLib.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(249, 87, 56, 0.4)' },
+              { offset: 1, color: 'rgba(249, 87, 56, 0.01)' },
+            ]),
+          },
+          data: volumes,
+          markPoint: {
+            data: [{ type: 'max', name: 'Peak Hour' }],
+            itemStyle: { color: '#f95738' },
+            label: { color: '#fff', fontSize: 10, fontWeight: 700 },
+          },
+        });
+      }
+
+      if (metric === 'both' || metric === 'count') {
+        series.push({
+          name: 'Bid Count',
+          type: 'bar',
+          yAxisIndex: metric === 'both' ? 1 : 0,
+          barMaxWidth: 14,
+          itemStyle: {
+            color: '#10b981',
+            borderRadius: [4, 4, 0, 0],
+          },
+          data: counts,
+        });
+      }
+
+      option = {
+        backgroundColor: 'transparent',
+        grid: {
+          left: '3%',
+          right: metric === 'both' ? '4%' : '3%',
+          top: '15%',
+          bottom: '12%',
+          containLabel: true,
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'cross', label: { backgroundColor: '#334155' } },
+          backgroundColor: tooltipBg,
+          borderColor: tooltipBorder,
+          borderWidth: 1,
+          padding: [10, 14],
+          textStyle: { color: textColor },
+          extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25); border-radius: 12px;',
+          formatter: (params: any) => {
+            if (!Array.isArray(params) || params.length === 0) return '';
+            const idx = params[0].dataIndex;
+            const hourPoint = hours[idx];
+            const avg =
+              hourPoint.avgBid ?? (hourPoint.bidCount > 0 ? hourPoint.volume / hourPoint.bidCount : 0);
+            return `
+              <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; min-width: 170px;">
+                <div style="font-weight: 700; font-size: 13px; color: ${headingColor}; margin-bottom: 6px;">
+                  ⏱️ ${categories[idx]} UTC
+                </div>
+                <div style="font-size: 13px; color: #f95738; font-weight: 700; margin-bottom: 4px;">
+                  Volume: ${currency}${Number(hourPoint.volume).toFixed(2)}
+                </div>
+                <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-bottom: 4px;">
+                  Bids: ${hourPoint.bidCount} transaction${hourPoint.bidCount === 1 ? '' : 's'}
+                </div>
+                <div style="font-size: 11px; color: ${textColor}; border-top: 1px solid ${gridLineColor}; padding-top: 4px;">
+                  Avg Bid: ${currency}${Number(avg).toFixed(2)}
+                </div>
+              </div>
+            `;
+          },
+        },
+        xAxis: {
+          type: 'category',
+          data: categories,
+          axisLine: { lineStyle: { color: gridLineColor } },
+          axisLabel: {
+            color: textColor,
+            fontSize: 10,
+            interval: 2,
+          },
+        },
+        yAxis: yAxes,
+        series,
+      };
+    } else {
+      const days = stats.dailyBidPressures ?? [];
+      const categories = days.map((d) => d.date);
+      const volumes = days.map((d) => Number(d.volume));
+
+      option = {
+        backgroundColor: 'transparent',
+        grid: {
+          left: '3%',
+          right: '4%',
+          top: '15%',
+          bottom: '12%',
+          containLabel: true,
+        },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: tooltipBg,
+          borderColor: tooltipBorder,
+          padding: [10, 14],
+          textStyle: { color: textColor },
+          extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25); border-radius: 12px;',
+          formatter: (params: any) => {
+            if (!Array.isArray(params) || params.length === 0) return '';
+            const idx = params[0].dataIndex;
+            const day = days[idx];
+            return `
+              <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
+                <div style="font-weight: 700; font-size: 13px; color: ${headingColor}; margin-bottom: 4px;">
+                  📅 ${day.date}
+                </div>
+                <div style="color: #f95738; font-weight: 700;">Volume: ${currency}${Number(day.volume).toFixed(2)}</div>
+                <div style="color: #10b981; font-weight: 600;">Bids: ${day.bidCount} transactions</div>
+              </div>
+            `;
+          },
+        },
+        xAxis: {
+          type: 'category',
+          data: categories,
+          axisLine: { lineStyle: { color: gridLineColor } },
+          axisLabel: { color: textColor, fontSize: 10 },
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: `Volume (${currency})`,
+            nameTextStyle: { color: textColor, fontSize: 10 },
+            axisLabel: {
+              color: textColor,
+              formatter: (v: number) => `${currency}${v}`,
+            },
+            splitLine: { lineStyle: { color: gridLineColor } },
+          },
+        ],
+        series: [
+          {
+            name: 'Daily Volume',
+            type: 'bar',
+            barMaxWidth: 26,
+            itemStyle: {
+              color: new echartsLib.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#f95738' },
+                { offset: 1, color: '#e04426' },
+              ]),
+              borderRadius: [6, 6, 0, 0],
+            },
+            data: volumes,
+          },
+        ],
+      };
+    }
+
+    this.echartsInstance.setOption(option, true);
   }
 }

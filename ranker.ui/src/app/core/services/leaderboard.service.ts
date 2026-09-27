@@ -38,7 +38,12 @@ export class LeaderboardService {
     });
   }
 
-  getPlatformStats(): Observable<PlatformStatsDto> {
+  getPlatformStats(categorySlug?: string | null): Observable<PlatformStatsDto> {
+    if (categorySlug?.trim()) {
+      return this.http.get<PlatformStatsDto>(
+        `${API_BASE_URL}/api/leaderboard/category/${encodeURIComponent(categorySlug.trim())}/stats`
+      );
+    }
     return this.http.get<PlatformStatsDto>(`${API_BASE_URL}/api/leaderboard/stats`);
   }
 
