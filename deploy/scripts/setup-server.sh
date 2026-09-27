@@ -98,25 +98,25 @@ if [ -f "${REPO_DIR}/nginx/ranker.conf" ]; then
   nginx -t && systemctl reload nginx
 fi
 
-# 8. Obtain Let's Encrypt SSL certificate
-echo "--> Obtaining SSL certificate for rankup.cyou..."
-if [ ! -f "/etc/letsencrypt/live/rankup.cyou/fullchain.pem" ]; then
-  certbot --nginx \
-    -d rankup.cyou \
-    -d www.rankup.cyou \
-    --non-interactive \
-    --agree-tos \
-    --redirect \
-    --email admin@rankup.cyou
-  echo "  SSL certificate issued successfully."
-else
-  echo "  Certificate already exists, skipping issuance."
-fi
+# 8. SSL Certificate (Let's Encrypt)
+# NOTE: SSL certificate issuance is NOT done automatically here because DNS must
+# point to this server BEFORE certbot can verify domain ownership.
+#
+# Once your DNS A record is live, run this manually on the server:
+#
+#   sudo certbot --nginx -d rankup.cyou -d www.rankup.cyou \
+#     --non-interactive --agree-tos --redirect --email admin@rankup.cyou
+#
+echo "--> Skipping automatic SSL issuance (run certbot manually after DNS is configured)."
 
-# Ensure auto-renewal timer is enabled
-systemctl enable certbot.timer
-systemctl start certbot.timer
-echo "  Certbot auto-renewal timer enabled."
+# Enable certbot auto-renewal timer only if a cert already exists
+if [ -f "/etc/letsencrypt/live/rankup.cyou/fullchain.pem" ]; then
+  systemctl enable certbot.timer
+  systemctl start certbot.timer
+  echo "  Certbot auto-renewal timer enabled."
+else
+  echo "  No certificate found yet. Auto-renewal timer will be enabled after you run certbot."
+fi
 
 # 9. Configure passwordless sudo for service restarts in CI/CD
 echo "--> Configuring sudoers for CI/CD deployments..."
