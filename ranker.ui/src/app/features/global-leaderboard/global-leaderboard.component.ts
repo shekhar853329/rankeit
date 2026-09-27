@@ -606,12 +606,6 @@ export class GlobalLeaderboardComponent implements OnInit {
         void this.signalr.joinCategoryGroup(slug);
       }
     }
-
-    if (slug) {
-      this.selectClaimCategory(slug);
-    } else {
-      this.selectClaimCategory(null);
-    }
   }
 
   selectClaimCategory(slug: string | null): void {
@@ -682,14 +676,14 @@ export class GlobalLeaderboardComponent implements OnInit {
     if (this.claimSlug() === slug) {
       this.clearCategorySelection();
     } else {
-      this.selectTab(slug);
+      this.selectClaimCategory(slug);
     }
     this.closeCategoryDropdown();
   }
 
   clearCategorySelection(event?: Event): void {
     event?.stopPropagation();
-    this.selectTab(null);
+    this.selectClaimCategory(null);
   }
 
   onCategorySearch(event: Event): void {
