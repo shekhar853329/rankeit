@@ -18,10 +18,10 @@ fi
 CURRENT_USER="${SUDO_USER:-$(whoami)}"
 echo "Configuring for user: ${CURRENT_USER}"
 
-# 1. Update system packages
+# 1. Update system packages & install prerequisites
 echo "--> Updating system packages..."
 apt-get update -y
-apt-get install -y ca-certificates curl wget gnupg lsb-release ufw git rsync
+apt-get install -y ca-certificates curl wget gnupg lsb-release ufw git rsync tar gzip libicu-dev
 
 # 2. Install Node.js 22 LTS
 echo "--> Installing Node.js 22 LTS..."
@@ -35,8 +35,21 @@ echo "NPM version:  $(npm -v)"
 # 3. Install .NET 10 SDK & Runtime via official Microsoft install script
 echo "--> Installing .NET 10..."
 mkdir -p /usr/share/dotnet
-curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 10.0 --install-dir /usr/share/dotnet
+mkdir -p /var/tmp
+export TMPDIR=/var/tmp
+
+# Clean up any previously corrupted or partial downloads
+rm -rf /usr/share/dotnet/* /tmp/dotnet-install.sh /var/tmp/dotnet*
+
+curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+chmod +x /tmp/dotnet-install.sh
+
+# Run install with verbose output (fallback to ASP.NET Core runtime if SDK has environment constraints)
+/tmp/dotnet-install.sh --channel 10.0 --install-dir /usr/share/dotnet --verbose || \
+/tmp/dotnet-install.sh --channel 10.0 --runtime aspnetcore --install-dir /usr/share/dotnet --verbose
+
 ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
+rm -f /tmp/dotnet-install.sh
 echo ".NET version: $(dotnet --version)"
 
 # 4. Install and configure Nginx
