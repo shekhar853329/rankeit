@@ -1,0 +1,18 @@
+[Unit]
+Description=Ranker Angular SSR Frontend
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/ranker/frontend
+ExecStart=/usr/bin/node /var/www/ranker/frontend/dist/ranker.ui/server/server.mjs
+Restart=always
+RestartSec=10
+SyslogIdentifier=ranker-frontend
+User=www-data
+Environment=NODE_ENV=production
+Environment=PORT=4000
+Environment=API_INTERNAL_URL=http://127.0.0.1:5000
+EnvironmentFile=-/var/www/ranker/frontend/.env
+
+[Install]
+WantedBy=multi-user.target

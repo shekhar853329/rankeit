@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Ranker.Application.Bids;
 using Ranker.Data;
@@ -66,13 +67,37 @@ builder.Services.AddSingleton<Razorpay.Api.RazorpayClient>(sp =>
     return new Razorpay.Api.RazorpayClient(opts.KeyId, opts.KeySecret);
 });
 
+// Configure forwarded headers for running behind reverse proxy (Nginx on Ubuntu)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddCors(options => options.AddPolicy(AngularDevCorsPolicy, policy =>
-    policy.WithOrigins("http://localhost:4200")
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials()));
+{
+    var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+    if (configuredOrigins != null && configuredOrigins.Length > 0)
+    {
+        policy.WithOrigins(configuredOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    }
+    else
+    {
+        // Fallback: dynamic origin allowing for local dev, IP-based access, and reverse-proxied domains
+        policy.SetIsOriginAllowed(_ => true)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    }
+}));
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -87,10 +112,49 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-if (!app.Environment.IsDevelopment())
+var enableHttpsRedirection = builder.Configuration.GetValue<bool>("EnableHttpsRedirection", false);
+if (enableHttpsRedirection && !app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+// Restrict direct external API consumption in Production:
+// Requests must carry the X-App-Client verification header from the Angular app,
+// or be an internal health check / loopback SSR request.
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+
+    if (!app.Environment.IsDevelopment() &&
+        path.StartsWithSegments("/api") &&
+        !path.StartsWithSegments("/api/health"))
+    {
+        // 1. Allow if Angular application verification header is present
+        if (context.Request.Headers.TryGetValue("X-App-Client", out var clientHeader) &&
+            clientHeader == "Ranker-UI-Client")
+        {
+            await next();
+            return;
+        }
+
+        // 2. Allow internal loopback calls without header (e.g. Node SSR making direct loopback calls)
+        var remoteIp = context.Connection.RemoteIpAddress;
+        if (remoteIp != null && System.Net.IPAddress.IsLoopback(remoteIp) &&
+            !context.Request.Headers.ContainsKey("X-Forwarded-For"))
+        {
+            await next();
+            return;
+        }
+
+        // 3. Reject unauthorized external calls
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync("{\"error\":\"Forbidden\",\"message\":\"Direct API access is restricted.\"}");
+        return;
+    }
+
+    await next();
+});
 
 app.UseCors(AngularDevCorsPolicy);
 

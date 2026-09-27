@@ -1,0 +1,203 @@
+name: Build & Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  # ============================================================================
+  # 1. BUILD & TEST BACKEND (.NET 10)
+  # ============================================================================
+  build-backend:
+    name: Build & Test Backend (.NET 10)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        run: |
+          mkdir -p /usr/share/dotnet
+          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 10.0 --install-dir /usr/share/dotnet
+          echo "/usr/share/dotnet" >> $GITHUB_PATH
+          echo "DOTNET_ROOT=/usr/share/dotnet" >> $GITHUB_ENV
+
+      - name: Verify .NET Version
+        run: dotnet --version
+
+      - name: Restore Dependencies
+        run: dotnet restore backend/Ranker.slnx
+
+      - name: Run Backend Tests
+        run: dotnet test backend/ranker.Tests/ranker.Tests.csproj --no-restore -c Release --verbosity normal
+
+      - name: Publish Backend
+        run: dotnet publish backend/ranker/ranker.csproj -c Release -o publish/backend --no-restore
+
+      - name: Upload Backend Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-publish
+          path: publish/backend
+          retention-days: 1
+
+  # ============================================================================
+  # 2. BUILD FRONTEND (Angular 20 SSR)
+  # ============================================================================
+  build-frontend:
+    name: Build Frontend (Angular SSR)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: ranker.ui/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ranker.ui
+        run: npm ci
+
+      - name: Build Angular Application
+        working-directory: ranker.ui
+        run: npm run build
+
+      - name: Prepare Frontend Bundle
+        run: |
+          mkdir -p publish/frontend
+          cp -r ranker.ui/dist publish/frontend/
+          cp ranker.ui/package.json publish/frontend/
+          cp ranker.ui/package-lock.json publish/frontend/
+
+      - name: Upload Frontend Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-publish
+          path: publish/frontend
+          retention-days: 1
+
+  # ============================================================================
+  # 3. DEPLOY TO UBUNTU SERVER
+  # ============================================================================
+  deploy:
+    name: Deploy to Ubuntu Host
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Backend Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-publish
+          path: publish/backend
+
+      - name: Download Frontend Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-publish
+          path: publish/frontend
+
+      - name: Configure SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Add Server to Known Hosts
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${SERVER_PORT}" -H "${SERVER_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Sync Backend Files via Rsync
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          rsync -avz -e "ssh -p ${SERVER_PORT}" --delete \
+            --exclude '.env' \
+            publish/backend/ \
+            "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/backend/"
+
+      - name: Sync Frontend Files via Rsync
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          rsync -avz -e "ssh -p ${SERVER_PORT}" \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            publish/frontend/ \
+            "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/frontend/"
+
+      - name: Configure Secrets, Install Dependencies & Restart Services
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+          PROD_CONNECTION_STRING: ${{ secrets.PROD_CONNECTION_STRING }}
+          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+        run: |
+          ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" bash -s << 'EOF'
+            set -euo pipefail
+
+            # 1. Update backend .env file if secrets are configured in GitHub Actions
+            if [ -n "${PROD_CONNECTION_STRING:-}" ]; then
+              cat << ENVFILE > /var/www/ranker/backend/.env
+          ASPNETCORE_ENVIRONMENT=Production
+          ASPNETCORE_URLS=http://127.0.0.1:5000
+          ConnectionStrings__RankerDb="${PROD_CONNECTION_STRING}"
+          Razorpay__KeyId="${RAZORPAY_KEY_ID:-}"
+          Razorpay__KeySecret="${RAZORPAY_KEY_SECRET:-}"
+          ENVFILE
+              chmod 600 /var/www/ranker/backend/.env
+            fi
+
+            # 2. Install production dependencies for frontend SSR
+            cd /var/www/ranker/frontend
+            npm install --omit=dev --no-audit --no-fund
+
+            # 3. Restart systemd services
+            echo "Restarting services..."
+            sudo systemctl restart ranker-backend
+            sudo systemctl restart ranker-frontend
+
+            # 4. Verify systemd service status
+            sleep 4
+            if ! sudo systemctl is-active --quiet ranker-backend; then
+              echo "ERROR: ranker-backend failed to start!"
+              sudo journalctl -u ranker-backend -n 50 --no-pager
+              exit 1
+            fi
+
+            if ! sudo systemctl is-active --quiet ranker-frontend; then
+              echo "ERROR: ranker-frontend failed to start!"
+              sudo journalctl -u ranker-frontend -n 50 --no-pager
+              exit 1
+            fi
+
+            echo "Both services are active and running."
+          EOF
+
+      - name: Verify Backend Health Check
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" \
+            'curl -fsS http://127.0.0.1:5000/api/health || (echo "Health check failed!" && exit 1)'
+          echo "Health check passed!"

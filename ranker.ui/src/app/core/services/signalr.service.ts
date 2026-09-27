@@ -33,7 +33,9 @@ export class SignalrService implements OnDestroy {
   private async ensureConnected(): Promise<void> {
     if (!this.connection) {
       this.connection = new signalR.HubConnectionBuilder()
-        .withUrl(HUB_URL)
+        .withUrl(HUB_URL, {
+          headers: { 'X-App-Client': 'Ranker-UI-Client' }
+        })
         .withAutomaticReconnect()
         .build();
 

@@ -1,0 +1,19 @@
+[Unit]
+Description=Ranker ASP.NET Core Web API
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/ranker/backend
+ExecStart=/usr/bin/dotnet /var/www/ranker/backend/ranker.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=ranker-backend
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5000
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+EnvironmentFile=-/var/www/ranker/backend/.env
+
+[Install]
+WantedBy=multi-user.target
