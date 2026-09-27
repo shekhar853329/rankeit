@@ -135,8 +135,12 @@ using (var scope = app.Services.CreateScope())
             logger.LogInformation("Checking database connectivity and applying migrations...");
             var dbContext = scope.ServiceProvider.GetRequiredService<RankerDbContext>();
             await dbContext.Database.MigrateAsync();
-            await DbSeeder.SeedAsync(dbContext);
-            logger.LogInformation("Database migration and seeding completed successfully.");
+            if (app.Environment.IsDevelopment())
+            {
+                await DbSeeder.SeedAsync(dbContext);
+                logger.LogInformation("Database seeding completed successfully.");
+            }
+            logger.LogInformation("Database migration completed successfully.");
         }
         catch (Exception ex)
         {
