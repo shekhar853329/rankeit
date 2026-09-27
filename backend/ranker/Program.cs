@@ -20,12 +20,12 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 
 builder.Services.AddDbContext<RankerDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("RankerDb"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure(
+        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null
+            errorCodesToAdd: null
         )
     ));
 
@@ -119,13 +119,11 @@ using (var scope = app.Services.CreateScope())
     {
         try
         {
-            var csb = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(rawConnStr);
-            logger.LogInformation("Database configured: Host='{DataSource}', Database='{InitialCatalog}', Auth='{AuthType}', Encrypt={Encrypt}, TrustServerCertificate={TrustServerCertificate}",
-                csb.DataSource,
-                csb.InitialCatalog,
-                csb.IntegratedSecurity ? "Windows Integrated" : $"SQL User '{csb.UserID}'",
-                csb.Encrypt,
-                csb.TrustServerCertificate);
+            var csb = new Npgsql.NpgsqlConnectionStringBuilder(rawConnStr);
+            logger.LogInformation("Database configured: Host='{Host}', Database='{Database}', User='{Username}'",
+                csb.Host,
+                csb.Database,
+                csb.Username);
         }
         catch
         {

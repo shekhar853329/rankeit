@@ -37,8 +37,8 @@ public class Listing
     /// <summary>Favicon URL derived from the submitted URL.</summary>
     public string? FaviconUrl { get; set; }
 
-    /// <summary>Optimistic-concurrency guard, layered on top of the pessimistic row lock taken during bid placement.</summary>
-    public byte[]? RowVersion { get; set; }
+    /// <summary>Optimistic-concurrency guard using PostgreSQL's built-in xmin system column.</summary>
+    public uint Xmin { get; set; }
 
     public ICollection<Bid> Bids { get; set; } = new List<Bid>();
 }

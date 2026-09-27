@@ -21,11 +21,12 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
         builder.Property(l => l.Description).HasMaxLength(1000);
         builder.Property(l => l.FaviconUrl).HasMaxLength(2048);
 
-        builder.Property(l => l.CurrentBidAmount).HasColumnType("decimal(18,2)");
+        builder.Property(l => l.CurrentBidAmount).HasColumnType("numeric(18,2)");
 
         builder.Property(l => l.ClickCount).HasDefaultValue(0);
 
-        builder.Property(l => l.RowVersion).IsRowVersion();
+        // PostgreSQL optimistic concurrency: maps to the built-in xmin system column (no migration needed)
+        builder.Property(l => l.Xmin).IsRowVersion();
 
         builder.HasOne(l => l.Category)
             .WithMany(c => c.Listings)

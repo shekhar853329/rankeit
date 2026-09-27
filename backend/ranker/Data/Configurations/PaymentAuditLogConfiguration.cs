@@ -19,7 +19,7 @@ public class PaymentAuditLogConfiguration : IEntityTypeConfiguration<PaymentAudi
         builder.Property(l => l.PaymentReference).HasMaxLength(200);
         builder.Property(l => l.Currency).HasMaxLength(10);
         builder.Property(l => l.Receipt).HasMaxLength(200);
-        builder.Property(l => l.Amount).HasColumnType("decimal(18,2)");
+        builder.Property(l => l.Amount).HasColumnType("numeric(18,2)");
         builder.Property(l => l.ClientIp).HasMaxLength(60);
 
         builder.HasIndex(l => l.OrderId);

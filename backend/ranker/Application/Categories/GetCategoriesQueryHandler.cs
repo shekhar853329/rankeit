@@ -39,16 +39,18 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
         // Core can't translate that combination - a GroupBy/Sum aggregate correlated inside a LEFT JOIN.
         var activityScores = await dbContext.Bids
             .Where(b => b.CreatedAt >= cutoff)
-            .GroupBy(b => b.Listing!.CategoryId)
-            .Select(g => new
-            {
-                CategoryId = g.Key,
-                Score = g.Sum(b => 1.0 / (1 + EF.Functions.DateDiffDay(b.CreatedAt, now))),
-                Count = g.Count(),
-            })
+            .Select(b => new { b.Listing!.CategoryId, b.CreatedAt })
             .ToListAsync(ct);
 
-        var statsByCategory = activityScores.ToDictionary(s => s.CategoryId, s => (s.Score, s.Count));
+        // Recency-weighted score: computed in memory to keep it provider-agnostic
+        var statsByCategory = activityScores
+            .GroupBy(b => b.CategoryId)
+            .ToDictionary(
+                g => g.Key,
+                g => (
+                    Score: g.Sum(b => 1.0 / (1 + (now - b.CreatedAt).TotalDays)),
+                    Count: g.Count()
+                ));
 
         var baseQuery = dbContext.Categories.Where(c => c.ParentCategoryId == parentCategoryId);
 
@@ -61,13 +63,13 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
         var withScores = categories
             .Select(x =>
             {
-                var (score, claimCount) = statsByCategory.GetValueOrDefault(x.Category.Id);
+                statsByCategory.TryGetValue(x.Category.Id, out var stats);
                 return new
                 {
                     x.Category,
                     x.ListingCount,
-                    Score = score,
-                    RecentClaimCount = claimCount,
+                    Score = stats.Score,
+                    RecentClaimCount = stats.Count,
                 };
             });
 

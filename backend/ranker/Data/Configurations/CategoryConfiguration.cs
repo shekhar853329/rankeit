@@ -25,8 +25,8 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.HasIndex(c => c.Slug).IsUnique();
 
-        builder.Property(c => c.MinBidIncrement).HasColumnType("decimal(18,2)");
-        builder.Property(c => c.MinStartingBid).HasColumnType("decimal(18,2)");
+        builder.Property(c => c.MinBidIncrement).HasColumnType("numeric(18,2)");
+        builder.Property(c => c.MinStartingBid).HasColumnType("numeric(18,2)");
 
         builder.HasOne(c => c.ParentCategory)
             .WithMany(c => c.ChildCategories)

@@ -12,9 +12,9 @@ public class BidReconciliationConfiguration : IEntityTypeConfiguration<BidReconc
 
         builder.HasKey(r => r.Id);
 
-        builder.Property(r => r.AttemptedTargetAmount).HasColumnType("decimal(18,2)");
-        builder.Property(r => r.ExpectedChargeAmount).HasColumnType("decimal(18,2)");
-        builder.Property(r => r.ConfirmedPaymentAmount).HasColumnType("decimal(18,2)");
+        builder.Property(r => r.AttemptedTargetAmount).HasColumnType("numeric(18,2)");
+        builder.Property(r => r.ExpectedChargeAmount).HasColumnType("numeric(18,2)");
+        builder.Property(r => r.ConfirmedPaymentAmount).HasColumnType("numeric(18,2)");
 
         builder.Property(r => r.PaymentReference).HasMaxLength(200).IsRequired();
         builder.Property(r => r.Reason).HasMaxLength(500).IsRequired();
