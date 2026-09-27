@@ -52,9 +52,9 @@ ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
 rm -f /tmp/dotnet-install.sh
 echo ".NET version: $(dotnet --version)"
 
-# 4. Install and configure Nginx
-echo "--> Installing Nginx..."
-apt-get install -y nginx
+# 4. Install Nginx and Certbot (Let's Encrypt)
+echo "--> Installing Nginx and Certbot..."
+apt-get install -y nginx certbot python3-certbot-nginx
 systemctl enable nginx
 
 # 5. Create deployment directories
@@ -98,7 +98,27 @@ if [ -f "${REPO_DIR}/nginx/ranker.conf" ]; then
   nginx -t && systemctl reload nginx
 fi
 
-# 8. Configure passwordless sudo for service restarts in CI/CD
+# 8. Obtain Let's Encrypt SSL certificate
+echo "--> Obtaining SSL certificate for rankup.cyou..."
+if [ ! -f "/etc/letsencrypt/live/rankup.cyou/fullchain.pem" ]; then
+  certbot --nginx \
+    -d rankup.cyou \
+    -d www.rankup.cyou \
+    --non-interactive \
+    --agree-tos \
+    --redirect \
+    --email admin@rankup.cyou
+  echo "  SSL certificate issued successfully."
+else
+  echo "  Certificate already exists, skipping issuance."
+fi
+
+# Ensure auto-renewal timer is enabled
+systemctl enable certbot.timer
+systemctl start certbot.timer
+echo "  Certbot auto-renewal timer enabled."
+
+# 9. Configure passwordless sudo for service restarts in CI/CD
 echo "--> Configuring sudoers for CI/CD deployments..."
 cat > /etc/sudoers.d/ranker-deploy << EOF
 # Allow only the deploy user to manage Ranker services without a password
@@ -112,7 +132,7 @@ ${CURRENT_USER} ALL=(ALL) NOPASSWD: \\
 EOF
 chmod 0440 /etc/sudoers.d/ranker-deploy
 
-# 9. Configure firewall
+# 10. Configure firewall
 # Oracle Cloud Ubuntu images ship with iptables and a catch-all REJECT rule at
 # position 5. Port 80/443 ACCEPT rules must be inserted BEFORE that rule.
 # UFW is left inactive to avoid conflicts with the OCI-managed iptables chain.
