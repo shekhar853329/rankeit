@@ -3,6 +3,7 @@ namespace Ranker.Dtos;
 /// <summary>One historical bid placed against a listing (rule for the listing detail / "see details" page).</summary>
 public sealed record BidHistoryEntryDto(
     decimal Amount,
+    decimal PaymentAmount,
     DateTime CreatedAt,
     string PaymentReferenceMasked);
 

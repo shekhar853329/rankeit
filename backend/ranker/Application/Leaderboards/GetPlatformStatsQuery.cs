@@ -99,7 +99,7 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         foreach (var b in recentBidsForStats)
         {
             var prevAmount = runningBidMap.GetValueOrDefault(b.ListingId, 0m);
-            var paid = Math.Max(0m, b.Amount - prevAmount);
+            var paid = b.PaymentAmount > 0m ? b.PaymentAmount : Math.Max(0m, b.Amount - prevAmount);
             runningBidMap[b.ListingId] = b.Amount;
             processedBids.Add((b, paid));
         }

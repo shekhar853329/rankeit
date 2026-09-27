@@ -49,11 +49,11 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
             .AsNoTracking()
             .Where(b => b.ListingId == request.ListingId)
             .OrderByDescending(b => b.CreatedAt)
-            .Select(b => new { b.Amount, b.CreatedAt, b.PaymentReference })
+            .Select(b => new { b.Amount, b.PaymentAmount, b.CreatedAt, b.PaymentReference })
             .ToListAsync(ct);
 
         var bidHistory = bids
-            .Select(b => new BidHistoryEntryDto(b.Amount, b.CreatedAt, MaskPaymentReference(b.PaymentReference)))
+            .Select(b => new BidHistoryEntryDto(b.Amount, b.PaymentAmount, b.CreatedAt, MaskPaymentReference(b.PaymentReference)))
             .ToList();
 
         return new ListingDetailDto(

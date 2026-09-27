@@ -13,6 +13,7 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
         builder.HasKey(b => b.Id);
 
         builder.Property(b => b.Amount).HasColumnType("decimal(18,2)");
+        builder.Property(b => b.PaymentAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
 
         builder.Property(b => b.PaymentReference).HasMaxLength(200).IsRequired();
 

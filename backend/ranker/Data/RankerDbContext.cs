@@ -15,6 +15,8 @@ public class RankerDbContext(DbContextOptions<RankerDbContext> options) : DbCont
 
     public DbSet<DailyVisitCount> DailyVisitCounts => Set<DailyVisitCount>();
 
+    public DbSet<PaymentAuditLog> PaymentAuditLogs => Set<PaymentAuditLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(RankerDbContext).Assembly);

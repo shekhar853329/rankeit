@@ -171,8 +171,37 @@ public class PlaceBidCommandHandler(
         {
             Listing = listing,
             Amount = decision.NewCurrentBidAmount,
+            PaymentAmount = decision.ExpectedChargeAmount,
             CreatedAt = now,
             PaymentReference = command.PaymentReference,
+        });
+
+        dbContext.PaymentAuditLogs.Add(new PaymentAuditLog
+        {
+            Action = "PlaceBid",
+            Gateway = "Razorpay",
+            PaymentReference = command.PaymentReference,
+            Amount = decision.ExpectedChargeAmount,
+            AmountInPaise = (long)(decision.ExpectedChargeAmount * 100m),
+            Currency = "INR",
+            IsSuccess = true,
+            RequestPayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                listingId = listing.Id,
+                listingName = listing.Name,
+                categoryId = command.CategoryId,
+                targetBidAmount = command.TargetBidAmount,
+                confirmedPaymentAmount = command.ConfirmedPaymentAmount,
+                paymentReference = command.PaymentReference,
+            }),
+            ResponsePayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                listingId = listing.Id,
+                newCurrentBidAmount = listing.CurrentBidAmount,
+                actualPaymentCharged = decision.ExpectedChargeAmount,
+                becameCategoryTop = decision.BecameCategoryTop,
+            }),
+            CreatedAt = now,
         });
 
         try

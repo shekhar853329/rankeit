@@ -1,5 +1,6 @@
 export interface BidHistoryEntryDto {
   amount: number;
+  paymentAmount: number;
   createdAt: string;
   paymentReferenceMasked: string;
 }
