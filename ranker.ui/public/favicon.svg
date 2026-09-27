@@ -1,4 +1,11 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#6366f1"/>
-  <polygon points="18,4 10,18 15,18 14,28 22,14 17,14" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="rankup-icon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b4a" />
+      <stop offset="100%" stop-color="#e8451f" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#rankup-icon-grad)" />
+  <path d="M16 6.5L24 19H8L16 6.5Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="round" />
+  <rect x="9.5" y="21.5" width="13" height="2.5" rx="1.25" fill="#FFFFFF" fill-opacity="0.9" />
 </svg>
