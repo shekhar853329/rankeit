@@ -49,6 +49,23 @@ export interface HourlyBidPointDto {
   hour: number;
   volume: number;
   bidCount: number;
+  avgBid?: number;
+}
+
+export interface BidTimelinePointDto {
+  id: number;
+  listingId: number;
+  listingName: string;
+  categoryName: string;
+  amount: number;
+  createdAt: string;
+  paymentReference: string | null;
+}
+
+export interface DailyBidPointDto {
+  date: string;
+  volume: number;
+  bidCount: number;
 }
 
 export interface PlatformStatsDto {
@@ -58,6 +75,8 @@ export interface PlatformStatsDto {
   directCtrRate: number;
   protocolAuditId: string;
   hourlyBidPressures: HourlyBidPointDto[];
+  recentBidsTimeline?: BidTimelinePointDto[];
+  dailyBidPressures?: DailyBidPointDto[];
 }
 
 export interface LiveBidEventDto {

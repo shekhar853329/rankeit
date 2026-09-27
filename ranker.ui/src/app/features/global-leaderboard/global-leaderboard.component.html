@@ -569,43 +569,153 @@
       }
       }
 
-      <!-- ── Inline Data Visualizer: Live Bid Velocity Pulse Chart (SVG) ── -->
+      <!-- ── Inline Data Visualizer: Interactive Bid Velocity & Liquidity Visualizer (Apache ECharts) ── -->
       <div class="liquidity-chart-card">
+        <!-- Header row with title, live pulse badge & key summary metrics -->
         <div class="liquidity-header">
           <div class="liquidity-title-group">
-            <span class="liquidity-title">Hourly Bid Pressure (Today)</span>
-            <span class="liquidity-sub">Auction liquidity in USD / hour</span>
+            <div class="liquidity-title-row">
+              <span class="liquidity-title">Bid Pressure & Auction Liquidity</span>
+              <span class="live-pulse-badge" title="Live SignalR auction feed active">
+                <span class="live-pulse-dot"></span>
+                LIVE SYNC
+              </span>
+            </div>
+            <span class="liquidity-sub">Continuous payment activity, transaction velocity & auction depth</span>
           </div>
-          <span class="liquidity-badge">
-            <span class="material-symbols-outlined icon-xs text-secondary">trending_up</span>
-            Peak Hour Active
-          </span>
+
+          <!-- Quick KPIs in Header -->
+          <div class="liquidity-stats-row">
+            <div class="liquidity-stat-pill" title="Total auction volume today">
+              <span class="stat-pill-label">Today's Vol</span>
+              <span class="stat-pill-val">{{ currencySymbol() }}{{ todayTotalVolume() | number: '1.2-2' }}</span>
+            </div>
+            <div class="liquidity-stat-pill" title="Total payments registered today">
+              <span class="stat-pill-label">Bids</span>
+              <span class="stat-pill-val">{{ todayTotalBids() }}</span>
+            </div>
+            @if (peakBidInfo(); as peak) {
+            <div class="liquidity-stat-pill liquidity-stat-pill--highlight" title="Peak payment today">
+              <span class="stat-pill-label">Peak</span>
+              <span class="stat-pill-val">{{ currencySymbol() }}{{ peak.amount | number: '1.0-2' }}</span>
+            </div>
+            }
+          </div>
         </div>
 
-        <div class="chart-container">
-          <svg class="chart-svg" fill="none" preserveAspectRatio="none" viewBox="0 0 600 100">
-            <defs>
-              <linearGradient id="bidChartGradient" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.35"></stop>
-                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.0"></stop>
-              </linearGradient>
-            </defs>
-            <path [attr.d]="hourlyChartAreaPath()" fill="url(#bidChartGradient)"></path>
-            <path [attr.d]="hourlyChartPath()" stroke="var(--color-primary)" stroke-linecap="round" stroke-width="3">
-            </path>
-            <circle [attr.cx]="chartPingPoint().cx" [attr.cy]="chartPingPoint().cy" r="6" fill="var(--color-primary)"
-              class="chart-ping-circle"></circle>
-            <circle [attr.cx]="chartPingPoint().cx" [attr.cy]="chartPingPoint().cy" r="4" fill="var(--color-primary)">
-            </circle>
-          </svg>
+        <!-- Controls Toolbar: View Mode Tabs + Metric Filter + Time Presets -->
+        <div class="chart-controls-bar">
+          <!-- View Modes -->
+          <div class="control-tab-group" role="tablist" aria-label="Chart views">
+            <button
+              type="button"
+              class="chart-tab-btn"
+              [class.chart-tab-btn--active]="chartViewMode() === 'timeline'"
+              (click)="setChartViewMode('timeline')"
+              title="Show each payment as its own distinct spike on a continuous timeline">
+              <span class="material-symbols-outlined icon-xs">bolt</span>
+              <span>Live Timeline</span>
+              <span class="tab-chip">{{ (platformStats()?.recentBidsTimeline?.length ?? 0) }}</span>
+            </button>
+            <button
+              type="button"
+              class="chart-tab-btn"
+              [class.chart-tab-btn--active]="chartViewMode() === 'hourly'"
+              (click)="setChartViewMode('hourly')"
+              title="Hourly liquidity distribution over 24 hours">
+              <span class="material-symbols-outlined icon-xs">schedule</span>
+              <span>24H Hourly</span>
+            </button>
+            <button
+              type="button"
+              class="chart-tab-btn"
+              [class.chart-tab-btn--active]="chartViewMode() === 'weekly'"
+              (click)="setChartViewMode('weekly')"
+              title="7-day bidding volume trend">
+              <span class="material-symbols-outlined icon-xs">date_range</span>
+              <span>7D Trend</span>
+            </button>
+          </div>
+
+          <!-- Secondary Toolbar: Metrics & Time Presets -->
+          <div class="chart-sub-controls">
+            @if (chartViewMode() === 'hourly') {
+            <!-- Metric Toggle for Hourly mode -->
+            <div class="metric-filter-group" aria-label="Metric filter">
+              <button
+                type="button"
+                class="metric-btn"
+                [class.metric-btn--active]="chartMetric() === 'both'"
+                (click)="setChartMetric('both')">
+                Both
+              </button>
+              <button
+                type="button"
+                class="metric-btn"
+                [class.metric-btn--active]="chartMetric() === 'volume'"
+                (click)="setChartMetric('volume')">
+                Volume
+              </button>
+              <button
+                type="button"
+                class="metric-btn"
+                [class.metric-btn--active]="chartMetric() === 'count'"
+                (click)="setChartMetric('count')">
+                Bids
+              </button>
+            </div>
+            }
+
+            @if (chartViewMode() === 'timeline') {
+            <!-- Time Presets for Timeline mode -->
+            <div class="metric-filter-group" aria-label="Timeline range">
+              <button
+                type="button"
+                class="metric-btn"
+                [class.metric-btn--active]="chartTimePreset() === '1h'"
+                (click)="setChartTimePreset('1h')">
+                1H
+              </button>
+              <button
+                type="button"
+                class="metric-btn"
+                [class.metric-btn--active]="chartTimePreset() === '6h'"
+                (click)="setChartTimePreset('6h')">
+                6H
+              </button>
+              <button
+                type="button"
+                class="metric-btn"
+                [class.metric-btn--active]="chartTimePreset() === 'today'"
+                (click)="setChartTimePreset('today')">
+                Today
+              </button>
+              <button
+                type="button"
+                class="metric-btn"
+                [class.metric-btn--active]="chartTimePreset() === 'all'"
+                (click)="setChartTimePreset('all')">
+                All
+              </button>
+            </div>
+            }
+          </div>
         </div>
 
-        <div class="chart-timeline">
-          <span>00:00 UTC</span>
-          <span>06:00 UTC</span>
-          <span>12:00 UTC</span>
-          <span class="timeline-peak">Now ({{ currentUtcTime() }}) — {{ currencySymbol() }}{{
-            reigningChampion()?.currentBidAmount ?? 0 | number: '1.0-0' }} Peak</span>
+        <!-- Interactive Chart Container (ECharts) -->
+        <div class="interactive-chart-wrapper">
+          <div #bidChartContainer class="echarts-surface"></div>
+        </div>
+
+        <!-- Chart Footnote & Interactive Hints -->
+        <div class="chart-footer-row">
+          <div class="footer-hint">
+            <span class="material-symbols-outlined icon-xs text-secondary">info</span>
+            <span>Hover on points for payment & listing details · Drag slider below or scroll to zoom</span>
+          </div>
+          <div class="footer-meta">
+            <span class="audit-id-badge">Audit {{ platformStats()?.protocolAuditId || '#AUDIT-1' }}</span>
+          </div>
         </div>
       </div>
     </main>

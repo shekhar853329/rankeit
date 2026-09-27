@@ -94,19 +94,77 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
             .ToListAsync(ct);
 
         var hourlyMap = hourlyBids.ToDictionary(h => h.Hour, h => (h.Volume, h.Count));
-        var currentHour = DateTime.UtcNow.Hour;
         var hourlyPoints = new List<HourlyBidPointDto>(24);
 
         for (var h = 0; h <= 23; h++)
         {
             if (hourlyMap.TryGetValue(h, out var stat))
             {
-                hourlyPoints.Add(new HourlyBidPointDto(h, stat.Volume, stat.Count));
+                var avgBid = stat.Count > 0 ? Math.Round(stat.Volume / stat.Count, 2) : 0m;
+                hourlyPoints.Add(new HourlyBidPointDto(h, stat.Volume, stat.Count, avgBid));
             }
             else
             {
-                // If past hour with no bids, volume is 0;
-                hourlyPoints.Add(new HourlyBidPointDto(h, 0m, 0));
+                hourlyPoints.Add(new HourlyBidPointDto(h, 0m, 0, 0m));
+            }
+        }
+
+        // 7. Recent Bids Timeline (Individual bid payments for fine-grained real-time charts)
+        var sinceUtc = todayUtc.AddDays(-2);
+        var timelineBids = await dbContext.Bids
+            .AsNoTracking()
+            .Include(b => b.Listing)
+                .ThenInclude(l => l!.Category)
+            .Where(b => b.CreatedAt >= sinceUtc)
+            .OrderBy(b => b.CreatedAt)
+            .Take(150)
+            .ToListAsync(ct);
+
+        if (timelineBids.Count == 0)
+        {
+            timelineBids = await dbContext.Bids
+                .AsNoTracking()
+                .Include(b => b.Listing)
+                    .ThenInclude(l => l!.Category)
+                .OrderByDescending(b => b.CreatedAt)
+                .Take(25)
+                .ToListAsync(ct);
+            timelineBids = timelineBids.OrderBy(b => b.CreatedAt).ToList();
+        }
+
+        var recentTimeline = timelineBids.Select(b => new BidTimelinePointDto(
+            b.Id,
+            b.ListingId,
+            b.Listing?.Name ?? "Listing",
+            b.Listing?.Category?.Name ?? "General",
+            b.Amount,
+            b.CreatedAt,
+            b.PaymentReference)).ToList();
+
+        // 8. Daily Bid Pressure (Last 7 Days)
+        var sevenDaysAgo = todayUtc.AddDays(-6);
+        var rawDailyBids = await dbContext.Bids
+            .AsNoTracking()
+            .Where(b => b.CreatedAt >= sevenDaysAgo)
+            .Select(b => new { b.CreatedAt, b.Amount })
+            .ToListAsync(ct);
+
+        var dailyMap = rawDailyBids
+            .GroupBy(b => DateOnly.FromDateTime(b.CreatedAt))
+            .ToDictionary(g => g.Key, g => (Volume: g.Sum(x => x.Amount), Count: g.Count()));
+
+        var dailyPoints = new List<DailyBidPointDto>(7);
+        for (var i = 6; i >= 0; i--)
+        {
+            var d = todayDate.AddDays(-i);
+            var dateLabel = d.ToString("MMM dd");
+            if (dailyMap.TryGetValue(d, out var dStat))
+            {
+                dailyPoints.Add(new DailyBidPointDto(dateLabel, dStat.Volume, dStat.Count));
+            }
+            else
+            {
+                dailyPoints.Add(new DailyBidPointDto(dateLabel, 0m, 0));
             }
         }
 
@@ -116,6 +174,8 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
             averageCpc,
             ctrRate,
             protocolAuditId,
-            hourlyPoints);
+            hourlyPoints,
+            recentTimeline,
+            dailyPoints);
     }
 }

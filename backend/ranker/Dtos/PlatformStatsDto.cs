@@ -6,10 +6,28 @@ public sealed record PlatformStatsDto(
     decimal AverageCpcToday,
     double DirectCtrRate,
     string ProtocolAuditId,
-    IReadOnlyList<HourlyBidPointDto> HourlyBidPressures);
+    IReadOnlyList<HourlyBidPointDto> HourlyBidPressures,
+    IReadOnlyList<BidTimelinePointDto> RecentBidsTimeline,
+    IReadOnlyList<DailyBidPointDto> DailyBidPressures);
 
 public sealed record HourlyBidPointDto(
     int Hour,
+    decimal Volume,
+    int BidCount,
+    decimal AvgBid = 0m);
+
+public sealed record BidTimelinePointDto(
+    int Id,
+    int ListingId,
+    string ListingName,
+    string CategoryName,
+    decimal Amount,
+    DateTime CreatedAt,
+    string? PaymentReference,
+    decimal CurrentBidLevel = 0m);
+
+public sealed record DailyBidPointDto(
+    string Date,
     decimal Volume,
     int BidCount);
 
