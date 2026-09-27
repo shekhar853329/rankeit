@@ -190,7 +190,7 @@ jobs:
 
             # 2. Install production dependencies for frontend SSR
             cd /var/www/ranker/frontend
-            npm install --omit=dev --no-audit --no-fund
+            npm install --omit=dev --no-audit --no-fund --cache /tmp/npm-cache
 
             # 3. Restart systemd services
             echo "Restarting services..."
@@ -242,5 +242,34 @@ jobs:
             sudo systemctl status ranker-backend --no-pager || true
             echo "--> Recent application logs (journalctl):"
             sudo journalctl -u ranker-backend -n 60 --no-pager || true
+            exit 1
+          EOF
+
+      - name: Verify Frontend Health Check
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" bash -s << 'EOF'
+            set -euo pipefail
+
+            echo "Polling http://127.0.0.1:4000 (Angular SSR)..."
+            for attempt in {1..12}; do
+              if curl -s -f http://127.0.0.1:4000 > /dev/null 2>&1; then
+                echo "--> Angular SSR responded successfully on attempt $attempt!"
+                exit 0
+              fi
+              echo "Waiting for frontend on port 4000... (attempt $attempt/12)"
+              sleep 2
+            done
+
+            echo "============================================="
+            echo " ERROR: Frontend did not respond on port 4000"
+            echo "============================================="
+            echo "--> Systemd service status:"
+            sudo systemctl status ranker-frontend --no-pager || true
+            echo "--> Recent application logs (journalctl):"
+            sudo journalctl -u ranker-frontend -n 60 --no-pager || true
             exit 1
           EOF

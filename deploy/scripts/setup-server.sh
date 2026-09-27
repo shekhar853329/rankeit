@@ -100,9 +100,15 @@ fi
 
 # 8. Configure passwordless sudo for service restarts in CI/CD
 echo "--> Configuring sudoers for CI/CD deployments..."
-cat << 'EOF' > /etc/sudoers.d/ranker-deploy
-# Allow deployment user and www-data to restart Ranker services without password
-ALL ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart ranker-backend, /usr/bin/systemctl restart ranker-frontend, /usr/bin/systemctl reload nginx, /usr/bin/systemctl status ranker-backend, /usr/bin/systemctl status ranker-frontend
+cat > /etc/sudoers.d/ranker-deploy << EOF
+# Allow only the deploy user to manage Ranker services without a password
+${CURRENT_USER} ALL=(ALL) NOPASSWD: \\
+  /usr/bin/systemctl restart ranker-backend, \\
+  /usr/bin/systemctl restart ranker-frontend, \\
+  /usr/bin/systemctl reload nginx, \\
+  /usr/bin/systemctl status ranker-backend, \\
+  /usr/bin/systemctl status ranker-frontend, \\
+  /usr/bin/journalctl
 EOF
 chmod 0440 /etc/sudoers.d/ranker-deploy
 
