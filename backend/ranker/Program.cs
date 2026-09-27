@@ -101,9 +101,19 @@ app.UseForwardedHeaders();
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<RankerDbContext>();
-    await dbContext.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(dbContext);
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("Checking database connectivity and applying migrations...");
+        var dbContext = scope.ServiceProvider.GetRequiredService<RankerDbContext>();
+        await dbContext.Database.MigrateAsync();
+        await DbSeeder.SeedAsync(dbContext);
+        logger.LogInformation("Database migration and seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database migration failed on startup. Server will continue running in Degraded mode so health check and diagnostics are available.");
+    }
 }
 
 // Configure the HTTP request pipeline.
