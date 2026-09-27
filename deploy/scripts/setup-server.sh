@@ -112,11 +112,29 @@ ${CURRENT_USER} ALL=(ALL) NOPASSWD: \\
 EOF
 chmod 0440 /etc/sudoers.d/ranker-deploy
 
-# 9. Configure firewall (UFW)
-echo "--> Configuring firewall (allowing SSH, HTTP 80, HTTPS 443)..."
-ufw allow OpenSSH
-ufw allow 'Nginx Full'
-# ufw --force enable (uncomment if you want UFW enabled automatically)
+# 9. Configure firewall
+# Oracle Cloud Ubuntu images ship with iptables and a catch-all REJECT rule at
+# position 5. Port 80/443 ACCEPT rules must be inserted BEFORE that rule.
+# UFW is left inactive to avoid conflicts with the OCI-managed iptables chain.
+echo "--> Configuring iptables for HTTP (80) and HTTPS (443)..."
+
+# Install persistence tool first
+apt-get install -y iptables-persistent netfilter-persistent
+
+# Only add rules if they don't already exist
+if ! iptables -C INPUT -m state --state NEW -p tcp --dport 80 -j ACCEPT 2>/dev/null; then
+  iptables -I INPUT 5 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+  echo "  Added iptables rule: ACCEPT tcp dpt:80"
+fi
+
+if ! iptables -C INPUT -m state --state NEW -p tcp --dport 443 -j ACCEPT 2>/dev/null; then
+  iptables -I INPUT 5 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+  echo "  Added iptables rule: ACCEPT tcp dpt:443"
+fi
+
+# Persist so rules survive reboots
+netfilter-persistent save
+echo "  iptables rules saved."
 
 echo "=========================================="
 echo " Server Setup Complete!"
