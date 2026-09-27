@@ -156,9 +156,11 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
         run: |
-          rsync -avz \
+          rsync -az \
             --no-owner \
             --no-group \
+            --no-perms \
+            --no-times \
             --delete \
             -e "ssh -p ${SERVER_PORT}" \
             publish/backend/ \
@@ -170,9 +172,11 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
         run: |
-          rsync -avz \
+          rsync -az \
             --no-owner \
             --no-group \
+            --no-perms \
+            --no-times \
             --exclude 'node_modules' \
             --exclude '.env' \
             -e "ssh -p ${SERVER_PORT}" \
