@@ -373,7 +373,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     this.isAmountFieldFocused.set(false);
     const num = parseFloat(val);
     if (isNaN(num) || num < 1) {
-      const fallback = this.claimPrice() ?? this.minStartingBid() ?? 10;
+      const fallback = this.claimPrice() ?? this.minStartingBid() ?? 1;
       this.claimAmount.set(fallback);
     } else {
       this.claimAmount.set(Math.max(1, Math.round(num * 100) / 100));
