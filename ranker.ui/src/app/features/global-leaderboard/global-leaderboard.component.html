@@ -285,16 +285,16 @@
           Clear Search
         </button>
         } @else if (selectedSlug() === null && timeMode() === 'today') {
-        <h3 class="feed-empty-card__title">No bids placed in today's auction yet</h3>
-        <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
+        <h3 class="feed-empty-card__title">Rank #1 is wide open — grab it for just {{ currencySymbol() }}{{ emptyStateClaimPrice() }}</h3>
+        <p class="feed-empty-card__sub">Today's leaderboard is a blank slate. Be the first name everyone sees.</p>
         <button type="button" class="btn btn-primary" (click)="claimThisPosition()">
-          Claim This Position
+          Claim #1 for {{ currencySymbol() }}{{ emptyStateClaimPrice() }}
         </button>
         } @else {
-        <h3 class="feed-empty-card__title">No listings found in this category yet</h3>
-        <p class="feed-empty-card__sub">Be the first pioneer to claim Rank #1 today!</p>
+        <h3 class="feed-empty-card__title">This category has no champion yet — be the first for just {{ currencySymbol() }}{{ emptyStateClaimPrice() }}</h3>
+        <p class="feed-empty-card__sub">No one has staked their claim here. Own Rank #1 before anyone else does.</p>
         <button type="button" class="btn btn-primary" (click)="claimThisPosition()">
-          Claim This Position
+          Claim #1 for {{ currencySymbol() }}{{ emptyStateClaimPrice() }}
         </button>
         }
       </div>

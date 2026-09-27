@@ -160,6 +160,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
 
+  readonly currencySymbol = '₹';
+
   readonly reigningChampion = computed<LeaderboardEntryDto | null>(() => {
     const items = this.entries();
     return items.length > 0 ? items[0] : null;
@@ -577,7 +579,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     if (!stats) return;
 
     const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-    const currency = '$';
+    const currency = '₹';
     const mode = this.chartViewMode();
     const metric = this.chartMetric();
 

@@ -105,7 +105,7 @@
                 }
               </div>
               <div class="amount-stepper-row">
-                <span class="amount-currency">$</span>
+                <span class="amount-currency">₹</span>
                 <input id="category-claim-amount" type="number" class="field-input field-input--amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingBid())"
                   (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
@@ -185,10 +185,10 @@
           <span class="material-symbols-outlined empty-icon">rocket_launch</span>
           @if (timeMode() === 'today') {
           <h3>No bids placed in this arena today</h3>
-          <p>Switch to All-Time to see the reigning champions, or be the first to place a bid today!</p>
+          <p>Be the first to claim Rank #1 today — starting at just {{ currencySymbol }}{{ claimPrice() ?? minStartingBid() }}!</p>
           } @else {
           <h3>No listings in this arena yet</h3>
-          <p>Be the first pioneer! Place a bid of ${{ minStartingBid() }} to claim Rank #1 right now.</p>
+          <p>Be the first pioneer! Claim Rank #1 right now for just {{ currencySymbol }}{{ claimPrice() ?? minStartingBid() }}.</p>
           }
         </div>
         } @else {

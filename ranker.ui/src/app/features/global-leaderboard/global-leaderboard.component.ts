@@ -155,7 +155,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   /* ── Time & Currency Controls ── */
   readonly timeMode = signal<'today' | 'alltime'>('today');
-  readonly selectedCurrency = signal<'USD' | 'EUR' | 'INR'>('USD');
+  readonly selectedCurrency = signal<'USD' | 'EUR' | 'INR'>('INR');
   readonly countdownText = signal('05h : 42m : 18s');
   readonly currentUtcTime = signal('18:00 UTC');
 
@@ -428,6 +428,21 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   readonly effectiveClaimAmount = computed<number | null>(() =>
     this.claimAmount() ?? this.claimPrice() ?? this.globalDefaultPrice()
   );
+
+  /** Minimum price to show in empty-state CTAs — uses the selected category's minStartingBid,
+   *  or the first available category's, so the number is always real and never hardcoded. */
+  readonly emptyStateClaimPrice = computed<number>(() => {
+    const slug = this.selectedSlug();
+    if (slug) {
+      const data = this.categoryData();
+      if (data?.minStartingBid) return data.minStartingBid;
+      const cat = this.allCategories().find((c) => c.slug === slug) ?? this.tabs().find((c) => c.slug === slug);
+      if (cat?.minStartingBid) return cat.minStartingBid;
+    }
+    // No category selected — use first available category's starting bid
+    const first = this.allCategories()[0] ?? this.tabs()[0];
+    return first?.minStartingBid ?? 1;
+  });
 
   readonly isHeroUrlValid = computed(() => {
     const v = this.heroUrl().trim();
