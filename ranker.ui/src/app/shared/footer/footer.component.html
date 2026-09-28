@@ -21,26 +21,20 @@
       </div>
 
       <div class="footer-status-links">
-        <button
-          type="button"
-          class="operational-pill"
-          [class.is-operational]="healthService.status() === 'operational'"
+        <button type="button" class="operational-pill" [class.is-operational]="healthService.status() === 'operational'"
           [class.is-degraded]="healthService.status() === 'degraded'"
           [class.is-offline]="healthService.status() === 'offline'"
           [class.is-checking]="healthService.status() === 'checking' || healthService.isChecking()"
-          [title]="healthService.statusTooltip()"
-          [attr.aria-label]="healthService.statusTooltip()"
-          (click)="onCheckHealth()"
-        >
+          [title]="healthService.statusTooltip()" [attr.aria-label]="healthService.statusTooltip()"
+          (click)="onCheckHealth()">
           <span class="op-dot"></span>
           <span class="op-text">{{ healthService.statusLabel() }}</span>
         </button>
 
         <nav class="footer-nav">
-          <a routerLink="/" class="footer-link">Leaderboard</a>
-          <a routerLink="/categories" class="footer-link">Category Arenas</a>
-          <a routerLink="/daily" class="footer-link">Daily Feed</a>
-          <a routerLink="/rules" class="footer-link">Rules & Governance</a>
+          <a routerLink="/rules" class="footer-link">Rules &amp; Governance</a>
+          <a routerLink="/terms" class="footer-link">Terms of Service</a>
+          <a routerLink="/privacy" class="footer-link">Privacy Policy</a>
           <a routerLink="/contact" class="footer-link">Contact</a>
         </nav>
       </div>

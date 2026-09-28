@@ -12,7 +12,7 @@ import { ToastService } from '../../core/services/toast.service';
 export class ContactComponent {
   private readonly toast = inject(ToastService);
 
-  readonly email = 'shekharshine25@gmail.com';
+  readonly email = 'shekhar3355@hotmail.com';
   readonly creationDate = 'September 22, 2026';
   readonly copied = signal(false);
 

@@ -6,6 +6,8 @@ import { DailyListingsComponent } from './features/daily-listings/daily-listings
 import { ContactComponent } from './features/contact/contact.component';
 import { RulesComponent } from './features/rules/rules.component';
 import { ListingDetailComponent } from './features/listing-detail/listing-detail.component';
+import { TermsComponent } from './features/terms/terms.component';
+import { PrivacyComponent } from './features/privacy/privacy.component';
 
 export const routes: Routes = [
   { path: '', component: GlobalLeaderboardComponent },
@@ -16,4 +18,6 @@ export const routes: Routes = [
   { path: 'daily', component: DailyListingsComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'rules', component: RulesComponent },
+  { path: 'terms', component: TermsComponent },
+  { path: 'privacy', component: PrivacyComponent },
 ];
