@@ -33,202 +33,219 @@ public class PlaceBidCommandHandler(
             return Failure(BidFailureReason.NewListingMissingDetails, "ListingName and ListingUrl are required for a new listing.");
         }
 
-        // Serializable ensures the read of the category's current top listing below can't see a
-        // phantom/changed row from a concurrent transaction - SQL Server enforces this with range locks,
-        // so no raw-SQL table hints are needed to make concurrent bids on the same category race-safe.
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        // NpgsqlRetryingExecutionStrategy does not support user-initiated transactions directly.
+        // We must wrap the entire transactional unit inside CreateExecutionStrategy().ExecuteAsync()
+        // so the strategy can replay the whole block (including the transaction) on transient failures.
+        // Serializable isolation ensures concurrent bids on the same category are race-safe.
+        var executionStrategy = dbContext.Database.CreateExecutionStrategy();
 
-        Listing? existingListing = null;
-        if (command.ListingId is { } listingId)
+        PlaceBidResultDto result = null!;
+
+        await executionStrategy.ExecuteAsync(async () =>
         {
-            existingListing = await listingRepository.GetByIdAsync(listingId, ct);
-            if (existingListing is null)
-            {
-                await transaction.RollbackAsync(ct);
-                return Failure(BidFailureReason.ListingNotFound, "Listing not found.");
-            }
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
 
-            if (existingListing.CategoryId != command.CategoryId)
+            Listing? existingListing = null;
+            if (command.ListingId is { } listingId)
             {
-                await transaction.RollbackAsync(ct);
-                return Failure(BidFailureReason.ListingCategoryMismatch, "Listing does not belong to this category.");
-            }
-
-            if (!string.Equals(existingListing.OwnerContactEmail.Trim(), command.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                await transaction.RollbackAsync(ct);
-                return Failure(BidFailureReason.OwnerEmailMismatch, "OwnerContactEmail does not match the listing on record.");
-            }
-        }
-        else if (!string.IsNullOrWhiteSpace(command.ListingUrl))
-        {
-            var trimmedUrl = command.ListingUrl.Trim();
-            var matchedListing = await dbContext.Listings
-                .FirstOrDefaultAsync(l => l.CategoryId == command.CategoryId && l.Url == trimmedUrl, ct);
-
-            if (matchedListing != null)
-            {
-                if (!string.Equals(matchedListing.OwnerContactEmail.Trim(), command.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
+                existingListing = await listingRepository.GetByIdAsync(listingId, ct);
+                if (existingListing is null)
                 {
                     await transaction.RollbackAsync(ct);
-                    return Failure(BidFailureReason.OwnerEmailMismatch, "This listing URL is already registered under a different owner contact email.");
+                    result = Failure(BidFailureReason.ListingNotFound, "Listing not found.");
+                    return;
                 }
 
-                existingListing = matchedListing;
+                if (existingListing.CategoryId != command.CategoryId)
+                {
+                    await transaction.RollbackAsync(ct);
+                    result = Failure(BidFailureReason.ListingCategoryMismatch, "Listing does not belong to this category.");
+                    return;
+                }
+
+                if (!string.Equals(existingListing.OwnerContactEmail.Trim(), command.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    await transaction.RollbackAsync(ct);
+                    result = Failure(BidFailureReason.OwnerEmailMismatch, "OwnerContactEmail does not match the listing on record.");
+                    return;
+                }
             }
-        }
-
-        // Reads the category's current #1 row; the Serializable transaction guarantees a concurrent
-        // bidder targeting the same category can't commit a conflicting change underneath us.
-        var topListing = await listingRepository.GetTopListingForUpdateAsync(command.CategoryId, ct);
-
-        var existingListingCurrentBid = existingListing?.CurrentBidAmount ?? 0m;
-
-        var decision = BidDecisionEngine.Evaluate(
-            category.MinBidIncrement,
-            category.MinStartingBid,
-            topListing?.CurrentBidAmount,
-            topListing?.Id,
-            existingListing?.Id,
-            existingListingCurrentBid,
-            command.TargetBidAmount,
-            command.ConfirmedPaymentAmount);
-
-        if (!decision.Success)
-        {
-            // BidTooLow / PaymentAmountMismatch mean the client's numbers went stale mid-flight - most
-            // often because a concurrent bidder won the row lock first (rule B4). Since payment happens at
-            // the gateway before this call, money may already be captured, so we flag it for reconciliation
-            // (manual refund) instead of silently discarding it.
-            if (decision.FailureReason is BidFailureReason.BidTooLow or BidFailureReason.PaymentAmountMismatch
-                && command.ConfirmedPaymentAmount > 0)
+            else if (!string.IsNullOrWhiteSpace(command.ListingUrl))
             {
-                dbContext.BidReconciliations.Add(new BidReconciliation
+                var trimmedUrl = command.ListingUrl.Trim();
+                var matchedListing = await dbContext.Listings
+                    .FirstOrDefaultAsync(l => l.CategoryId == command.CategoryId && l.Url == trimmedUrl, ct);
+
+                if (matchedListing != null)
+                {
+                    if (!string.Equals(matchedListing.OwnerContactEmail.Trim(), command.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        await transaction.RollbackAsync(ct);
+                        result = Failure(BidFailureReason.OwnerEmailMismatch, "This listing URL is already registered under a different owner contact email.");
+                        return;
+                    }
+
+                    existingListing = matchedListing;
+                }
+            }
+
+            // Reads the category's current #1 row; the Serializable transaction guarantees a concurrent
+            // bidder targeting the same category can't commit a conflicting change underneath us.
+            var topListing = await listingRepository.GetTopListingForUpdateAsync(command.CategoryId, ct);
+
+            var existingListingCurrentBid = existingListing?.CurrentBidAmount ?? 0m;
+
+            var decision = BidDecisionEngine.Evaluate(
+                category.MinBidIncrement,
+                category.MinStartingBid,
+                topListing?.CurrentBidAmount,
+                topListing?.Id,
+                existingListing?.Id,
+                existingListingCurrentBid,
+                command.TargetBidAmount,
+                command.ConfirmedPaymentAmount);
+
+            if (!decision.Success)
+            {
+                // BidTooLow / PaymentAmountMismatch mean the client's numbers went stale mid-flight - most
+                // often because a concurrent bidder won the row lock first (rule B4). Since payment happens at
+                // the gateway before this call, money may already be captured, so we flag it for reconciliation
+                // (manual refund) instead of silently discarding it.
+                if (decision.FailureReason is BidFailureReason.BidTooLow or BidFailureReason.PaymentAmountMismatch
+                    && command.ConfirmedPaymentAmount > 0)
+                {
+                    dbContext.BidReconciliations.Add(new BidReconciliation
+                    {
+                        CategoryId = command.CategoryId,
+                        ListingId = existingListing?.Id,
+                        AttemptedTargetAmount = command.TargetBidAmount,
+                        ExpectedChargeAmount = decision.ExpectedChargeAmount,
+                        ConfirmedPaymentAmount = command.ConfirmedPaymentAmount,
+                        PaymentReference = command.PaymentReference,
+                        Reason = decision.FailureReason.ToString(),
+                        CreatedAt = DateTime.UtcNow,
+                        Resolved = false,
+                    });
+                    await dbContext.SaveChangesAsync(ct);
+                    await transaction.CommitAsync(ct);
+
+                    logger.LogWarning(
+                        "Bid rejected after payment confirmation (reason: {Reason}); flagged for reconciliation. PaymentReference={PaymentReference}",
+                        decision.FailureReason, command.PaymentReference);
+
+                    result = new PlaceBidResultDto(
+                        false,
+                        "BID_REJECTED_RECONCILE_PAYMENT",
+                        $"Bid no longer meets the minimum ({decision.RequiredMinimumBid:0.00}) - a concurrent bid likely won first. Your payment has been flagged for reconciliation/refund.",
+                        existingListing?.Id,
+                        null,
+                        null);
+                    return;
+                }
+
+                await transaction.RollbackAsync(ct);
+                result = Failure(decision.FailureReason, DescribeFailure(decision));
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+            Listing listing;
+            if (existingListing is null)
+            {
+                listing = new Listing
                 {
                     CategoryId = command.CategoryId,
-                    ListingId = existingListing?.Id,
-                    AttemptedTargetAmount = command.TargetBidAmount,
-                    ExpectedChargeAmount = decision.ExpectedChargeAmount,
-                    ConfirmedPaymentAmount = command.ConfirmedPaymentAmount,
-                    PaymentReference = command.PaymentReference,
-                    Reason = decision.FailureReason.ToString(),
-                    CreatedAt = DateTime.UtcNow,
-                    Resolved = false,
-                });
-                await dbContext.SaveChangesAsync(ct);
-                await transaction.CommitAsync(ct);
-
-                logger.LogWarning(
-                    "Bid rejected after payment confirmation (reason: {Reason}); flagged for reconciliation. PaymentReference={PaymentReference}",
-                    decision.FailureReason, command.PaymentReference);
-
-                return new PlaceBidResultDto(
-                    false,
-                    "BID_REJECTED_RECONCILE_PAYMENT",
-                    $"Bid no longer meets the minimum ({decision.RequiredMinimumBid:0.00}) - a concurrent bid likely won first. Your payment has been flagged for reconciliation/refund.",
-                    existingListing?.Id,
-                    null,
-                    null);
+                    Name = command.ListingName!,
+                    Url = command.ListingUrl!,
+                    OwnerContactEmail = command.OwnerContactEmail,
+                    CurrentBidAmount = decision.NewCurrentBidAmount,
+                    FirstBidAt = now,
+                    LastBidAt = now,
+                    SiteName = command.SiteName,
+                    LogoUrl = command.LogoUrl,
+                    Description = command.Description,
+                    FaviconUrl = command.FaviconUrl,
+                };
+                listingRepository.Add(listing);
+            }
+            else
+            {
+                listing = existingListing;
+                listing.CurrentBidAmount = decision.NewCurrentBidAmount;
+                listing.LastBidAt = now;
+                if (!string.IsNullOrWhiteSpace(command.ListingName)) listing.Name = command.ListingName;
+                if (!string.IsNullOrWhiteSpace(command.SiteName)) listing.SiteName = command.SiteName;
+                if (!string.IsNullOrWhiteSpace(command.LogoUrl)) listing.LogoUrl = command.LogoUrl;
+                if (!string.IsNullOrWhiteSpace(command.Description)) listing.Description = command.Description;
+                if (!string.IsNullOrWhiteSpace(command.FaviconUrl)) listing.FaviconUrl = command.FaviconUrl;
             }
 
-            await transaction.RollbackAsync(ct);
-            return Failure(decision.FailureReason, DescribeFailure(decision));
-        }
-
-        var now = DateTime.UtcNow;
-        Listing listing;
-        if (existingListing is null)
-        {
-            listing = new Listing
+            bidRepository.Add(new Bid
             {
-                CategoryId = command.CategoryId,
-                Name = command.ListingName!,
-                Url = command.ListingUrl!,
-                OwnerContactEmail = command.OwnerContactEmail,
-                CurrentBidAmount = decision.NewCurrentBidAmount,
-                FirstBidAt = now,
-                LastBidAt = now,
-                SiteName = command.SiteName,
-                LogoUrl = command.LogoUrl,
-                Description = command.Description,
-                FaviconUrl = command.FaviconUrl,
-            };
-            listingRepository.Add(listing);
-        }
-        else
-        {
-            listing = existingListing;
-            listing.CurrentBidAmount = decision.NewCurrentBidAmount;
-            listing.LastBidAt = now;
-            if (!string.IsNullOrWhiteSpace(command.ListingName)) listing.Name = command.ListingName;
-            if (!string.IsNullOrWhiteSpace(command.SiteName)) listing.SiteName = command.SiteName;
-            if (!string.IsNullOrWhiteSpace(command.LogoUrl)) listing.LogoUrl = command.LogoUrl;
-            if (!string.IsNullOrWhiteSpace(command.Description)) listing.Description = command.Description;
-            if (!string.IsNullOrWhiteSpace(command.FaviconUrl)) listing.FaviconUrl = command.FaviconUrl;
-        }
+                Listing = listing,
+                Amount = decision.NewCurrentBidAmount,
+                PaymentAmount = decision.ExpectedChargeAmount,
+                CreatedAt = now,
+                PaymentReference = command.PaymentReference,
+            });
 
-        bidRepository.Add(new Bid
-        {
-            Listing = listing,
-            Amount = decision.NewCurrentBidAmount,
-            PaymentAmount = decision.ExpectedChargeAmount,
-            CreatedAt = now,
-            PaymentReference = command.PaymentReference,
+            dbContext.PaymentAuditLogs.Add(new PaymentAuditLog
+            {
+                Action = "PlaceBid",
+                Gateway = "Razorpay",
+                PaymentReference = command.PaymentReference,
+                Amount = decision.ExpectedChargeAmount,
+                AmountInPaise = (long)(decision.ExpectedChargeAmount * 100m),
+                Currency = "INR",
+                IsSuccess = true,
+                RequestPayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    listingId = listing.Id,
+                    listingName = listing.Name,
+                    categoryId = command.CategoryId,
+                    targetBidAmount = command.TargetBidAmount,
+                    confirmedPaymentAmount = command.ConfirmedPaymentAmount,
+                    paymentReference = command.PaymentReference,
+                }),
+                ResponsePayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    listingId = listing.Id,
+                    newCurrentBidAmount = listing.CurrentBidAmount,
+                    actualPaymentCharged = decision.ExpectedChargeAmount,
+                    becameCategoryTop = decision.BecameCategoryTop,
+                }),
+                CreatedAt = now,
+            });
+
+            try
+            {
+                await dbContext.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                // Defense-in-depth: should be prevented by the row lock above, but if the optimistic
+                // concurrency token still trips, treat it exactly like a lost race.
+                logger.LogError(ex, "Concurrency conflict placing bid for listing {ListingId}", existingListing?.Id);
+                await transaction.RollbackAsync(ct);
+                result = Failure(BidFailureReason.BidTooLow, "A concurrent update won the race for this listing. Please retry.");
+                return;
+            }
+
+            await transaction.CommitAsync(ct);
+
+            await mediator.Publish(new BidPlacedEvent(
+                listing.Id,
+                category.Id,
+                category.Slug,
+                listing.Name,
+                listing.CurrentBidAmount,
+                now,
+                decision.BecameCategoryTop), ct);
+
+            result = new PlaceBidResultDto(true, null, null, listing.Id, listing.CurrentBidAmount, decision.ExpectedChargeAmount);
         });
 
-        dbContext.PaymentAuditLogs.Add(new PaymentAuditLog
-        {
-            Action = "PlaceBid",
-            Gateway = "Razorpay",
-            PaymentReference = command.PaymentReference,
-            Amount = decision.ExpectedChargeAmount,
-            AmountInPaise = (long)(decision.ExpectedChargeAmount * 100m),
-            Currency = "INR",
-            IsSuccess = true,
-            RequestPayloadJson = System.Text.Json.JsonSerializer.Serialize(new
-            {
-                listingId = listing.Id,
-                listingName = listing.Name,
-                categoryId = command.CategoryId,
-                targetBidAmount = command.TargetBidAmount,
-                confirmedPaymentAmount = command.ConfirmedPaymentAmount,
-                paymentReference = command.PaymentReference,
-            }),
-            ResponsePayloadJson = System.Text.Json.JsonSerializer.Serialize(new
-            {
-                listingId = listing.Id,
-                newCurrentBidAmount = listing.CurrentBidAmount,
-                actualPaymentCharged = decision.ExpectedChargeAmount,
-                becameCategoryTop = decision.BecameCategoryTop,
-            }),
-            CreatedAt = now,
-        });
-
-        try
-        {
-            await dbContext.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            // Defense-in-depth: should be prevented by the row lock above, but if the optimistic
-            // concurrency token still trips, treat it exactly like a lost race.
-            logger.LogError(ex, "Concurrency conflict placing bid for listing {ListingId}", existingListing?.Id);
-            await transaction.RollbackAsync(ct);
-            return Failure(BidFailureReason.BidTooLow, "A concurrent update won the race for this listing. Please retry.");
-        }
-
-        await transaction.CommitAsync(ct);
-
-        await mediator.Publish(new BidPlacedEvent(
-            listing.Id,
-            category.Id,
-            category.Slug,
-            listing.Name,
-            listing.CurrentBidAmount,
-            now,
-            decision.BecameCategoryTop), ct);
-
-        return new PlaceBidResultDto(true, null, null, listing.Id, listing.CurrentBidAmount, decision.ExpectedChargeAmount);
+        return result;
     }
 
     private static PlaceBidResultDto Failure(BidFailureReason reason, string message) =>

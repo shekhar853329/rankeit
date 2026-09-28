@@ -1328,7 +1328,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         grid: {
           left: '3%',
           right: '4%',
-          top: '12%',
+          top: '22%',
           bottom: '22%',
           containLabel: true,
         },
@@ -1452,6 +1452,8 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             },
             markPoint: {
               data: [{ type: 'max', name: 'Peak Bid' }],
+              symbolSize: 40,
+              symbolOffset: [0, '-5%'],
               label: {
                 formatter: (p: any) => `${currency}${p.value}`,
                 fontSize: 10,
@@ -1525,6 +1527,8 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           data: volumes,
           markPoint: {
             data: [{ type: 'max', name: 'Peak Hour' }],
+            symbolSize: 40,
+            symbolOffset: [0, '-40%'],
             itemStyle: { color: '#f95738' },
             label: { color: '#fff', fontSize: 10, fontWeight: 700 },
           },
