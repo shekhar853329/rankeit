@@ -26,7 +26,7 @@ import { CategoryDto } from '../../core/models/category.model';
 @Component({
   selector: 'app-confirm-claim-modal',
   standalone: true,
-  imports: [FormsModule, RouterLink, DecimalPipe],
+  imports: [FormsModule, DecimalPipe],
   templateUrl: './confirm-claim-modal.component.html',
   styleUrl: './confirm-claim-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
