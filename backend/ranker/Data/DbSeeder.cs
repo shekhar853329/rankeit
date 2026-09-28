@@ -3,14 +3,12 @@ using Ranker.Domain.Entities;
 
 namespace Ranker.Data;
 
-/// <summary>Idempotent seed helpers. <see cref="SeedCategoriesAsync"/> is safe to run in any environment.
-/// <see cref="SeedAsync"/> additionally seeds fake listings/bids and is intended for dev-time only.</summary>
+/// <summary>Idempotent seed helpers. Both <see cref="SeedCategoriesAsync"/> and <see cref="SeedAsync"/>
+/// seed only category reference data and are safe to run in any environment.</summary>
 public static class DbSeeder
 {
     private sealed record CategorySeed(string Name, string Slug, string Icon, decimal MinStartingBid, decimal MinBidIncrement, int BaseDaysAgo);
 
-    // BaseDaysAgo roughly controls how "hot" (recent bids) vs "cold" (older bids) a category looks, which
-    // in turn drives ActivityScore/RecentClaimCount and the "most active categories" UI.
     private static readonly CategorySeed[] CategorySeeds =
     [
         new("AI Agents & Infrastructure", "ai-agents-infrastructure", "🤖", 1m, 1m, 1),
@@ -75,93 +73,11 @@ public static class DbSeeder
     }
 
     /// <summary>
-    /// Idempotent dev-time seed: categories + ~10 fake listings/bids per category.
-    /// Also seeds baseline DailyVisitCount rows.
-    /// Intended for Development only.
+    /// Idempotent. Seeds category reference data only — identical to Production.
+    /// No fake listings, bids, or visit counts are created.
     /// </summary>
     public static async Task SeedAsync(RankerDbContext dbContext, CancellationToken ct = default)
     {
-        // Ensure DailyVisitCount has baseline rows for today and yesterday if empty.
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var yesterday = today.AddDays(-1);
-        if (!await dbContext.DailyVisitCounts.AnyAsync(ct))
-        {
-            dbContext.DailyVisitCounts.AddRange(
-                new DailyVisitCount { VisitDate = yesterday, Count = 1250 },
-                new DailyVisitCount { VisitDate = today, Count = 1600 }
-            );
-            await dbContext.SaveChangesAsync(ct);
-        }
-
-        // Seed categories first (idempotent); bail early if they already existed
-        // (means listings were already seeded too).
-        var hadCategories = await dbContext.Categories.AnyAsync(ct);
         await SeedCategoriesAsync(dbContext, ct);
-        if (hadCategories)
-            return;
-
-        // Reload the freshly-inserted categories so we can attach listings to them.
-        var categories = await dbContext.Categories.ToListAsync(ct);
-
-        var random = new Random(42);
-        var now = DateTime.UtcNow;
-
-        foreach (var seed in CategorySeeds)
-        {
-            var category = categories.First(c => c.Slug == seed.Slug);
-
-            var currentAmount = seed.MinStartingBid;
-            for (var i = 0; i < 10; i++)
-            {
-                currentAmount += seed.MinBidIncrement * (1 + random.Next(0, 4));
-
-                var daysAgo = seed.BaseDaysAgo + i * random.Next(1, 4);
-                var firstBidAt = now.AddDays(-daysAgo).AddHours(-random.Next(0, 24));
-
-                var listing = new Listing
-                {
-                    Category = category,
-                    Name = $"{seed.Name} Pick #{i + 1}",
-                    Url = $"https://example.com/{seed.Slug}-{i + 1}",
-                    OwnerContactEmail = $"owner{i + 1}@{seed.Slug}.example.com",
-                    CurrentBidAmount = currentAmount,
-                    FirstBidAt = firstBidAt,
-                    LastBidAt = firstBidAt,
-                };
-                dbContext.Listings.Add(listing);
-
-                dbContext.Bids.Add(new Bid
-                {
-                    Listing = listing,
-                    Amount = currentAmount,
-                    CreatedAt = firstBidAt,
-                    PaymentReference = $"seed-{seed.Slug}-{i + 1}-1",
-                });
-
-                // Give roughly half the listings a re-bid, so LastBidAt/re-claim history and
-                // ActivityScore recency weighting have something realistic to show.
-                if (random.Next(0, 2) == 0)
-                {
-                    var rebidAmount = currentAmount + seed.MinBidIncrement * (1 + random.Next(0, 3));
-                    var rebidAt = firstBidAt.AddDays(random.Next(1, Math.Max(2, daysAgo)));
-                    if (rebidAt > now)
-                        rebidAt = now.AddHours(-random.Next(1, 12));
-
-                    listing.CurrentBidAmount = rebidAmount;
-                    listing.LastBidAt = rebidAt;
-                    currentAmount = rebidAmount;
-
-                    dbContext.Bids.Add(new Bid
-                    {
-                        Listing = listing,
-                        Amount = rebidAmount,
-                        CreatedAt = rebidAt,
-                        PaymentReference = $"seed-{seed.Slug}-{i + 1}-2",
-                    });
-                }
-            }
-        }
-
-        await dbContext.SaveChangesAsync(ct);
     }
 }

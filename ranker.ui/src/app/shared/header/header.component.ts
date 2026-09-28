@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
@@ -21,6 +21,23 @@ export class HeaderComponent implements OnInit {
 
   protected readonly onlineUsers = signal(0);
   protected readonly visitsToday = signal<number | null>(null);
+  protected readonly menuOpen = signal(false);
+
+  toggleMenu(): void {
+    this.menuOpen.update((v) => !v);
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
+  /** Close mobile menu when viewport grows past the desktop breakpoint */
+  @HostListener('window:resize')
+  onResize(): void {
+    if (window.innerWidth >= 860) {
+      this.menuOpen.set(false);
+    }
+  }
 
   ngOnInit(): void {
     void this.signalr.connect();
