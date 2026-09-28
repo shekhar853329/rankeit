@@ -382,7 +382,12 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     }
   }
 
+  openChampionUrl(url: string): void {
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
   moveToClaimRank(targetAmount?: number, rank?: number): void {
+
     const minInc = this.minBidIncrement() || 1;
     const currentTop = this.entries()[0]?.currentBidAmount;
     const minReq = currentTop !== undefined ? currentTop + minInc : this.minStartingBid();

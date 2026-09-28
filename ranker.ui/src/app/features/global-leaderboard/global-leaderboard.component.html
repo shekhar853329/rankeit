@@ -285,13 +285,15 @@
           Clear Search
         </button>
         } @else if (selectedSlug() === null && timeMode() === 'today') {
-        <h3 class="feed-empty-card__title">Rank #1 is wide open — grab it for just {{ currencySymbol() }}{{ emptyStateClaimPrice() }}</h3>
+        <h3 class="feed-empty-card__title">Rank #1 is wide open — grab it for just {{ currencySymbol() }}{{
+          emptyStateClaimPrice() }}</h3>
         <p class="feed-empty-card__sub">Today's leaderboard is a blank slate. Be the first name everyone sees.</p>
         <button type="button" class="btn btn-primary" (click)="claimThisPosition()">
           Claim #1 for {{ currencySymbol() }}{{ emptyStateClaimPrice() }}
         </button>
         } @else {
-        <h3 class="feed-empty-card__title">This category has no champion yet — be the first for just {{ currencySymbol() }}{{ emptyStateClaimPrice() }}</h3>
+        <h3 class="feed-empty-card__title">This category has no champion yet — be the first for just {{ currencySymbol()
+          }}{{ emptyStateClaimPrice() }}</h3>
         <p class="feed-empty-card__sub">No one has staked their claim here. Own Rank #1 before anyone else does.</p>
         <button type="button" class="btn btn-primary" (click)="claimThisPosition()">
           Claim #1 for {{ currencySymbol() }}{{ emptyStateClaimPrice() }}
@@ -607,31 +609,20 @@
         <div class="chart-controls-bar">
           <!-- View Modes -->
           <div class="control-tab-group" role="tablist" aria-label="Chart views">
-            <button
-              type="button"
-              class="chart-tab-btn"
-              [class.chart-tab-btn--active]="chartViewMode() === 'timeline'"
+            <button type="button" class="chart-tab-btn" [class.chart-tab-btn--active]="chartViewMode() === 'timeline'"
               (click)="setChartViewMode('timeline')"
               title="Show each payment as its own distinct spike on a continuous timeline">
               <span class="material-symbols-outlined icon-xs">bolt</span>
               <span>Live Timeline</span>
               <span class="tab-chip">{{ (platformStats()?.recentBidsTimeline?.length ?? 0) }}</span>
             </button>
-            <button
-              type="button"
-              class="chart-tab-btn"
-              [class.chart-tab-btn--active]="chartViewMode() === 'hourly'"
-              (click)="setChartViewMode('hourly')"
-              title="Hourly liquidity distribution over 24 hours">
+            <button type="button" class="chart-tab-btn" [class.chart-tab-btn--active]="chartViewMode() === 'hourly'"
+              (click)="setChartViewMode('hourly')" title="Hourly liquidity distribution over 24 hours">
               <span class="material-symbols-outlined icon-xs">schedule</span>
               <span>24H Hourly</span>
             </button>
-            <button
-              type="button"
-              class="chart-tab-btn"
-              [class.chart-tab-btn--active]="chartViewMode() === 'weekly'"
-              (click)="setChartViewMode('weekly')"
-              title="7-day bidding volume trend">
+            <button type="button" class="chart-tab-btn" [class.chart-tab-btn--active]="chartViewMode() === 'weekly'"
+              (click)="setChartViewMode('weekly')" title="7-day bidding volume trend">
               <span class="material-symbols-outlined icon-xs">date_range</span>
               <span>7D Trend</span>
             </button>
@@ -642,24 +633,15 @@
             @if (chartViewMode() === 'hourly') {
             <!-- Metric Toggle for Hourly mode -->
             <div class="metric-filter-group" aria-label="Metric filter">
-              <button
-                type="button"
-                class="metric-btn"
-                [class.metric-btn--active]="chartMetric() === 'both'"
+              <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'both'"
                 (click)="setChartMetric('both')">
                 Both
               </button>
-              <button
-                type="button"
-                class="metric-btn"
-                [class.metric-btn--active]="chartMetric() === 'volume'"
+              <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'volume'"
                 (click)="setChartMetric('volume')">
                 Volume
               </button>
-              <button
-                type="button"
-                class="metric-btn"
-                [class.metric-btn--active]="chartMetric() === 'count'"
+              <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'count'"
                 (click)="setChartMetric('count')">
                 Bids
               </button>
@@ -669,31 +651,19 @@
             @if (chartViewMode() === 'timeline') {
             <!-- Time Presets for Timeline mode -->
             <div class="metric-filter-group" aria-label="Timeline range">
-              <button
-                type="button"
-                class="metric-btn"
-                [class.metric-btn--active]="chartTimePreset() === '1h'"
+              <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === '1h'"
                 (click)="setChartTimePreset('1h')">
                 1H
               </button>
-              <button
-                type="button"
-                class="metric-btn"
-                [class.metric-btn--active]="chartTimePreset() === '6h'"
+              <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === '6h'"
                 (click)="setChartTimePreset('6h')">
                 6H
               </button>
-              <button
-                type="button"
-                class="metric-btn"
-                [class.metric-btn--active]="chartTimePreset() === 'today'"
+              <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === 'today'"
                 (click)="setChartTimePreset('today')">
                 Today
               </button>
-              <button
-                type="button"
-                class="metric-btn"
-                [class.metric-btn--active]="chartTimePreset() === 'all'"
+              <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === 'all'"
                 (click)="setChartTimePreset('all')">
                 All
               </button>
@@ -735,46 +705,50 @@
         </div>
 
         <div class="spotlight-card__avatar-area">
-          <div class="champion-avatar-ring">
-            @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
-            <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt=""
-              class="champion-avatar-img" />
-            } @else {
-            <div class="champion-avatar-placeholder">
-              {{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}
+          <div class="champion-hero-row champion-hero-row--link"
+            (click)="reigningChampion() && openListing(reigningChampion()!)">
+            <div class="champion-avatar-ring">
+              @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
+              <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt=""
+                class="champion-avatar-img" />
+              } @else {
+              <div class="champion-avatar-placeholder">
+                {{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}
+              </div>
+              }
+              <div class="crown-topper">
+                <span class="material-symbols-outlined icon-sm">crown</span>
+              </div>
             </div>
-            }
-            <div class="crown-topper">
-              <span class="material-symbols-outlined icon-sm">crown</span>
+            <div class="champion-meta">
+              <h3 class="champion-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName || 'No Leader
+                Yet' }}</h3>
+              <p class="champion-holding">
+                <strong class="text-on-surface">{{ reigningChampion()?.categoryName || 'Global' }}</strong>
+              </p>
             </div>
           </div>
 
-          <h3 class="champion-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName || 'No Leader
-            Yet' }}</h3>
-          <p class="champion-holding">
-            Holding the throne in <strong class="text-on-surface">{{ reigningChampion()?.categoryName || 'Global'
-              }}</strong>
-          </p>
-
           <div class="defense-grid">
             <div class="defense-box">
-              <span class="defense-val">{{ reigningChampion()?.bidCount ?? 1 }} {{ (reigningChampion()?.bidCount ?? 1)
+              <span class="defense-val">{{ reigningChampion()?.bidCount ?? 0 }} {{ (reigningChampion()?.bidCount ?? 1)
                 === 1 ? 'Time' : 'Times' }}</span>
               <span class="defense-label">Defended Today</span>
             </div>
             <div class="defense-box">
               <span class="defense-val text-primary">{{ currencySymbol() }}{{ reigningChampion()?.currentBidAmount ?? 0
                 | number: '1.0-0' }}</span>
-              <span class="defense-label">Daily Capital Spent</span>
+              <span class="defense-label">Capital Spent</span>
             </div>
           </div>
 
           <button type="button" class="claim-throne-btn"
-            (click)="claimThisPosition((reigningChampion()?.currentBidAmount ?? 10) + 1, 1)">
+            (click)="$event.stopPropagation(); claimThisPosition((reigningChampion()?.currentBidAmount ?? 10) + 1, 1)">
             <span class="material-symbols-outlined icon-sm">workspace_premium</span>
             <span>Claim This Position</span>
           </button>
         </div>
+
       </section>
 
       <!-- CARD 2: Complementary Leaderboard Card (All-Time Pantheon vs Today's Auction) -->

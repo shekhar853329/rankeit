@@ -556,29 +556,34 @@
           </div>
 
           <div class="spotlight-body">
-            <div class="avatar-ring">
-              @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
-              <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt="" class="ring-img" />
-              } @else {
-              <div class="ring-placeholder">{{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}
+            <div class="spotlight-hero-row spotlight-hero-row--link"
+              (click)="openChampionUrl(reigningChampion()?.listingUrl ?? '')">
+              <div class="avatar-ring">
+                @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
+                <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt="" class="ring-img" />
+                } @else {
+                <div class="ring-placeholder">{{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}
+                </div>
+                }
+                <div class="crown-badge">
+                  <span class="material-symbols-outlined icon-sm">crown</span>
+                </div>
               </div>
-              }
-              <div class="crown-badge">
-                <span class="material-symbols-outlined icon-sm">crown</span>
+              <div class="spotlight-meta">
+                <h3 class="spotlight-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName }}</h3>
+                <p class="spotlight-sub">Reigning #1 in {{ categoryName() }}</p>
               </div>
             </div>
 
-            <h3 class="spotlight-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName }}</h3>
-            <p class="spotlight-sub">Reigning #1 in {{ categoryName() }}</p>
-
             <button type="button" class="spotlight-claim-btn"
-              (click)="moveToClaimRank((reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement(), 1)">
+              (click)="$event.stopPropagation(); moveToClaimRank((reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement(), 1)">
               <span class="material-symbols-outlined icon-sm">workspace_premium</span>
               <span>Claim This Position</span>
             </button>
           </div>
         </section>
         }
+
 
         <!-- Other Trending Arenas -->
         <section class="side-card">
