@@ -3,7 +3,7 @@
   aria-labelledby="claim-modal-title">
   <div class="modal-panel" (click)="$event.stopPropagation()">
 
-    <!-- ── Header ────────────────────────────────────────── -->
+    <!-- ── Header ────────────────────────────────────────────── -->
     <div class="modal-panel__header">
       <div>
         <div class="modal-panel__badge-row">
@@ -11,60 +11,39 @@
             {{ isRebid() ? '🔄 Raising Existing Position' : '🚀 Claim Position' }}
           </span>
         </div>
-        <h2 class="modal-panel__title" id="claim-modal-title">Claim This Position</h2>
-        <p class="modal-panel__subtitle">
-          Enter your website domain & category below. We'll automatically identify if you have an active bid to credit.
-        </p>
+        <h2 class="modal-panel__title" id="claim-modal-title">Confirm & Pay</h2>
       </div>
       <button type="button" class="modal-panel__close" (click)="close()" [disabled]="submitting()"
         aria-label="Close">✕</button>
     </div>
 
-    <!-- ── Category Selection & Arena Benchmarks ──────────── -->
-    <div class="category-select-block">
-      <label>
-        <span class="field-title">Vertical Category Arena</span>
-        <select class="styled-select" [value]="selectedCategoryId()" (change)="onCategorySelectChange($event)"
-          [disabled]="submitting() || loadingCategories()">
-          @for (cat of categories(); track cat.id) {
-          <option [value]="cat.id">{{ cat.name }}</option>
-          }
-        </select>
-      </label>
-
-      <!-- Benchmark Strip for Selected Category -->
-      <div class="benchmark-strip">
-        <div class="benchmark-item">
-          <span class="benchmark-label">CURRENT #1 BID</span>
-          <span class="benchmark-val font-numeric">
-            {{ currentTopBid() !== null ? ('₹' + (currentTopBid() | number: '1.2-2')) : 'None' }}
-          </span>
-        </div>
-        <div class="benchmark-item">
-          <span class="benchmark-label">MIN INCREMENT</span>
-          <span class="benchmark-val font-numeric">+₹{{ minBidIncrement() | number: '1.2-2' }}</span>
-        </div>
-        <div class="benchmark-item benchmark-item--highlight">
-          <span class="benchmark-label">MIN TO TAKE #1</span>
-          <span class="benchmark-val font-numeric text-primary">₹{{ minRank1Bid() | number: '1.2-2' }}</span>
-        </div>
+    <!-- ── Summary Row (read-only: category + product + bid) ─── -->
+    <div class="summary-row">
+      <div class="summary-item">
+        <span class="summary-label">Category</span>
+        <span class="summary-value">{{ selectedCategoryName() }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Product</span>
+        <span class="summary-value">{{ listingName() || domainUrl() || '—' }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Target Bid</span>
+        <span class="summary-value font-numeric text-primary">₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}</span>
       </div>
     </div>
 
-    <!-- ── Domain / Website URL Input ─────────────────────── -->
+    <!-- ── Domain / Website URL (read-only) ──────────────────── -->
     <div class="domain-input-block">
-      <label>
-        <div class="field-title-row">
-          <span class="field-title">Website Domain / Product URL</span>
-          @if (checkingDomain()) {
-          <span class="checking-pill">Checking domain...</span>
-          }
-        </div>
-        <input type="text" [ngModel]="domainUrl()" (ngModelChange)="onDomainInput($event)"
-          placeholder="e.g. myproduct.com or https://myproduct.com" [disabled]="submitting()" autocomplete="off" />
-      </label>
+      <div class="field-title-row">
+        <span class="field-title">Website Domain / Product URL</span>
+      </div>
+      <div class="readonly-url">
+        <span class="material-symbols-outlined icon-sm readonly-url__icon">link</span>
+        <span class="readonly-url__value">{{ domainUrl() || '—' }}</span>
+      </div>
 
-      <!-- Dynamic Identification Alert Banner -->
+      <!-- Rebid credit notice -->
       @if (isRebid()) {
       <div class="domain-alert domain-alert--found">
         <div class="domain-alert__icon">
@@ -72,33 +51,22 @@
         </div>
         <div class="domain-alert__content">
           <div class="domain-alert__title">
-            Active Listing Identified: <strong>{{ listingName() || 'Your Product' }}</strong>
+            Active listing found
             @if (matchedRank()) {
-            <span class="rank-tag">Currently Rank #{{ matchedRank() }}</span>
+            <span class="rank-tag">Rank #{{ matchedRank() }}</span>
             }
           </div>
           <div class="domain-alert__desc">
-            Current Winning Bid: <strong>₹{{ existingBidAmount() | number: '1.2-2' }}</strong>.
-            This prior payment will be <strong>credited 100%</strong> toward your new bid!
+            Your previous payment of <strong>₹{{ existingBidAmount() | number: '1.2-2' }}</strong> will be
+            <strong>credited 100%</strong> toward your new bid.
           </div>
         </div>
-      </div>
-      } @else if (domainUrl().trim().length > 3 && !checkingDomain()) {
-      <div class="domain-alert domain-alert--new">
-        <span class="material-symbols-outlined icon-sm text-primary">fiber_new</span>
-        <span>New listing detected. You will be claiming an initial spot in this arena.</span>
       </div>
       }
     </div>
 
-    <!-- ── Product Name / Title ────────────────────────────── -->
-    <label>
-      <span class="field-title">Product / Project Title</span>
-      <input type="text" [ngModel]="listingName()" (ngModelChange)="listingName.set($event)"
-        placeholder="e.g. AtlasAI Studio" [disabled]="submitting()" />
-    </label>
 
-    <!-- ── Owner Contact Email ─────────────────────────────── -->
+    <!-- ── Owner Contact Email ─────────────────────────────────── -->
     <label>
       <div class="field-title-row">
         <span class="field-title">Owner Contact Email</span>
@@ -108,52 +76,22 @@
       </div>
       <input type="email" [ngModel]="ownerEmail()" (ngModelChange)="ownerEmail.set($event)"
         placeholder="you@example.com" [disabled]="submitting()" />
-      <span class="field-hint">
-        {{ isRebid()
-        ? 'Must match the email on record for this domain to authorize your previous payment credit.'
-        : 'Used to manage your listing, view click analytics, and authorize future bid adjustments.' }}
-      </span>
+      @if (isRebid()) {
+      <span class="field-hint">Must match the email on record to authorize your previous payment credit.</span>
+      }
     </label>
 
-    <!-- ── Target Bid Amount & Quick Chips ─────────────────── -->
-    <div class="bid-input-group">
-      <label>
-        <span class="field-title">Target Bid Amount (₹)</span>
-        <input type="number" [ngModel]="targetAmount()" (ngModelChange)="targetAmount.set($event ? +$event : null)"
-          placeholder="0.00" [min]="absoluteMinimumBid()" [step]="minBidIncrement()" [disabled]="submitting()" />
-      </label>
-
-      <div class="quick-chips">
-        <button type="button" class="chip-btn chip-btn--accent" (click)="setRank1Target()" [disabled]="submitting()">
-          Rank #1 (₹{{ minRank1Bid() | number: '1.0-0' }})
-        </button>
-        <button type="button" class="chip-btn" (click)="subtractIncrement(minBidIncrement())"
-          [disabled]="submitting() || (targetAmount() ?? 0) <= absoluteMinimumBid()" title="Decrease bid">
-          −₹{{ minBidIncrement() | number: '1.0-0' }}
-        </button>
-        <button type="button" class="chip-btn" (click)="addIncrement(minBidIncrement())" [disabled]="submitting()">
-          +₹{{ minBidIncrement() | number: '1.0-0' }}
-        </button>
-        <button type="button" class="chip-btn" (click)="addIncrement(50)" [disabled]="submitting()">
-          +₹50
-        </button>
-        <button type="button" class="chip-btn" (click)="addIncrement(100)" [disabled]="submitting()">
-          +₹100
-        </button>
-      </div>
-    </div>
-
-    <!-- ── Transparent Payment Calculation Breakdown ──────── -->
+    <!-- ── Payment Calculation Breakdown ──────────────────────── -->
     <div class="calc-ledger">
       <div class="calc-ledger__header">
         <span class="material-symbols-outlined icon-sm">receipt_long</span>
-        <span>PAYMENT CALCULATION BREAKDOWN</span>
+        <span>PAYMENT BREAKDOWN</span>
       </div>
 
       <div class="calc-ledger__row">
         <div class="calc-ledger__row-left">
-          <span class="calc-ledger__item-title">New Target Bid (Leaderboard Score)</span>
-          <span class="calc-ledger__item-desc">Your total active rank amount</span>
+          <span class="calc-ledger__item-title">Target Bid Amount</span>
+          <span class="calc-ledger__item-desc">Your total leaderboard score</span>
         </div>
         <span class="calc-ledger__item-val font-numeric">
           ₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}
@@ -169,7 +107,7 @@
             }
           </span>
           <span class="calc-ledger__item-desc">
-            {{ isRebid() ? 'Paid previously on this domain' : 'Brand-new listing (no prior credit)' }}
+            {{ isRebid() ? 'Paid previously on this domain' : 'New listing — no prior credit' }}
           </span>
         </div>
         <span class="calc-ledger__item-val font-numeric text-success">
@@ -177,12 +115,13 @@
         </span>
       </div>
 
+
       <div class="calc-ledger__divider"></div>
 
       <div class="calc-ledger__row calc-ledger__row--total">
         <div class="calc-ledger__row-left">
           <span class="calc-ledger__total-title">Net Amount Due Now</span>
-          <span class="calc-ledger__total-desc">Exact amount charged via Razorpay today</span>
+          <span class="calc-ledger__total-desc">Charged via Razorpay today</span>
         </div>
         <span class="calc-ledger__total-val font-numeric text-primary">
           ₹{{ payableAmount() | number: '1.2-2' }}
@@ -190,19 +129,11 @@
       </div>
     </div>
 
-    <!-- ── Validation Warnings / Errors ────────────────────── -->
+    <!-- ── Validation Warnings / Errors ────────────────────────── -->
     @if (isBelowMinimum()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>
       <span>Target bid must be at least ₹{{ absoluteMinimumBid() | number: '1.2-2' }}.</span>
-    </div>
-    }
-
-    @if (isBelowRank1() && !isBelowMinimum()) {
-    <div class="alert-box alert-box--info">
-      <span class="material-symbols-outlined icon-sm">info</span>
-      <span>Your bid of ₹{{ (targetAmount() ?? 0) | number: '1.2-2' }} will place you below Rank #1 (Rank #1 currently
-        requires ₹{{ minRank1Bid() | number: '1.2-2' }}).</span>
     </div>
     }
 
@@ -220,21 +151,14 @@
     </div>
     }
 
-    <!-- ── Terms checkbox ──────────────────────────────────── -->
+    <!-- ── Terms checkbox ──────────────────────────────────────── -->
     <label class="modal-panel__terms">
       <input type="checkbox" [ngModel]="agreed()" (ngModelChange)="agreed.set($event)" [disabled]="submitting()" />
-      <span>I have reviewed the calculation breakdown and agree to the <a href="/terms" target="_blank" rel="noopener"
+      <span>I agree to the <a href="/terms" target="_blank" rel="noopener"
           class="modal-panel__link">Terms of Service</a></span>
     </label>
 
-    <!-- ── Footer links ────────────────────────────────────── -->
-    <div class="modal-panel__footer-links">
-      <a routerLink="/privacy" target="_blank" rel="noopener" class="modal-panel__link">Privacy</a>
-      <span>·</span>
-      <a routerLink="/rules" target="_blank" rel="noopener" class="modal-panel__link">Rules</a>
-    </div>
-
-    <!-- ── Action Buttons ──────────────────────────────────── -->
+    <!-- ── Action Buttons ──────────────────────────────────────── -->
     <div class="modal-panel__actions">
       <button type="button" class="btn btn-ghost" (click)="close()" [disabled]="submitting()">
         Cancel
@@ -242,13 +166,13 @@
       <button type="button" class="btn btn-primary" [disabled]="!isFormValid() || submitting()"
         (click)="proceedToCheckout()">
         @if (submitting()) {
-        @if (quoteValidating()) {
-        <span>Validating Calculation...</span>
+          @if (quoteValidating()) {
+            <span>Validating...</span>
+          } @else {
+            <span>Opening Checkout...</span>
+          }
         } @else {
-        <span>Opening Checkout...</span>
-        }
-        } @else {
-        <span>💳 Confirm & Pay ₹{{ payableAmount() | number: '1.2-2' }}</span>
+          <span>💳 Pay ₹{{ payableAmount() | number: '1.2-2' }}</span>
         }
       </button>
     </div>
