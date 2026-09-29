@@ -17,7 +17,7 @@ This guide walks you through setting up automated CI/CD deployment of the **Rank
                      │                           │
                      ▼                           ▼
         [ ranker-backend.service ]   [ ranker-frontend.service ]
-          ASP.NET Core (.NET 10)         Angular 20 SSR (Node 22)
+          ASP.NET Core (.NET 10)         Angular 20 SSR (Node 24)
           Port: 127.0.0.1:5000           Port: 127.0.0.1:4000
                      │
                      ▼
@@ -68,7 +68,7 @@ SSH into your Ubuntu server and run the automated provisioning script.
 
 ### What this script does automatically:
 - Installs prerequisites (`curl`, `rsync`, `git`, `ufw`).
-- Installs **Node.js 22 LTS**.
+- Installs **Node.js 24**.
 - Installs **.NET 10 SDK & Runtime** via official Microsoft scripts.
 - Installs & enables **Nginx**.
 - Prepares deployment directories:

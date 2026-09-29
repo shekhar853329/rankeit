@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Ranker Ubuntu Server Setup Script
-# Installs .NET 10, Node.js 22 LTS, Nginx, configures directories, systemd, and UFW
+# Installs .NET 10, Node.js 24, Nginx, configures directories, systemd, and UFW
 # ==============================================================================
 set -euo pipefail
 
@@ -23,10 +23,10 @@ echo "--> Updating system packages..."
 apt-get update -y
 apt-get install -y ca-certificates curl wget gnupg lsb-release ufw git rsync tar gzip libicu-dev
 
-# 2. Install Node.js 22 LTS
-echo "--> Installing Node.js 22 LTS..."
-if ! command -v node &> /dev/null || [[ $(node -v) != v22* ]]; then
-  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+# 2. Install Node.js 24
+echo "--> Installing Node.js 24..."
+if ! command -v node &> /dev/null || [[ $(node -v) != v24* ]]; then
+  curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
   apt-get install -y nodejs
 fi
 echo "Node version: $(node -v)"
