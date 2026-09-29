@@ -98,7 +98,7 @@
             <span class="material-symbols-outlined field-icon">payments</span>
             <div class="field-content">
               <div class="field-label-row">
-                <span class="field-label">Bid Amount</span>
+                <label for="category-claim-amount" class="field-label">Bid Amount</label>
                 @if (claimPrice(); as minRank1) {
                 <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: ${{
                   minRank1 }}</span>
@@ -107,6 +107,7 @@
               <div class="amount-stepper-row">
                 <span class="amount-currency">₹</span>
                 <input id="category-claim-amount" type="number" class="field-input field-input--amount"
+                  aria-label="Bid Amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingBid())"
                   (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
@@ -433,6 +434,8 @@
               <button
                 type="button"
                 class="chart-tab-btn"
+                role="tab"
+                [attr.aria-selected]="chartViewMode() === 'timeline'"
                 [class.chart-tab-btn--active]="chartViewMode() === 'timeline'"
                 (click)="setChartViewMode('timeline')"
                 title="Show each payment as its own distinct spike on a continuous timeline">
@@ -443,6 +446,8 @@
               <button
                 type="button"
                 class="chart-tab-btn"
+                role="tab"
+                [attr.aria-selected]="chartViewMode() === 'hourly'"
                 [class.chart-tab-btn--active]="chartViewMode() === 'hourly'"
                 (click)="setChartViewMode('hourly')"
                 title="Hourly liquidity distribution over 24 hours">
@@ -452,6 +457,8 @@
               <button
                 type="button"
                 class="chart-tab-btn"
+                role="tab"
+                [attr.aria-selected]="chartViewMode() === 'weekly'"
                 [class.chart-tab-btn--active]="chartViewMode() === 'weekly'"
                 (click)="setChartViewMode('weekly')"
                 title="7-day bidding volume trend">

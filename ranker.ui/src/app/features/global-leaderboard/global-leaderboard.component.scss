@@ -522,7 +522,7 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all 0.12s ease;
+  transition: transform 0.12s ease, background-color 0.12s ease;
 
   span {
     font-size: 14px;
@@ -600,14 +600,13 @@
 .custom-select-placeholder {
   font-size: 0.84rem;
   font-weight: 600;
-  color: var(--color-on-surface-variant);
-  opacity: 0.65;
+  color: #52606d;
 }
 
 .custom-select-arrow {
   font-size: 20px;
   color: var(--color-on-surface-variant);
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   margin-left: auto;
 
@@ -2137,7 +2136,7 @@
   justify-content: center;
   gap: 6px;
   box-shadow: 0 4px 16px rgba(249, 87, 56, 0.3);
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 
   &:hover {
     background: var(--color-primary-hover);

@@ -4,10 +4,10 @@
 
 /* ── Design Tokens – Light Mode ────────────────────────────── */
 :root {
-  /* Stitch Color Tokens */
-  --color-primary: #f95738;
-  --color-primary-hover: #e04426;
-  --color-primary-container: #d53d21;
+  /* Stitch Color Tokens - WCAG AA compliant for text on primary */
+  --color-primary: #d93c1d;
+  --color-primary-hover: #b82b10;
+  --color-primary-container: #c23316;
   --color-primary-fixed: #ffdad3;
   --color-primary-fixed-dim: #ffb4a5;
   --color-on-primary-fixed: #3e0400;
@@ -56,9 +56,9 @@
   --text: #151c22;
   --text-muted: #5b403b;
   --text-faint: #8f706a;
-  --accent: #f95738;
-  --accent-hover: #e04426;
-  --accent-soft: rgba(249, 87, 56, 0.08);
+  --accent: #d93c1d;
+  --accent-hover: #b82b10;
+  --accent-soft: rgba(217, 60, 29, 0.08);
   --accent-contrast: #ffffff;
   --secondary: #10b981;
   --amber: #e0a926;

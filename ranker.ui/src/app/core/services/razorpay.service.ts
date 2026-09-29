@@ -23,7 +23,7 @@ export class RazorpayService {
   private readonly http = inject(HttpClient);
 
   /** KEY_ID only — safe to expose in the browser. Never send KeySecret to the frontend. */
-  private readonly keyId = 'rzp_test_Tgvh8ZMuu5XaJ1';
+  private readonly keyId = 'rzp_test_ThKrjBmWSjghRh';
 
   // ── HTTP helpers ─────────────────────────────────────────────────────────
 
@@ -140,9 +140,42 @@ export class RazorpayService {
     return err instanceof Error ? err.message : fallback;
   }
 
-  // ── Private: modal wrapper ────────────────────────────────────────────────
+  // ── Private: dynamic script loader & modal wrapper ────────────────────────
 
-  private openModal(opts: {
+  private scriptPromise: Promise<void> | null = null;
+
+  /**
+   * Lazily loads the Razorpay Standard Checkout SDK only when payment is initiated.
+   * This eliminates ~311 KiB from initial page load and prevents 3rd-party cookies
+   * on landing pages.
+   */
+  private loadScript(): Promise<void> {
+    if (typeof window === 'undefined') {
+      return Promise.reject(new Error('Razorpay checkout can only run in the browser.'));
+    }
+    if ((window as any).Razorpay) {
+      return Promise.resolve();
+    }
+    if (this.scriptPromise) {
+      return this.scriptPromise;
+    }
+
+    this.scriptPromise = new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => {
+        this.scriptPromise = null;
+        reject(new Error('Failed to load Razorpay payment gateway. Please check your connection.'));
+      };
+      document.body.appendChild(script);
+    });
+
+    return this.scriptPromise;
+  }
+
+  private async openModal(opts: {
     keyId: string;
     orderId: string;
     amount: number;
@@ -150,6 +183,8 @@ export class RazorpayService {
     email: string;
     description: string;
   }): Promise<RazorpaySuccessResponse> {
+    await this.loadScript();
+
     return new Promise((resolve, reject) => {
       const rzp = new window.Razorpay({
         key: opts.keyId,

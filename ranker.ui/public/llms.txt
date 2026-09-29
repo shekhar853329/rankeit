@@ -1,0 +1,18 @@
+# RankUp
+
+> Real-time bid-based competitive rankings across curated categories. Claim the top spot in your niche.
+
+RankUp is a competitive leaderboard platform allowing products, projects, and creators to bid for real-time ranked placement across categories and daily listings.
+
+## Core Navigation Links
+- [Global Leaderboard](https://rankup.cyou/): Real-time live bid rankings, stats, and active top spots across all categories.
+- [Category Directory](https://rankup.cyou/categories): Browse top categories, niches, and competitors.
+- [Daily Listings](https://rankup.cyou/daily): Today's active claims, bids, and highest performers.
+- [Rules & Guidelines](https://rankup.cyou/rules): How bidding, rank calculation, and leaderboard fairness work.
+- [Contact Support](https://rankup.cyou/contact): Feedback, support, and inquiries.
+- [Terms of Service](https://rankup.cyou/terms): Platform terms and conditions.
+- [Privacy Policy](https://rankup.cyou/privacy): Privacy policy and data disclosures.
+
+## Optional & Developer Endpoints
+- [Health Check](https://rankup.cyou/api/health): System status and uptime endpoint.
+- [Sitemap](https://rankup.cyou/sitemap.xml): Machine-readable XML sitemap.

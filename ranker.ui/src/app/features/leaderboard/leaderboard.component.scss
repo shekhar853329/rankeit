@@ -446,7 +446,7 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all 0.12s ease;
+  transition: transform 0.12s ease, background-color 0.12s ease;
 
   span {
     font-size: 14px;
