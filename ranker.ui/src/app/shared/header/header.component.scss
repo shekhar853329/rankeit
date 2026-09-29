@@ -134,7 +134,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.3rem 0.65rem;
+    padding: 0.25rem 0.35rem 0.25rem 0.65rem;
     border-radius: 9999px;
     background: var(--color-surface-container-low);
     border: 1px solid var(--border);
@@ -147,8 +147,8 @@
     /* grow to fill available space between brand and nav on mid screens */
     @media (min-width: 640px) {
       font-size: 0.78rem;
-      padding: 0.35rem 0.85rem;
-      gap: 0.5rem;
+      padding: 0.3rem 0.4rem 0.3rem 0.8rem;
+      gap: 0.45rem;
     }
   }
 
@@ -164,7 +164,7 @@
   .stats-online-label {
     display: none;
 
-    @media (min-width: 400px) {
+    @media (min-width: 440px) {
       display: inline;
     }
   }
@@ -185,6 +185,88 @@
     color: var(--color-outline-variant);
     opacity: 0.6;
     margin: 0 0.1rem;
+  }
+
+  /* Divider separating live telemetry and Analytics link */
+  &__stats-divider {
+    display: inline-block;
+    width: 1px;
+    height: 14px;
+    background: var(--border);
+    opacity: 0.75;
+    margin: 0 0.1rem;
+    flex-shrink: 0;
+  }
+
+  /* Analytics link to the right of visited Today */
+  &__stats-analytics {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    text-decoration: none;
+    color: var(--color-on-surface-variant);
+    font-family: var(--font-headline);
+    font-size: 0.74rem;
+    font-weight: 600;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+
+    .stats-analytics-icon {
+      font-size: 15px;
+      line-height: 1;
+      opacity: 0.8;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .stats-analytics-label {
+      display: inline;
+
+      /* When space is tight, hide label and show only the icon */
+      @media (max-width: 640px) {
+        display: none;
+      }
+
+      @media (min-width: 860px) and (max-width: 1080px) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      padding: 0.18rem 0.35rem;
+    }
+
+    @media (min-width: 860px) and (max-width: 1080px) {
+      padding: 0.18rem 0.35rem;
+    }
+
+    &:hover {
+      color: var(--color-on-surface);
+      background: var(--color-surface-container);
+      border-color: var(--border);
+
+      .stats-analytics-icon {
+        opacity: 1;
+        transform: scale(1.08);
+      }
+    }
+
+    /* Active / Selected section highlight */
+    &.active {
+      color: var(--color-primary, #ff5a36);
+      background: rgba(255, 90, 54, 0.08);
+      border-color: rgba(255, 90, 54, 0.28);
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(255, 90, 54, 0.1);
+
+      .stats-analytics-icon {
+        color: var(--color-primary, #ff5a36);
+        opacity: 1;
+      }
+    }
   }
 
   /* ── Desktop Navigation ── */
@@ -365,14 +447,19 @@
 .mobile-nav__stats {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.55rem 0.45rem 0.75rem;
   border-radius: 0.65rem;
   background: var(--color-surface-container-low);
   border: 1px solid var(--border);
   font-size: 0.78rem;
   font-family: var(--font-headline);
   color: var(--color-on-surface-variant);
+
+  .site-header__stats-analytics {
+    margin-left: auto;
+  }
 }
 
 /* ── Mobile nav: links ── */
@@ -594,6 +681,32 @@
 
     &__stats-sep {
       color: rgba(255, 255, 255, 0.2);
+    }
+
+    &__stats-divider {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    &__stats-analytics {
+      color: #94a3b8;
+
+      &:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      &.active {
+        color: #4edea3;
+        background: rgba(78, 222, 163, 0.12);
+        border-color: rgba(78, 222, 163, 0.35);
+        box-shadow: 0 0 8px rgba(78, 222, 163, 0.15);
+
+        .stats-analytics-icon {
+          color: #4edea3;
+          opacity: 1;
+        }
+      }
     }
 
     .status-beacon__ping {

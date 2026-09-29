@@ -18,8 +18,8 @@
       </a>
     </div>
 
-    <!-- ── Live network stats pill (always visible) ── -->
-    <a routerLink="/analytics" class="site-header__stats" title="View Real-Time Traffic & Google Analytics Telemetry">
+    <!-- ── Live network stats pill (with Analytics link to the right of visited today) ── -->
+    <div class="site-header__stats">
       <span class="status-beacon">
         <span class="status-beacon__ping"></span>
         <span class="status-beacon__dot"></span>
@@ -34,14 +34,19 @@
         <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
         }
       </span>
-    </a>
+      <span class="site-header__stats-divider" aria-hidden="true"></span>
+      <a routerLink="/analytics" routerLinkActive="active" class="site-header__stats-analytics"
+        title="View Real-Time Traffic & Google Analytics Telemetry">
+        <span class="material-symbols-outlined stats-analytics-icon">insights</span>
+        <span class="stats-analytics-label">Google Stats</span>
+      </a>
+    </div>
 
     <!-- ── Main Navigation (desktop) ── -->
     <nav class="site-header__nav" aria-label="Main navigation">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Leaderboards</a>
       <a routerLink="/categories" routerLinkActive="active">Categories</a>
       <a routerLink="/daily" routerLinkActive="active">Daily</a>
-      <a routerLink="/analytics" routerLinkActive="active">Analytics</a>
       <a routerLink="/rules" routerLinkActive="active">Rules &amp; FAQ</a>
       <a routerLink="/contact" routerLinkActive="active">Contact</a>
     </nav>
@@ -60,13 +65,8 @@
       </a>
 
       <!-- Hamburger toggle (mobile only) -->
-      <button
-        type="button"
-        class="site-header__hamburger"
-        (click)="toggleMenu()"
-        [attr.aria-expanded]="menuOpen()"
-        aria-label="Toggle navigation menu"
-        aria-controls="mobile-nav">
+      <button type="button" class="site-header__hamburger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()"
+        aria-label="Toggle navigation menu" aria-controls="mobile-nav">
         <span class="hamburger-line" [class.open]="menuOpen()"></span>
       </button>
     </div>
@@ -74,11 +74,7 @@
   </div>
 
   <!-- ── Mobile Navigation Drawer ── -->
-  <nav
-    id="mobile-nav"
-    class="site-header__mobile-nav"
-    [class.is-open]="menuOpen()"
-    aria-label="Mobile navigation">
+  <nav id="mobile-nav" class="site-header__mobile-nav" [class.is-open]="menuOpen()" aria-label="Mobile navigation">
 
     <!-- Stats row inside mobile drawer -->
     <div class="mobile-nav__stats">
@@ -87,13 +83,21 @@
         <span class="status-beacon__dot"></span>
       </span>
       <span class="site-header__stats-text">
-        <strong class="stats-online-count">{{ onlineUsers() }}</strong> online
+        <strong class="stats-online-count">{{ onlineUsers() }}</strong>
+        <span class="stats-online-label"> online</span>
         @if (visitsToday() !== null) {
         <span class="site-header__stats-sep" aria-hidden="true">•</span>
-        <strong class="stats-views-count">{{ visitsToday() }}</strong> views today
+        <strong class="stats-views-count">{{ visitsToday() }}</strong>
+        <span class="stats-views-label"> views</span>
         <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
         }
       </span>
+      <span class="site-header__stats-divider" aria-hidden="true"></span>
+      <a routerLink="/analytics" routerLinkActive="active" (click)="closeMenu()" class="site-header__stats-analytics"
+        title="View Real-Time Traffic & Google Analytics Telemetry">
+        <span class="material-symbols-outlined stats-analytics-icon">insights</span>
+        <span class="stats-analytics-label">Analytics</span>
+      </a>
     </div>
 
     <div class="mobile-nav__links">

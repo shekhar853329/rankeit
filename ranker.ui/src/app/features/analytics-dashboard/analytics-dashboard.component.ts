@@ -85,6 +85,18 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private resizeTimeout: any = null;
+  private readonly onWindowResize = () => {
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+    }
+    this.resizeTimeout = setTimeout(() => {
+      if (this.report()) {
+        this.renderAllCharts();
+      }
+    }, 150);
+  };
+
   ngOnInit(): void {
     this.loadData();
     this.loadStatus();
@@ -99,6 +111,13 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         if (this.realtimeTimer) {
           clearInterval(this.realtimeTimer);
         }
+        if (this.resizeTimeout) {
+          clearTimeout(this.resizeTimeout);
+        }
+        if (isPlatformBrowser(this.platformId)) {
+          window.removeEventListener('resize', this.onWindowResize);
+          window.removeEventListener('orientationchange', this.onWindowResize);
+        }
         this.destroyCharts();
       });
     }
@@ -107,6 +126,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.initResizeObserver();
+      window.addEventListener('resize', this.onWindowResize);
+      window.addEventListener('orientationchange', this.onWindowResize);
     }
   }
 
@@ -225,6 +246,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.98)';
     const tooltipBorder = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
 
+    const isMobile = isPlatformBrowser(this.platformId) && window.innerWidth < 640;
+    const isVerySmall = isPlatformBrowser(this.platformId) && window.innerWidth < 420;
+
     const seriesData = reportData.timeSeries;
     const dates = seriesData.map((d) => d.label);
     const users = seriesData.map((d) => d.activeUsers);
@@ -235,20 +259,22 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const series: any[] = [];
     const yAxis: any[] = [];
 
+    const axisFontSize = isMobile ? 10 : 11;
+
     if (metric === 'users_views') {
       yAxis.push(
         {
           type: 'value',
           name: 'Users',
-          nameTextStyle: { color: textColor, fontSize: 11 },
-          axisLabel: { color: textColor, fontSize: 11 },
+          nameTextStyle: { color: textColor, fontSize: axisFontSize },
+          axisLabel: { color: textColor, fontSize: axisFontSize },
           splitLine: { lineStyle: { color: gridLineColor } },
         },
         {
           type: 'value',
           name: 'Page Views',
-          nameTextStyle: { color: '#0ea5e9', fontSize: 11 },
-          axisLabel: { color: '#0ea5e9', fontSize: 11 },
+          nameTextStyle: { color: '#0ea5e9', fontSize: axisFontSize },
+          axisLabel: { color: '#0ea5e9', fontSize: axisFontSize },
           splitLine: { show: false },
         }
       );
@@ -315,8 +341,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       yAxis.push({
         type: 'value',
         name,
-        nameTextStyle: { color: textColor, fontSize: 11 },
-        axisLabel: { color: textColor, fontSize: 11 },
+        nameTextStyle: { color: textColor, fontSize: axisFontSize },
+        axisLabel: { color: textColor, fontSize: axisFontSize },
         splitLine: { lineStyle: { color: gridLineColor } },
       });
 
@@ -345,28 +371,35 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         backgroundColor: tooltipBg,
         borderColor: tooltipBorder,
         borderWidth: 1,
-        padding: [10, 14],
-        textStyle: { color: textColor, fontFamily: 'Plus Jakarta Sans, sans-serif' },
+        padding: isMobile ? [8, 10] : [10, 14],
+        textStyle: { color: textColor, fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: isMobile ? 12 : 13 },
         extraCssText: 'border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); backdrop-filter: blur(8px);',
       },
       legend: {
         top: 0,
         right: 0,
-        textStyle: { color: textColor, fontSize: 12 },
+        textStyle: { color: textColor, fontSize: isMobile ? 10 : 12 },
         icon: 'roundRect',
+        itemWidth: isMobile ? 14 : 25,
+        itemHeight: isMobile ? 8 : 12,
       },
       grid: {
-        left: '2%',
-        right: '3%',
-        top: '14%',
-        bottom: '8%',
+        left: isVerySmall ? '1%' : '2%',
+        right: isVerySmall ? '1%' : (isMobile ? '2%' : '3%'),
+        top: isMobile ? '18%' : '14%',
+        bottom: isMobile ? '12%' : '8%',
         containLabel: true,
       },
       xAxis: {
         type: 'category',
         data: dates,
         axisLine: { lineStyle: { color: gridLineColor } },
-        axisLabel: { color: textColor, fontSize: 11 },
+        axisLabel: {
+          color: textColor,
+          fontSize: isMobile ? 9 : 11,
+          hideOverlap: true,
+          interval: 'auto',
+        },
       },
       yAxis,
       series,
@@ -389,6 +422,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.98)';
     const tooltipBorder = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
 
+    const isSmall = isPlatformBrowser(this.platformId) && window.innerWidth < 520;
+
     const colors = ['#d93c1d', '#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
     const data = reportData.trafficSources.map((s, index) => ({
       name: s.channelGroup,
@@ -404,21 +439,23 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         backgroundColor: tooltipBg,
         borderColor: tooltipBorder,
         borderWidth: 1,
-        textStyle: { color: textColor, fontFamily: 'Plus Jakarta Sans, sans-serif' },
+        textStyle: { color: textColor, fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: isSmall ? 12 : 13 },
         extraCssText: 'border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);',
       },
       legend: {
         bottom: '0%',
         left: 'center',
-        textStyle: { color: textColor, fontSize: 11 },
+        textStyle: { color: textColor, fontSize: isSmall ? 10 : 11 },
         icon: 'circle',
+        itemWidth: isSmall ? 8 : 10,
+        itemHeight: isSmall ? 8 : 10,
       },
       series: [
         {
           name: 'Traffic Channels',
           type: 'pie',
-          radius: ['48%', '75%'],
-          center: ['50%', '42%'],
+          radius: isSmall ? ['42%', '68%'] : ['48%', '75%'],
+          center: isSmall ? ['50%', '40%'] : ['50%', '42%'],
           avoidLabelOverlap: true,
           itemStyle: {
             borderRadius: 6,
@@ -431,7 +468,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
           emphasis: {
             label: {
               show: true,
-              fontSize: 13,
+              fontSize: isSmall ? 11 : 13,
               fontWeight: 'bold',
               color: textColor,
             },
@@ -457,6 +494,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.98)';
     const tooltipBorder = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+    const isSmall = isPlatformBrowser(this.platformId) && window.innerWidth < 520;
 
     const deviceColors: Record<string, string> = {
       desktop: '#d93c1d',
@@ -478,21 +516,23 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         backgroundColor: tooltipBg,
         borderColor: tooltipBorder,
         borderWidth: 1,
-        textStyle: { color: textColor, fontFamily: 'Plus Jakarta Sans, sans-serif' },
+        textStyle: { color: textColor, fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: isSmall ? 12 : 13 },
         extraCssText: 'border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);',
       },
       legend: {
         bottom: '0%',
         left: 'center',
-        textStyle: { color: textColor, fontSize: 11 },
+        textStyle: { color: textColor, fontSize: isSmall ? 10 : 11 },
         icon: 'circle',
+        itemWidth: isSmall ? 8 : 10,
+        itemHeight: isSmall ? 8 : 10,
       },
       series: [
         {
           name: 'Device Type',
           type: 'pie',
-          radius: ['48%', '75%'],
-          center: ['50%', '42%'],
+          radius: isSmall ? ['42%', '68%'] : ['48%', '75%'],
+          center: isSmall ? ['50%', '40%'] : ['50%', '42%'],
           avoidLabelOverlap: true,
           itemStyle: {
             borderRadius: 6,
@@ -505,7 +545,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
           emphasis: {
             label: {
               show: true,
-              fontSize: 13,
+              fontSize: isSmall ? 11 : 13,
               fontWeight: 'bold',
               color: textColor,
             },
