@@ -389,7 +389,7 @@
   color: var(--color-on-surface);
   outline: none;
   width: 100%;
-  padding: 0;
+  padding: 0 0 0 10px;
 
   &::placeholder {
     color: var(--color-on-surface-variant);
