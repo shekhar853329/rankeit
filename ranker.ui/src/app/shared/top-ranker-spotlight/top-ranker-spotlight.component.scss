@@ -100,7 +100,7 @@
   }
 
   &__name {
-    font-family: 'Sora', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-headline);
     font-weight: 800;
     font-size: 1.05rem;
     color: #6b3a00;

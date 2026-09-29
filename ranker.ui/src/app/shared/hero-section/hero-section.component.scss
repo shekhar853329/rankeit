@@ -48,7 +48,7 @@
   &__headline {
     color: var(--text);
     font-size: clamp(1rem, 2.5vw, 1.35rem);
-    font-family: 'Sora', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-headline);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.2;
@@ -70,7 +70,7 @@
 
   &__category {
     font-size: clamp(0.9rem, 2vw, 1.1rem);
-    font-family: 'Sora', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-headline);
     font-weight: 700;
     color: var(--text-muted);
     letter-spacing: -0.02em;

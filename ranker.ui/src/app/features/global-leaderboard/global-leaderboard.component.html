@@ -55,7 +55,7 @@
           <!-- URL / @Handle Input -->
           <div class="command-bar__field command-bar__field--url">
             @if (faviconDisplayUrl()) {
-            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" (error)="onFaviconError($event)" />
+            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" width="24" height="24" decoding="async" (error)="onFaviconError($event)" />
             } @else {
             <span class="material-symbols-outlined field-icon">link</span>
             }
@@ -323,8 +323,8 @@
               <!-- Product Avatar / Media Preview with pinging dot -->
               <div class="product-avatar-wrap">
                 @if (row.logoUrl || row.faviconUrl) {
-                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar"
-                  (error)="onListingFaviconError($event)" />
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="48" height="48"
+                  fetchpriority="high" decoding="async" (error)="onListingFaviconError($event)" />
                 } @else {
                 <div class="product-avatar product-avatar--placeholder">
                   {{ row.listingName.charAt(0).toUpperCase() }}
@@ -399,8 +399,8 @@
 
               <div class="product-avatar-wrap">
                 @if (row.logoUrl || row.faviconUrl) {
-                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar"
-                  (error)="onListingFaviconError($event)" />
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="48" height="48"
+                  loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
                 } @else {
                 <div class="product-avatar product-avatar--placeholder">
                   {{ row.listingName.charAt(0).toUpperCase() }}
@@ -459,8 +459,8 @@
 
               <div class="product-avatar-wrap">
                 @if (row.logoUrl || row.faviconUrl) {
-                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar"
-                  (error)="onListingFaviconError($event)" />
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="48" height="48"
+                  loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
                 } @else {
                 <div class="product-avatar product-avatar--placeholder">
                   {{ row.listingName.charAt(0).toUpperCase() }}
@@ -715,7 +715,7 @@
             <div class="champion-avatar-ring">
               @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
               <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt=""
-                class="champion-avatar-img" />
+                class="champion-avatar-img" width="46" height="46" loading="lazy" decoding="async" />
               } @else {
               <div class="champion-avatar-placeholder">
                 {{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}

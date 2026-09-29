@@ -51,6 +51,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   private echartsModule: typeof import('echarts') | null = null;
   private echartsInstance: echarts.ECharts | null = null;
   private chartResizeObserver: ResizeObserver | null = null;
+  private chartIntersectionObserver: IntersectionObserver | null = null;
 
   /* ── Category Bid Pressure Chart State ── */
   readonly categoryStats = signal<PlatformStatsDto | null>(null);
@@ -238,6 +239,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     });
 
     this.destroyRef.onDestroy(() => {
+      this.chartIntersectionObserver?.disconnect();
+      this.chartIntersectionObserver = null;
       this.chartResizeObserver?.disconnect();
       this.echartsInstance?.dispose();
       this.echartsInstance = null;
@@ -517,8 +520,22 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   /* ── Interactive Bid Pressure Chart Methods ── */
   ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      void this.initChart();
+    if (isPlatformBrowser(this.platformId) && this.chartContainerRef?.nativeElement) {
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.chartIntersectionObserver = new IntersectionObserver(
+          (entries) => {
+            if (entries[0]?.isIntersecting) {
+              this.chartIntersectionObserver?.disconnect();
+              this.chartIntersectionObserver = null;
+              void this.initChart();
+            }
+          },
+          { rootMargin: '250px' }
+        );
+        this.chartIntersectionObserver.observe(this.chartContainerRef.nativeElement);
+      } else {
+        setTimeout(() => void this.initChart(), 1000);
+      }
     }
   }
 

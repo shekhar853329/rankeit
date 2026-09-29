@@ -91,6 +91,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   private echartsModule: typeof import('echarts') | null = null;
   private echartsInstance: echarts.ECharts | null = null;
   private chartResizeObserver: ResizeObserver | null = null;
+  private chartIntersectionObserver: IntersectionObserver | null = null;
 
   /* ── Interactive Bid Pressure Chart Controls ── */
   readonly chartViewMode = signal<'timeline' | 'hourly' | 'weekly'>('timeline');
@@ -483,22 +484,35 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.startCountdownTimer();
     this.loadPlatformStats();
-    this.loadLiveStream();
-    this.loadAllTimeHallOfFame();
-    this.loadTodayAuctionTop();
 
+    // Critical above-the-fold content: Trending category tabs and primary leaderboard
     this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 12 }).subscribe((result) => {
       this.tabs.set(result.items);
     });
 
     this.loadTop3Bidders();
-
-    this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
-      this.allCategories.set(result.items);
-    });
-
     this.loadSelection();
-    void this.signalr.joinGlobalGroup();
+
+    // Stagger non-critical / secondary network calls & SignalR to eliminate startup connection contention
+    if (isPlatformBrowser(this.platformId)) {
+      const scheduleSecondary = () => {
+        this.loadLiveStream();
+        this.loadAllTimeHallOfFame();
+        this.loadTodayAuctionTop();
+        if (this.allCategories().length === 0) {
+          this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
+            this.allCategories.set(result.items);
+          });
+        }
+        void this.signalr.joinGlobalGroup();
+      };
+
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(() => scheduleSecondary(), { timeout: 1500 });
+      } else {
+        setTimeout(scheduleSecondary, 400);
+      }
+    }
 
     // Debounced server-side search
     this.searchChange$
@@ -533,6 +547,8 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       });
 
     this.destroyRef.onDestroy(() => {
+      this.chartIntersectionObserver?.disconnect();
+      this.chartIntersectionObserver = null;
       this.chartResizeObserver?.disconnect();
       this.echartsInstance?.dispose();
       this.echartsInstance = null;
@@ -758,9 +774,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   toggleCategoryDropdown(event?: Event): void {
     event?.stopPropagation();
-    this.categoryDropdownOpen.update((v) => !v);
-    if (!this.categoryDropdownOpen()) {
+    const nextState = !this.categoryDropdownOpen();
+    this.categoryDropdownOpen.set(nextState);
+    if (!nextState) {
       this.categorySearchQuery.set('');
+    } else if (this.allCategories().length === 0) {
+      this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
+        this.allCategories.set(result.items);
+      });
     }
   }
 
@@ -1215,8 +1236,22 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
      APACHE ECHARTS: INTERACTIVE BID PRESSURE & VELOCITY VISUALIZER
      ══════════════════════════════════════════════════════════════ */
   ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => this.initChart(), 60);
+    if (isPlatformBrowser(this.platformId) && this.chartContainerRef?.nativeElement) {
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.chartIntersectionObserver = new IntersectionObserver(
+          (entries) => {
+            if (entries[0]?.isIntersecting) {
+              this.chartIntersectionObserver?.disconnect();
+              this.chartIntersectionObserver = null;
+              void this.initChart();
+            }
+          },
+          { rootMargin: '250px' }
+        );
+        this.chartIntersectionObserver.observe(this.chartContainerRef.nativeElement);
+      } else {
+        setTimeout(() => void this.initChart(), 1000);
+      }
     }
   }
 

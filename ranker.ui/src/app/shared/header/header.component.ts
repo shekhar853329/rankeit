@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
@@ -18,6 +19,7 @@ export class HeaderComponent implements OnInit {
   private readonly signalr = inject(SignalrService);
   private readonly siteVisits = inject(SiteVisitService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   protected readonly onlineUsers = signal(0);
   protected readonly visitsToday = signal<number | null>(null);
@@ -40,16 +42,28 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.signalr.connect();
-    this.signalr.onlineUsers$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((count) => this.onlineUsers.set(count));
-    this.signalr.visitsToday$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((count) => {
-      if (count !== null) {
-        this.visitsToday.set(count);
-      }
-    });
-    this.siteVisits
-      .trackVisit()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((result) => this.visitsToday.set(result.visitsToday));
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const initNetwork = () => {
+      void this.signalr.connect();
+      this.signalr.onlineUsers$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((count) => this.onlineUsers.set(count));
+      this.signalr.visitsToday$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((count) => {
+        if (count !== null) {
+          this.visitsToday.set(count);
+        }
+      });
+      this.siteVisits
+        .trackVisit()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((result) => this.visitsToday.set(result.visitsToday));
+    };
+
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(initNetwork, { timeout: 1500 });
+    } else {
+      setTimeout(initNetwork, 300);
+    }
   }
 }
