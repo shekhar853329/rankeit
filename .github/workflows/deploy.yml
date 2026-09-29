@@ -125,6 +125,8 @@ jobs:
           PROD_CONNECTION_STRING: ${{ secrets.PROD_CONNECTION_STRING }}
           RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
           RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+          GA_PROPERTY_ID: ${{ secrets.GA_PROPERTY_ID }}
+          GA_CREDENTIALS_JSON: ${{ secrets.GA_CREDENTIALS_JSON }}
         run: |
           python3 - << 'PYEOF'
           import os
@@ -132,6 +134,8 @@ jobs:
           conn = os.environ.get('PROD_CONNECTION_STRING', '').strip()
           rzp_id = os.environ.get('RAZORPAY_KEY_ID', '').strip()
           rzp_sec = os.environ.get('RAZORPAY_KEY_SECRET', '').strip()
+          ga_prop = os.environ.get('GA_PROPERTY_ID', '').strip()
+          ga_json = os.environ.get('GA_CREDENTIALS_JSON', '').strip()
 
           lines = [
               "ASPNETCORE_ENVIRONMENT=Production",
@@ -140,8 +144,18 @@ jobs:
               f"ConnectionStrings__RankerDb={conn}",
               f"Razorpay__KeyId={rzp_id}",
               f"Razorpay__KeySecret={rzp_sec}",
-              ""
           ]
+
+          if ga_prop:
+              lines.append(f"GoogleAnalytics__PropertyId={ga_prop}")
+
+          if ga_json:
+              with open("publish/backend/ga-credentials.json", "w", encoding="utf-8") as f:
+                  f.write(ga_json)
+              lines.append("GoogleAnalytics__CredentialsFilePath=/var/www/ranker/backend/ga-credentials.json")
+              print("Injected Google Analytics service account credentials into publish/backend/ga-credentials.json.")
+
+          lines.append("")
 
           with open("publish/backend/.env", "w", encoding="utf-8") as f:
               f.write("\n".join(lines))

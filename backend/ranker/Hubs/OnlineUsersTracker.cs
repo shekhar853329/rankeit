@@ -18,4 +18,6 @@ public class OnlineUsersTracker
         connectionIds.TryRemove(connectionId, out _);
         return connectionIds.Count;
     }
+
+    public int Count => connectionIds.Count;
 }

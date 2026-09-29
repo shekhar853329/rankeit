@@ -4,6 +4,7 @@ using Ranker.Application.Bids;
 using Ranker.Data;
 using Ranker.Hubs;
 using Ranker.Repositories;
+using Ranker.Services.Analytics;
 using Ranker.Services.Leaderboards;
 using Ranker.Services.Payments;
 using Ranker.Services.UrlMetadata;
@@ -36,6 +37,7 @@ builder.Services.AddScoped<IListingRepository, ListingRepository>();
 builder.Services.AddScoped<IBidRepository, BidRepository>();
 builder.Services.AddSingleton<GlobalLeaderboardCache>();
 builder.Services.AddSingleton<OnlineUsersTracker>();
+builder.Services.AddScoped<IGoogleAnalyticsService, GoogleAnalyticsService>();
 
 // ── URL Metadata ──────────────────────────────────────────────────────────
 // Direct HTTP scrape with enhanced browser mimicry to avoid bot detection

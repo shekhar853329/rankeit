@@ -44,6 +44,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'analytics',
+    loadComponent: () =>
+      import('./features/analytics-dashboard/analytics-dashboard.component').then(
+        (m) => m.AnalyticsDashboardComponent
+      ),
+  },
+  {
     path: 'contact',
     loadComponent: () =>
       import('./features/contact/contact.component').then((m) => m.ContactComponent),

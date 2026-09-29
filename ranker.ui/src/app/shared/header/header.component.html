@@ -19,7 +19,7 @@
     </div>
 
     <!-- ── Live network stats pill (always visible) ── -->
-    <div class="site-header__stats">
+    <a routerLink="/analytics" class="site-header__stats" title="View Real-Time Traffic & Google Analytics Telemetry">
       <span class="status-beacon">
         <span class="status-beacon__ping"></span>
         <span class="status-beacon__dot"></span>
@@ -34,13 +34,14 @@
         <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
         }
       </span>
-    </div>
+    </a>
 
     <!-- ── Main Navigation (desktop) ── -->
     <nav class="site-header__nav" aria-label="Main navigation">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Leaderboards</a>
       <a routerLink="/categories" routerLinkActive="active">Categories</a>
       <a routerLink="/daily" routerLinkActive="active">Daily</a>
+      <a routerLink="/analytics" routerLinkActive="active">Analytics</a>
       <a routerLink="/rules" routerLinkActive="active">Rules &amp; FAQ</a>
       <a routerLink="/contact" routerLinkActive="active">Contact</a>
     </nav>
@@ -104,6 +105,9 @@
       </a>
       <a routerLink="/daily" routerLinkActive="active" (click)="closeMenu()">
         <span class="material-symbols-outlined">today</span>Daily
+      </a>
+      <a routerLink="/analytics" routerLinkActive="active" (click)="closeMenu()">
+        <span class="material-symbols-outlined">insights</span>Analytics
       </a>
       <a routerLink="/rules" routerLinkActive="active" (click)="closeMenu()">
         <span class="material-symbols-outlined">help_outline</span>Rules &amp; FAQ

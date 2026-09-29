@@ -1,0 +1,642 @@
+<div class="analytics-page">
+  <div class="analytics-container">
+
+    <!-- ── Header & Action Controls ────────────────────────── -->
+    <header class="analytics-header">
+      <div class="header-main">
+        <div class="header-badge-row">
+          <span class="analytics-pill">
+            <span class="material-symbols-outlined text-sm">insights</span>
+            TELEMETRY &amp; AUDIENCE
+          </span>
+
+          @if (report()?.isConnected) {
+            <span class="status-tag status-tag--connected" title="Streaming live from Google Analytics Data API">
+              <span class="status-dot"></span>
+              Live GA4 Connected
+            </span>
+          } @else {
+            <span class="status-tag status-tag--preview" title="Preview mode with realistic telemetry. Click 'Connect GA4' to link your property.">
+              <span class="status-dot status-dot--amber"></span>
+              Preview Mode (Tag: G-G5F28SY0F0)
+            </span>
+          }
+        </div>
+
+        <h1 class="analytics-title">Website Traffic &amp; Analytics</h1>
+        <p class="analytics-subtitle">
+          Real-time audience engagement, traffic acquisition channels, and telemetry powered by Google Analytics 4.
+        </p>
+      </div>
+
+      <div class="header-controls">
+        <!-- Date Range Toggle -->
+        <div class="range-selector" role="group" aria-label="Select report time range">
+          <button
+            type="button"
+            class="range-btn"
+            [class.active]="selectedDays() === 7"
+            (click)="setDays(7)">
+            7D
+          </button>
+          <button
+            type="button"
+            class="range-btn"
+            [class.active]="selectedDays() === 14"
+            (click)="setDays(14)">
+            14D
+          </button>
+          <button
+            type="button"
+            class="range-btn"
+            [class.active]="selectedDays() === 30"
+            (click)="setDays(30)">
+            30D
+          </button>
+          <button
+            type="button"
+            class="range-btn"
+            [class.active]="selectedDays() === 90"
+            (click)="setDays(90)">
+            90D
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn action-btn--refresh"
+            (click)="refresh()"
+            [disabled]="refreshing()"
+            title="Refresh analytics data"
+            aria-label="Refresh analytics data">
+            <span class="material-symbols-outlined icon-spin" [class.spinning]="refreshing()">refresh</span>
+            <span class="btn-text">Refresh</span>
+          </button>
+
+          <button
+            type="button"
+            class="action-btn action-btn--setup"
+            (click)="openSetupModal()"
+            title="Google Analytics API Configuration & Setup Guide">
+            <span class="material-symbols-outlined">settings_suggest</span>
+            <span class="btn-text">GA4 Setup Guide</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Live Realtime Audience Card ─────────────────────── -->
+    @if (realtime(); as rt) {
+      <section class="realtime-banner" aria-label="Live website traffic">
+        <div class="realtime-metric">
+          <div class="realtime-ping-wrap">
+            <span class="live-beacon">
+              <span class="live-beacon__pulse"></span>
+              <span class="live-beacon__dot"></span>
+            </span>
+            <span class="realtime-label">LIVE NOW (LAST 30 MIN)</span>
+          </div>
+          <div class="realtime-counter">
+            <span class="realtime-number">{{ rt.activeUsersLast30Min }}</span>
+            <span class="realtime-unit">active visitors</span>
+          </div>
+        </div>
+
+        <div class="realtime-divider" aria-hidden="true"></div>
+
+        <div class="realtime-details">
+          <div class="realtime-section">
+            <span class="detail-label">Active Pages Right Now:</span>
+            <div class="realtime-chips">
+              @for (page of rt.topPages; track page.pagePath) {
+                <div class="realtime-chip">
+                  <span class="chip-path">{{ page.pagePath }}</span>
+                  <span class="chip-badge">{{ page.activeUsers }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          @if (rt.topCountries && rt.topCountries.length > 0) {
+            <div class="realtime-section">
+              <span class="detail-label">Top Locations:</span>
+              <div class="realtime-chips">
+                @for (c of rt.topCountries; track c.country) {
+                  <div class="realtime-chip realtime-chip--country">
+                    <span class="chip-path">{{ c.country }}</span>
+                    <span class="chip-badge chip-badge--secondary">{{ c.activeUsers }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ── Loading Skeleton / Overlay ───────────────────────── -->
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading Google Analytics telemetry...</p>
+      </div>
+    } @else if (report(); as rep) {
+
+      <!-- ── KPI Cards Grid ─────────────────────────────────── -->
+      <section class="kpi-grid" aria-label="Key traffic performance indicators">
+        <!-- 1. Active Users -->
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__title">Active Users</span>
+            <span class="material-symbols-outlined kpi-icon">group</span>
+          </div>
+          <div class="kpi-card__value">{{ rep.overview.activeUsers | number }}</div>
+          <div class="kpi-card__footer">
+            <span class="trend-badge trend-badge--up">
+              <span class="material-symbols-outlined text-xs">trending_up</span>
+              +{{ rep.overview.totalUsersChangePercent }}%
+            </span>
+            <span class="footer-note">{{ rep.overview.newUsers | number }} new</span>
+          </div>
+        </div>
+
+        <!-- 2. Page Views -->
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__title">Page Views</span>
+            <span class="material-symbols-outlined kpi-icon text-sky">visibility</span>
+          </div>
+          <div class="kpi-card__value">{{ rep.overview.screenPageViews | number }}</div>
+          <div class="kpi-card__footer">
+            <span class="trend-badge trend-badge--up">
+              <span class="material-symbols-outlined text-xs">trending_up</span>
+              +{{ rep.overview.pageViewsChangePercent }}%
+            </span>
+            <span class="footer-note">in {{ rep.dateRangeLabel }}</span>
+          </div>
+        </div>
+
+        <!-- 3. Total Sessions -->
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__title">Total Sessions</span>
+            <span class="material-symbols-outlined kpi-icon text-emerald">browse_activity</span>
+          </div>
+          <div class="kpi-card__value">{{ rep.overview.sessions | number }}</div>
+          <div class="kpi-card__footer">
+            <span class="trend-badge trend-badge--up">
+              <span class="material-symbols-outlined text-xs">trending_up</span>
+              +{{ rep.overview.sessionsChangePercent }}%
+            </span>
+            <span class="footer-note">vs prior period</span>
+          </div>
+        </div>
+
+        <!-- 4. Avg Session Duration -->
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__title">Avg Session Duration</span>
+            <span class="material-symbols-outlined kpi-icon text-amber">timer</span>
+          </div>
+          <div class="kpi-card__value font-numeric">
+            {{ formatDuration(rep.overview.averageSessionDurationSeconds) }}
+          </div>
+          <div class="kpi-card__footer">
+            <span class="footer-note">High engagement index</span>
+          </div>
+        </div>
+
+        <!-- 5. Engagement Rate -->
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__title">Engagement Rate</span>
+            <span class="material-symbols-outlined kpi-icon text-purple">thumb_up</span>
+          </div>
+          <div class="kpi-card__value">{{ rep.overview.engagementRate }}%</div>
+          <div class="kpi-card__footer">
+            <span class="trend-badge trend-badge--up">
+              <span class="material-symbols-outlined text-xs">trending_up</span>
+              +{{ rep.overview.engagementRateChangePercent }}%
+            </span>
+            <span class="footer-note">{{ rep.overview.bounceRate }}% bounce</span>
+          </div>
+        </div>
+
+        <!-- 6. Total Events -->
+        <div class="kpi-card">
+          <div class="kpi-card__top">
+            <span class="kpi-card__title">Events Tracked</span>
+            <span class="material-symbols-outlined kpi-icon text-rose">bolt</span>
+          </div>
+          <div class="kpi-card__value">{{ rep.overview.eventCount | number }}</div>
+          <div class="kpi-card__footer">
+            <span class="footer-note">Clicks, scrolls &amp; pageviews</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Main Chart Section ─────────────────────────────── -->
+      <section class="chart-card main-chart-card">
+        <div class="chart-card__header">
+          <div class="chart-title-wrap">
+            <h2 class="chart-card__title">Audience &amp; Traffic Trends</h2>
+            <span class="chart-subtitle">Historical trajectory across {{ rep.dateRangeLabel.toLowerCase() }}</span>
+          </div>
+
+          <!-- Metric Selector -->
+          <div class="chart-metric-pills" role="radiogroup" aria-label="Select chart metric">
+            <button
+              type="button"
+              class="metric-pill"
+              [class.active]="selectedMetric() === 'users_views'"
+              (click)="setMetric('users_views')">
+              Users &amp; Views
+            </button>
+            <button
+              type="button"
+              class="metric-pill"
+              [class.active]="selectedMetric() === 'users'"
+              (click)="setMetric('users')">
+              Active Users
+            </button>
+            <button
+              type="button"
+              class="metric-pill"
+              [class.active]="selectedMetric() === 'sessions'"
+              (click)="setMetric('sessions')">
+              Sessions
+            </button>
+            <button
+              type="button"
+              class="metric-pill"
+              [class.active]="selectedMetric() === 'views'"
+              (click)="setMetric('views')">
+              Page Views
+            </button>
+          </div>
+        </div>
+
+        <div #mainChartRef class="echarts-container main-echarts"></div>
+      </section>
+
+      <!-- ── Two-Column Visualizations: Sources & Devices ───── -->
+      <section class="split-charts-grid">
+        <!-- Traffic Acquisition Channels -->
+        <div class="chart-card">
+          <div class="chart-card__header">
+            <div>
+              <h2 class="chart-card__title">Traffic Acquisition Channels</h2>
+              <span class="chart-subtitle">Where visitors originate from</span>
+            </div>
+            <span class="material-symbols-outlined chart-icon">share</span>
+          </div>
+
+          <div #sourcesChartRef class="echarts-container donut-echarts"></div>
+
+          <div class="channel-list">
+            @for (source of rep.trafficSources; track source.channelGroup) {
+              <div class="channel-row">
+                <span class="channel-name">{{ source.channelGroup }}</span>
+                <div class="channel-bar-wrap">
+                  <div class="channel-bar" [style.width.%]="source.percentage"></div>
+                </div>
+                <span class="channel-stat">
+                  <strong>{{ source.sessions | number }}</strong>
+                  <span class="stat-pct">({{ source.percentage }}%)</span>
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Device Breakdown -->
+        <div class="chart-card">
+          <div class="chart-card__header">
+            <div>
+              <h2 class="chart-card__title">Device &amp; Platform Distribution</h2>
+              <span class="chart-subtitle">Visitor screen categories</span>
+            </div>
+            <span class="material-symbols-outlined chart-icon">devices</span>
+          </div>
+
+          <div #deviceChartRef class="echarts-container donut-echarts"></div>
+
+          <div class="device-cards">
+            @for (device of rep.deviceBreakdown; track device.deviceCategory) {
+              <div class="device-pill">
+                <span class="material-symbols-outlined device-icon">
+                  {{ getDeviceIcon(device.deviceCategory) }}
+                </span>
+                <div class="device-info">
+                  <span class="device-name">{{ device.deviceCategory | titlecase }}</span>
+                  <span class="device-users">{{ device.users | number }} users</span>
+                </div>
+                <span class="device-pct">{{ device.percentage }}%</span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Drilldown Tables Section (Tabs) ────────────────── -->
+      <section class="details-section">
+        <div class="details-nav">
+          <div class="tab-buttons">
+            <button
+              type="button"
+              class="tab-btn"
+              [class.active]="activeTab() === 'pages'"
+              (click)="setActiveTab('pages')">
+              <span class="material-symbols-outlined text-sm">article</span>
+              Top Visited Pages ({{ rep.topPages.length }})
+            </button>
+            <button
+              type="button"
+              class="tab-btn"
+              [class.active]="activeTab() === 'geo'"
+              (click)="setActiveTab('geo')">
+              <span class="material-symbols-outlined text-sm">public</span>
+              Top Geographic Locations ({{ rep.geographics.length }})
+            </button>
+            <button
+              type="button"
+              class="tab-btn"
+              [class.active]="activeTab() === 'events'"
+              (click)="setActiveTab('events')">
+              <span class="material-symbols-outlined text-sm">track_changes</span>
+              Tracked Events ({{ rep.topEvents.length }})
+            </button>
+          </div>
+
+          @if (activeTab() === 'pages') {
+            <div class="page-search-wrap">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input
+                type="text"
+                placeholder="Search page paths or titles..."
+                [ngModel]="pageSearch()"
+                (ngModelChange)="pageSearch.set($event)"
+                class="search-input" />
+            </div>
+          }
+        </div>
+
+        <!-- 1. Top Pages Tab -->
+        @if (activeTab() === 'pages') {
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Page Path &amp; Title</th>
+                    <th class="text-right">Page Views</th>
+                    <th class="text-right">Active Users</th>
+                    <th class="text-right">Avg Time on Page</th>
+                    <th class="text-right">Bounce Rate</th>
+                    <th class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (page of filteredPages(); track page.pagePath) {
+                    <tr>
+                      <td class="page-cell">
+                        <span class="page-path font-numeric">{{ page.pagePath }}</span>
+                        <span class="page-title">{{ page.pageTitle }}</span>
+                      </td>
+                      <td class="text-right font-numeric font-semibold">
+                        {{ page.pageViews | number }}
+                      </td>
+                      <td class="text-right font-numeric text-muted">
+                        {{ page.activeUsers | number }}
+                      </td>
+                      <td class="text-right font-numeric">
+                        {{ formatDuration(page.averageTimeOnPageSeconds) }}
+                      </td>
+                      <td class="text-right font-numeric">
+                        <span [class.text-emerald]="page.bounceRate < 35" [class.text-amber]="page.bounceRate >= 35">
+                          {{ page.bounceRate }}%
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <a
+                          [routerLink]="page.pagePath"
+                          class="table-link-btn"
+                          title="Open page in RankUp"
+                          aria-label="Open page">
+                          <span class="material-symbols-outlined text-sm">open_in_new</span>
+                        </a>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="empty-cell">
+                        No pages found matching "{{ pageSearch() }}".
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- 2. Geographic Tab -->
+        @if (activeTab() === 'geo') {
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Country &amp; Top City</th>
+                    <th class="text-right">Users</th>
+                    <th class="text-right">Sessions</th>
+                    <th>Share</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (geo of rep.geographics; track geo.country) {
+                    <tr>
+                      <td class="geo-cell">
+                        <span class="geo-flag-badge">{{ geo.countryCode }}</span>
+                        <div class="geo-details">
+                          <span class="country-name">{{ geo.country }}</span>
+                          <span class="city-name">{{ geo.city }}</span>
+                        </div>
+                      </td>
+                      <td class="text-right font-numeric font-semibold">
+                        {{ geo.users | number }}
+                      </td>
+                      <td class="text-right font-numeric text-muted">
+                        {{ geo.sessions | number }}
+                      </td>
+                      <td class="share-cell">
+                        <div class="share-bar-wrap">
+                          <div class="share-bar" [style.width.%]="geo.percentage"></div>
+                          <span class="share-text">{{ geo.percentage }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- 3. Events Tab -->
+        @if (activeTab() === 'events') {
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Event Name</th>
+                    <th class="text-right">Total Event Count</th>
+                    <th class="text-right">Unique Users Triggered</th>
+                    <th class="text-right">Events / User</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ev of rep.topEvents; track ev.eventName) {
+                    <tr>
+                      <td class="event-cell">
+                        <code class="event-name">{{ ev.eventName }}</code>
+                      </td>
+                      <td class="text-right font-numeric font-semibold">
+                        {{ ev.eventCount | number }}
+                      </td>
+                      <td class="text-right font-numeric text-muted">
+                        {{ ev.totalUsers | number }}
+                      </td>
+                      <td class="text-right font-numeric">
+                        {{ (ev.eventCount / (ev.totalUsers || 1)) | number:'1.1-1' }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- ── Data Source Footer Disclaimer ─────────────────── -->
+      <footer class="source-footnote">
+        <span class="material-symbols-outlined text-sm">info</span>
+        <span>{{ rep.dataSourceDescription }}</span>
+        @if (!rep.isConnected) {
+          <button type="button" class="link-btn" (click)="openSetupModal()">
+            Connect live GA4 API
+          </button>
+        }
+      </footer>
+    }
+
+  </div>
+
+  <!-- ── GA4 API Configuration & Setup Modal ───────────────── -->
+  @if (isSetupModalOpen()) {
+    <div class="modal-backdrop" (click)="closeSetupModal()">
+      <div class="setup-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="material-symbols-outlined modal-icon">tune</span>
+            <div>
+              <h2 id="modal-title" class="modal-title">Google Analytics 4 API Setup</h2>
+              <span class="modal-subtitle">Connect your GA4 Property to stream real-time production telemetry</span>
+            </div>
+          </div>
+          <button type="button" class="close-btn" (click)="closeSetupModal()" aria-label="Close dialog">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Client Tracking Tag Configured</h3>
+              <p>
+                Your website is already collecting traffic via Google Tag:
+                <code class="code-badge">G-G5F28SY0F0</code> embedded in
+                <code class="code-file">src/index.html</code>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Find Your GA4 Property ID</h3>
+              <p>
+                In <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" class="ext-link">Google Analytics</a>, go to:
+                <strong>Admin ⚙️ &rarr; Property Settings &rarr; Property Details</strong>.
+                Copy the numeric <strong>Property ID</strong> (e.g. <code>475829103</code>).
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Create a Service Account in Google Cloud</h3>
+              <ol class="step-list">
+                <li>Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" class="ext-link">Google Cloud Console</a>.</li>
+                <li>Enable the <strong>Google Analytics Data API (v1beta)</strong>.</li>
+                <li>Under <strong>IAM &amp; Admin &rarr; Service Accounts</strong>, create a service account (e.g. <code>ga-reader&#64;project.iam.gserviceaccount.com</code>).</li>
+                <li>Create a <strong>JSON Key</strong> and download it.</li>
+                <li>In Google Analytics Admin &rarr; <strong>Property Access Management</strong>, add this service account email with the <strong>Viewer</strong> role.</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3>Add Credentials to RankUp Backend</h3>
+              <p>In <code class="code-file">backend/ranker/appsettings.json</code>, fill in the <code>GoogleAnalytics</code> section:</p>
+              <pre class="code-block"><code>"GoogleAnalytics": &#123;
+  "PropertyId": "YOUR_NUMERIC_GA4_PROPERTY_ID",
+  "CredentialsFilePath": "C:\\path\\to\\service-account.json"
+&#125;</code></pre>
+              <p class="text-xs text-muted mt-1">
+                Or on Linux / Docker, set environment variables:
+                <code>GOOGLEANALYTICS__PROPERTYID</code> and <code>GOOGLEANALYTICS__CREDENTIALSFILEPATH</code>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Connection Status Card -->
+          <div class="modal-status-card">
+            <div class="status-summary">
+              <span class="status-indicator" [class.status-indicator--live]="status()?.isConfigured"></span>
+              <div>
+                <strong>Current Status:</strong> {{ status()?.mode || 'Preview / Demo Mode' }}
+                @if (status()?.propertyId) {
+                  <span class="text-xs block text-muted">Property ID: {{ status()?.propertyId }}</span>
+                }
+              </div>
+            </div>
+            <button type="button" class="test-conn-btn" (click)="loadStatus()">
+              <span class="material-symbols-outlined text-sm">sync</span>
+              Check Connection
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-primary" (click)="closeSetupModal()">
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
