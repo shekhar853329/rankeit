@@ -51,7 +51,7 @@
       <a routerLink="/contact" routerLinkActive="active">Contact</a>
     </nav>
 
-    <!-- ── Actions: Theme, Claim Spot & Hamburger ── -->
+    <!-- ── Actions: Theme & Hamburger ── -->
     <div class="site-header__actions">
       <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()"
         [attr.aria-label]="theme.dark() ? 'Switch to light mode' : 'Switch to dark mode'">
@@ -59,10 +59,6 @@
           {{ theme.dark() ? 'dark_mode' : 'light_mode' }}
         </span>
       </button>
-      <a routerLink="/" fragment="claim-url" class="site-header__claim-btn" aria-label="Claim #1 Spot">
-        <span class="material-symbols-outlined icon-bolt">bolt</span>
-        <span class="site-header__claim-label">Claim #1 Spot</span>
-      </a>
 
       <!-- Hamburger toggle (mobile only) -->
       <button type="button" class="site-header__hamburger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()"
@@ -120,10 +116,5 @@
         <span class="material-symbols-outlined">mail</span>Contact
       </a>
     </div>
-
-    <a routerLink="/" fragment="claim-url" class="mobile-nav__claim-btn" (click)="closeMenu()">
-      <span class="material-symbols-outlined">bolt</span>
-      Claim #1 Spot
-    </a>
   </nav>
 </header>

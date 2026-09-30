@@ -347,51 +347,7 @@
     }
   }
 
-  &__claim-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.45rem 0.75rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, var(--color-primary, #f95738) 0%, #e04426 100%);
-    color: #ffffff;
-    font-family: var(--font-headline);
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-decoration: none;
-    border: 1px solid rgba(249, 87, 56, 0.3);
-    box-shadow: 0 0 16px rgba(249, 87, 56, 0.3);
-    transition: all 0.2s ease;
-    flex-shrink: 0;
 
-    /* Hide text label on small screens; show only icon */
-    .site-header__claim-label {
-      display: none;
-
-      @media (min-width: 540px) {
-        display: inline;
-      }
-    }
-
-    @media (min-width: 540px) {
-      padding: 0.5rem 1.15rem;
-    }
-
-    /* Hide the whole button on mobile (it lives in the drawer instead) */
-    @media (max-width: 399px) {
-      display: none;
-    }
-
-    &:hover {
-      filter: brightness(1.08);
-      transform: translateY(-1px);
-      box-shadow: 0 0 24px rgba(249, 87, 56, 0.45);
-    }
-
-    &:active {
-      transform: scale(0.97);
-    }
-  }
 
   /* ── Hamburger button ── */
   &__hamburger {
@@ -506,34 +462,7 @@
   }
 }
 
-/* ── Mobile nav: claim CTA ── */
-.mobile-nav__claim-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.7rem 1rem;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, var(--color-primary, #f95738) 0%, #e04426 100%);
-  color: #ffffff;
-  font-family: var(--font-headline);
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-decoration: none;
-  border: 1px solid rgba(249, 87, 56, 0.3);
-  box-shadow: 0 0 16px rgba(249, 87, 56, 0.25);
-  transition: all 0.2s ease;
-  margin-top: 0.25rem;
 
-  .material-symbols-outlined {
-    font-size: 18px;
-  }
-
-  &:hover {
-    filter: brightness(1.08);
-    box-shadow: 0 0 24px rgba(249, 87, 56, 0.45);
-  }
-}
 
 /* ════════════════════════════════════════════
    HAMBURGER ICON (3 lines → X animation)
@@ -766,17 +695,7 @@
       }
     }
 
-    /* Claim button in Dark Mode */
-    &__claim-btn {
-      background: linear-gradient(135deg, #ff5a36 0%, #ff3811 100%);
-      border: 1px solid rgba(255, 90, 54, 0.4);
-      box-shadow: 0 0 20px rgba(255, 90, 54, 0.35);
 
-      &:hover {
-        box-shadow: 0 0 26px rgba(255, 90, 54, 0.5);
-        filter: brightness(1.1);
-      }
-    }
   }
 
   /* Hamburger lines in dark */
@@ -814,9 +733,5 @@
     }
   }
 
-  .mobile-nav__claim-btn {
-    background: linear-gradient(135deg, #ff5a36 0%, #ff3811 100%);
-    border-color: rgba(255, 90, 54, 0.4);
-    box-shadow: 0 0 16px rgba(255, 90, 54, 0.3);
-  }
+
 }
