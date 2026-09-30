@@ -540,8 +540,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       )
       .subscribe((meta) => {
         this.urlMetadata.set(meta);
-        if (meta?.siteName && !this.productTitle()) {
-          this.productTitle.set(meta.siteName);
+        const dynamicTitle = meta?.siteName?.trim();
+        if (dynamicTitle) {
+          this.productTitle.set(dynamicTitle);
+        } else {
+          this.productTitle.set(this.heroUrl().trim());
         }
         this.metadataLoading.set(false);
       });
@@ -685,6 +688,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       this.urlChange$.next(v);
     } else {
       this.urlMetadata.set(null);
+      this.productTitle.set('');
       this.metadataLoading.set(false);
     }
   }
@@ -924,10 +928,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       }
 
       const url = this.heroUrl();
+      const trimmedUrl = url.trim();
       const meta = this.urlMetadata();
-      const title = this.productTitle() || meta?.siteName || '';
+      const dynamicTitle = meta?.siteName?.trim() || this.productTitle().trim();
+      const title = dynamicTitle || trimmedUrl;
 
-      const enteredUrl = url.trim().toLowerCase();
+      const enteredUrl = trimmedUrl.toLowerCase();
       const existing = data.leaderboard.items.find(
         (e) => e.listingUrl.trim().toLowerCase() === enteredUrl
       );

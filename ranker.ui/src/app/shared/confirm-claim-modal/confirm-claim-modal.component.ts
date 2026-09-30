@@ -137,7 +137,7 @@ export class ConfirmClaimModalComponent implements OnInit {
     if (this.payableAmount() < 1) return false;
     if (this.isBelowMinimum()) return false;
     if (this.isNotHigherThanExisting()) return false;
-    if (!this.listingName().trim()) return false;
+    if (!this.listingName().trim() && !this.domainUrl().trim()) return false;
     return true;
   });
 
@@ -150,8 +150,10 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.agreed.set(false);
       this.selectedCategoryId.set(payload.categoryId);
       this.selectedCategoryName.set(payload.categoryName);
-      this.domainUrl.set(payload.listingUrl || '');
-      this.listingName.set(payload.listingName || '');
+      const url = payload.listingUrl || '';
+      const fallbackTitle = payload.listingName?.trim() || payload.siteName?.trim() || url.trim();
+      this.domainUrl.set(url);
+      this.listingName.set(fallbackTitle);
       this.ownerEmail.set('');
       this.existingBidAmount.set(payload.currentBidAmount ?? 0);
       this.listingId.set(payload.listingId ?? null);
@@ -159,7 +161,7 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.currentTopBid.set(payload.currentTopBid ?? null);
       this.minStartingBid.set(payload.minStartingBid);
       this.minBidIncrement.set(payload.minBidIncrement);
-      this.siteName.set(payload.siteName ?? null);
+      this.siteName.set(payload.siteName?.trim() || (fallbackTitle || null));
       this.logoUrl.set(payload.logoUrl ?? null);
       this.description.set(payload.description ?? null);
       this.faviconUrl.set(payload.faviconUrl ?? null);
@@ -240,15 +242,18 @@ export class ConfirmClaimModalComponent implements OnInit {
 
             // Scrape URL metadata if listing name is empty
             const currentUrl = this.domainUrl().trim();
-            if (currentUrl.length > 5 && !this.listingName()) {
+            if (currentUrl.length > 5) {
               this.urlMetadataService.fetch(currentUrl).subscribe((meta) => {
-                if (meta.siteName && !this.listingName()) {
-                  this.listingName.set(meta.siteName);
+                if (meta?.siteName?.trim()) {
+                  this.listingName.set(meta.siteName.trim());
+                  this.siteName.set(meta.siteName.trim());
+                } else if (!this.listingName().trim()) {
+                  this.listingName.set(currentUrl);
+                  this.siteName.set(currentUrl);
                 }
-                if (meta.siteName) this.siteName.set(meta.siteName);
-                if (meta.logoUrl) this.logoUrl.set(meta.logoUrl);
-                if (meta.description) this.description.set(meta.description);
-                if (meta.faviconUrl) this.faviconUrl.set(meta.faviconUrl);
+                if (meta?.logoUrl) this.logoUrl.set(meta.logoUrl);
+                if (meta?.description) this.description.set(meta.description);
+                if (meta?.faviconUrl) this.faviconUrl.set(meta.faviconUrl);
               });
             }
           }
@@ -390,17 +395,20 @@ export class ConfirmClaimModalComponent implements OnInit {
       });
 
       // Step 3: Place bid with matching targetBidAmount and confirmedPaymentAmount
+      const resolvedTitle = this.listingName()?.trim() || quote.listingName?.trim() || this.siteName()?.trim() || domain;
+      const resolvedSiteName = this.siteName()?.trim() || payload?.siteName?.trim() || resolvedTitle;
+
       this.bidService
         .placeBid({
           categoryId,
           listingId: quote.listingId ?? this.listingId(),
-          listingName: this.listingName() || quote.listingName || null,
+          listingName: resolvedTitle,
           listingUrl: domain,
           ownerContactEmail: email,
           targetBidAmount: quote.targetBidAmount,
           paymentReference: payment.razorpayPaymentId,
           confirmedPaymentAmount: payment.amountInRupees,
-          siteName: this.siteName() ?? payload?.siteName ?? null,
+          siteName: resolvedSiteName,
           logoUrl: this.logoUrl() ?? payload?.logoUrl ?? null,
           description: this.description() ?? payload?.description ?? null,
           faviconUrl: this.faviconUrl() ?? payload?.faviconUrl ?? null,

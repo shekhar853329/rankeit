@@ -27,10 +27,20 @@ public class PlaceBidCommandHandler(
             return Failure(BidFailureReason.CategoryNotFound, "Category not found.");
         }
 
+        var effectiveListingName = !string.IsNullOrWhiteSpace(command.ListingName)
+            ? command.ListingName.Trim()
+            : (!string.IsNullOrWhiteSpace(command.SiteName)
+                ? command.SiteName.Trim()
+                : command.ListingUrl?.Trim());
+
+        var effectiveSiteName = !string.IsNullOrWhiteSpace(command.SiteName)
+            ? command.SiteName.Trim()
+            : effectiveListingName;
+
         var isNewListing = command.ListingId is null;
-        if (isNewListing && (string.IsNullOrWhiteSpace(command.ListingName) || string.IsNullOrWhiteSpace(command.ListingUrl)))
+        if (isNewListing && (string.IsNullOrWhiteSpace(effectiveListingName) || string.IsNullOrWhiteSpace(command.ListingUrl)))
         {
-            return Failure(BidFailureReason.NewListingMissingDetails, "ListingName and ListingUrl are required for a new listing.");
+            return Failure(BidFailureReason.NewListingMissingDetails, "ListingUrl is required for a new listing.");
         }
 
         // NpgsqlRetryingExecutionStrategy does not support user-initiated transactions directly.
@@ -155,13 +165,13 @@ public class PlaceBidCommandHandler(
                 listing = new Listing
                 {
                     CategoryId = command.CategoryId,
-                    Name = command.ListingName!,
+                    Name = effectiveListingName!,
                     Url = command.ListingUrl!,
                     OwnerContactEmail = command.OwnerContactEmail,
                     CurrentBidAmount = decision.NewCurrentBidAmount,
                     FirstBidAt = now,
                     LastBidAt = now,
-                    SiteName = command.SiteName,
+                    SiteName = effectiveSiteName,
                     LogoUrl = command.LogoUrl,
                     Description = command.Description,
                     FaviconUrl = command.FaviconUrl,
@@ -173,8 +183,16 @@ public class PlaceBidCommandHandler(
                 listing = existingListing;
                 listing.CurrentBidAmount = decision.NewCurrentBidAmount;
                 listing.LastBidAt = now;
-                if (!string.IsNullOrWhiteSpace(command.ListingName)) listing.Name = command.ListingName;
-                if (!string.IsNullOrWhiteSpace(command.SiteName)) listing.SiteName = command.SiteName;
+                if (!string.IsNullOrWhiteSpace(command.ListingName))
+                    listing.Name = command.ListingName.Trim();
+                else if (string.IsNullOrWhiteSpace(listing.Name) && !string.IsNullOrWhiteSpace(effectiveListingName))
+                    listing.Name = effectiveListingName;
+
+                if (!string.IsNullOrWhiteSpace(command.SiteName))
+                    listing.SiteName = command.SiteName.Trim();
+                else if (string.IsNullOrWhiteSpace(listing.SiteName) && !string.IsNullOrWhiteSpace(effectiveSiteName))
+                    listing.SiteName = effectiveSiteName;
+
                 if (!string.IsNullOrWhiteSpace(command.LogoUrl)) listing.LogoUrl = command.LogoUrl;
                 if (!string.IsNullOrWhiteSpace(command.Description)) listing.Description = command.Description;
                 if (!string.IsNullOrWhiteSpace(command.FaviconUrl)) listing.FaviconUrl = command.FaviconUrl;

@@ -261,8 +261,11 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       )
       .subscribe((meta) => {
         this.urlMetadata.set(meta);
-        if (meta?.siteName && !this.productTitle()) {
-          this.productTitle.set(meta.siteName);
+        const dynamicTitle = meta?.siteName?.trim();
+        if (dynamicTitle) {
+          this.productTitle.set(dynamicTitle);
+        } else {
+          this.productTitle.set(this.sidebarUrl().trim());
         }
         this.metadataLoading.set(false);
       });
@@ -340,6 +343,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       this.urlChange$.next(value.trim());
     } else {
       this.urlMetadata.set(null);
+      this.productTitle.set('');
       this.metadataLoading.set(false);
     }
   }
@@ -434,9 +438,11 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     }
 
     const meta = this.urlMetadata();
-    const title = this.productTitle() || meta?.siteName || '';
     const url = targetListingUrl || this.sidebarUrl() || '';
-    const enteredUrl = url.trim().toLowerCase();
+    const trimmedUrl = url.trim();
+    const dynamicTitle = meta?.siteName?.trim() || this.productTitle().trim();
+    const title = dynamicTitle || trimmedUrl;
+    const enteredUrl = trimmedUrl.toLowerCase();
 
     // Check if this URL already exists in this category
     const existing = this.entries().find(

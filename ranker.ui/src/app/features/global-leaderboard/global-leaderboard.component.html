@@ -70,17 +70,6 @@
             }
           </div>
 
-          <!-- Product / Brand Name -->
-          <div class="command-bar__field command-bar__field--title">
-            <span class="material-symbols-outlined field-icon">badge</span>
-            <div class="field-content">
-              <label for="claim-title" class="field-label">Product Title</label>
-              <input id="claim-title" type="text" class="field-input" placeholder="e.g. AtlasAI Studio"
-                [value]="productTitle() || urlMetadata()?.siteName || ''"
-                (input)="onProductTitleChange($any($event.target).value)" autocomplete="off" />
-            </div>
-          </div>
-
           <!-- Custom Category Picker Dropdown -->
           <div class="command-bar__field command-bar__field--category"
             [class.command-bar__field--open]="categoryDropdownOpen()" (click)="toggleCategoryDropdown($event)"
