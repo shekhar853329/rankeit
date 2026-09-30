@@ -8,7 +8,7 @@ import {
   VerifyPaymentRequest,
   VerifyPaymentResponse,
 } from '../models/payment.model';
-import { RazorpaySuccessResponse } from '../models/razorpay';
+import { RazorpayFailureResponse, RazorpaySuccessResponse } from '../models/razorpay';
 
 export interface CheckoutResult {
   razorpayPaymentId: string;
@@ -23,7 +23,7 @@ export class RazorpayService {
   private readonly http = inject(HttpClient);
 
   /** KEY_ID only — safe to expose in the browser. Never send KeySecret to the frontend. */
-  private readonly keyId = 'rzp_test_TiMDq8YiEenAGd';
+  private readonly keyId = 'rzp_test_TiMfW1UWvzbfs2';
 
   // ── HTTP helpers ─────────────────────────────────────────────────────────
 
@@ -186,6 +186,9 @@ export class RazorpayService {
     await this.loadScript();
 
     return new Promise((resolve, reject) => {
+      let settled = false;
+      let lastFailureReason: string | null = null;
+
       const rzp = new window.Razorpay({
         key: opts.keyId,
         amount: opts.amount,
@@ -195,18 +198,27 @@ export class RazorpayService {
         order_id: opts.orderId,
         prefill: { email: opts.email },
         theme: { color: '#6366f1' },
-        handler: (response) => resolve(response),
+        handler: (response: RazorpaySuccessResponse) => {
+          settled = true;
+          resolve(response);
+        },
         modal: {
-          ondismiss: () => reject(new Error('Payment cancelled.')),
+          ondismiss: () => {
+            if (settled) return;
+            settled = true;
+            if (lastFailureReason) {
+              reject(new Error(lastFailureReason));
+            } else {
+              reject(new Error('Payment cancelled.'));
+            }
+          },
         },
       });
 
-      rzp.on('payment.failed', (response) => {
-        reject(
-          new Error(
-            response.error?.description ?? 'Payment failed. Please try again.',
-          ),
-        );
+      rzp.on('payment.failed', (response: RazorpayFailureResponse) => {
+        // Record the failure reason in case the user dismisses the modal without a successful payment.
+        // DO NOT reject here because Razorpay allows the user to retry payment within the same modal session.
+        lastFailureReason = response.error?.description ?? 'Payment failed. Please try again.';
       });
 
       rzp.open();

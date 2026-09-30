@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, of, Subject, switchMap } from 'rxjs';
 import { ModalService } from '../../core/services/modal.service';
@@ -20,13 +20,27 @@ import { ListingService } from '../../core/services/listing.service';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { ToastService } from '../../core/services/toast.service';
-import { RazorpayService } from '../../core/services/razorpay.service';
+import { RazorpayService, CheckoutResult } from '../../core/services/razorpay.service';
 import { CategoryDto } from '../../core/models/category.model';
+
+export interface CompletedTransactionDetails {
+  success: boolean;
+  paymentId?: string;
+  orderId?: string;
+  amountPaid?: number;
+  newBidAmount?: number;
+  targetBidAmount?: number;
+  categoryName: string;
+  listingName: string;
+  listingUrl: string;
+  errorMessage?: string;
+  timestamp: Date;
+}
 
 @Component({
   selector: 'app-confirm-claim-modal',
   standalone: true,
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, DatePipe],
   templateUrl: './confirm-claim-modal.component.html',
   styleUrl: './confirm-claim-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,6 +92,11 @@ export class ConfirmClaimModalComponent implements OnInit {
   protected readonly submitting = signal(false);
   protected readonly quoteValidating = signal(false);
   protected readonly quoteError = signal<string | null>(null);
+
+  // Transaction completion states
+  protected readonly transactionStatus = signal<'idle' | 'processing' | 'success' | 'failed'>('idle');
+  protected readonly transactionDetails = signal<CompletedTransactionDetails | null>(null);
+  protected readonly copied = signal(false);
 
   // Stream for debounced domain/category lookup
   private readonly domainChange$ = new Subject<{ categoryId: number; url: string }>();
@@ -168,6 +187,9 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.submitting.set(false);
       this.quoteValidating.set(false);
       this.quoteError.set(null);
+      this.transactionStatus.set('idle');
+      this.transactionDetails.set(null);
+      this.copied.set(false);
 
       // Refresh benchmark & verify domain if URL already provided
       if (payload.listingUrl) {
@@ -325,8 +347,38 @@ export class ConfirmClaimModalComponent implements OnInit {
   }
 
   protected close(): void {
+    if (this.transactionStatus() === 'processing') return;
+    if (this.transactionStatus() === 'success') {
+      this.finishSuccess();
+      return;
+    }
     if (this.submitting() || this.quoteValidating()) return;
     this.modal.closeClaimModal();
+  }
+
+  protected finishSuccess(): void {
+    const payload = this.modal.claimModal();
+    this.modal.closeClaimModal();
+    if (payload?.onSuccess) {
+      payload.onSuccess();
+    }
+  }
+
+  protected retryPayment(): void {
+    this.transactionStatus.set('idle');
+    this.transactionDetails.set(null);
+    this.submitting.set(false);
+    this.quoteValidating.set(false);
+    this.quoteError.set(null);
+  }
+
+  protected copyPaymentId(id: string): void {
+    if (typeof navigator !== 'undefined' && navigator?.clipboard) {
+      navigator.clipboard.writeText(id).then(() => {
+        this.copied.set(true);
+        setTimeout(() => this.copied.set(false), 2000);
+      });
+    }
   }
 
   protected onKeydown(event: KeyboardEvent): void {
@@ -385,23 +437,50 @@ export class ConfirmClaimModalComponent implements OnInit {
         return;
       }
 
-      // Step 2: Open Razorpay for the exact net charge amount
-      const payment = await this.razorpay.checkout({
-        amountInRupees: chargeAmount,
-        email: email,
-        description: this.isRebid()
-          ? `Raise bid to ₹${target} (Paid ₹${chargeAmount}) for ${quote.listingName || this.listingName()}`
-          : `Claim rank with ₹${target} for ${this.listingName()}`,
-      });
-
-      // Step 3: Place bid with matching targetBidAmount and confirmedPaymentAmount
       const resolvedTitle = this.listingName()?.trim() || quote.listingName?.trim() || this.siteName()?.trim() || domain;
       const resolvedSiteName = this.siteName()?.trim() || payload?.siteName?.trim() || resolvedTitle;
+      const resolvedLogoUrl = this.logoUrl() ?? payload?.logoUrl ?? null;
+      const resolvedDescription = this.description() ?? payload?.description ?? null;
+      const resolvedFaviconUrl = this.faviconUrl() ?? payload?.faviconUrl ?? null;
+      const resolvedListingId = quote.listingId ?? this.listingId();
 
+      // Keep confirmation modal pop up open, update state to processing
+      this.transactionStatus.set('processing');
+
+      // Step 2: Open Razorpay for the exact net charge amount
+      let payment: CheckoutResult;
+      try {
+        payment = await this.razorpay.checkout({
+          amountInRupees: chargeAmount,
+          email: email,
+          description: this.isRebid()
+            ? `Raise bid to ₹${target} (Paid ₹${chargeAmount}) for ${quote.listingName || this.listingName()}`
+            : `Claim rank with ₹${target} for ${this.listingName()}`,
+        });
+      } catch (checkoutErr: unknown) {
+        // Return to confirmation modal screen and show failed transaction details
+        this.submitting.set(false);
+        this.transactionStatus.set('failed');
+        const failMsg = checkoutErr instanceof Error ? checkoutErr.message : 'Payment was not completed.';
+        this.transactionDetails.set({
+          success: false,
+          amountPaid: chargeAmount,
+          targetBidAmount: target,
+          categoryName: this.selectedCategoryName(),
+          listingName: resolvedTitle,
+          listingUrl: domain,
+          errorMessage: failMsg,
+          timestamp: new Date(),
+        });
+        this.toast.show(failMsg, failMsg === 'Payment cancelled.' ? 'info' : 'error');
+        return;
+      }
+
+      // Step 3: Place bid with matching targetBidAmount and confirmedPaymentAmount
       this.bidService
         .placeBid({
           categoryId,
-          listingId: quote.listingId ?? this.listingId(),
+          listingId: resolvedListingId,
           listingName: resolvedTitle,
           listingUrl: domain,
           ownerContactEmail: email,
@@ -409,34 +488,83 @@ export class ConfirmClaimModalComponent implements OnInit {
           paymentReference: payment.razorpayPaymentId,
           confirmedPaymentAmount: payment.amountInRupees,
           siteName: resolvedSiteName,
-          logoUrl: this.logoUrl() ?? payload?.logoUrl ?? null,
-          description: this.description() ?? payload?.description ?? null,
-          faviconUrl: this.faviconUrl() ?? payload?.faviconUrl ?? null,
+          logoUrl: resolvedLogoUrl,
+          description: resolvedDescription,
+          faviconUrl: resolvedFaviconUrl,
         })
         .subscribe({
           next: (result) => {
             this.submitting.set(false);
             if (result.success) {
+              this.transactionStatus.set('success');
+              this.transactionDetails.set({
+                success: true,
+                paymentId: payment.razorpayPaymentId,
+                orderId: payment.razorpayOrderId,
+                amountPaid: result.amountCharged ?? payment.amountInRupees,
+                newBidAmount: result.newCurrentBidAmount ?? target,
+                targetBidAmount: target,
+                categoryName: this.selectedCategoryName(),
+                listingName: resolvedTitle,
+                listingUrl: domain,
+                timestamp: new Date(),
+              });
               this.toast.show(
                 `🎉 Success! New bid: ₹${result.newCurrentBidAmount} (Amount paid: ₹${result.amountCharged})`,
                 'success',
               );
-              this.modal.closeClaimModal();
-              if (payload?.onSuccess) payload.onSuccess();
             } else {
-              this.toast.show(result.errorMessage ?? 'Bid rejected.', 'error');
+              const errMsg = result.errorMessage ?? 'Bid placement was rejected by server.';
+              this.transactionStatus.set('failed');
+              this.transactionDetails.set({
+                success: false,
+                paymentId: payment.razorpayPaymentId,
+                orderId: payment.razorpayOrderId,
+                amountPaid: payment.amountInRupees,
+                targetBidAmount: target,
+                categoryName: this.selectedCategoryName(),
+                listingName: resolvedTitle,
+                listingUrl: domain,
+                errorMessage: errMsg,
+                timestamp: new Date(),
+              });
+              this.toast.show(errMsg, 'error');
             }
           },
           error: (err) => {
             this.submitting.set(false);
             const msg = err.error?.errorMessage || err.message || 'Something went wrong placing your bid.';
+            this.transactionStatus.set('failed');
+            this.transactionDetails.set({
+              success: false,
+              paymentId: payment.razorpayPaymentId,
+              orderId: payment.razorpayOrderId,
+              amountPaid: payment.amountInRupees,
+              targetBidAmount: target,
+              categoryName: this.selectedCategoryName(),
+              listingName: resolvedTitle,
+              listingUrl: domain,
+              errorMessage: msg,
+              timestamp: new Date(),
+            });
             this.toast.show(msg, 'error');
           },
         });
     } catch (err: unknown) {
       this.submitting.set(false);
       this.quoteValidating.set(false);
-      const message = err instanceof Error ? err.message : 'Payment was not completed.';
+      const message = err instanceof Error ? err.message : 'Calculation error occurred.';
+      this.transactionStatus.set('failed');
+      this.transactionDetails.set({
+        success: false,
+        amountPaid: target,
+        targetBidAmount: target,
+        categoryName: this.selectedCategoryName(),
+        listingName: this.listingName() || domain,
+        listingUrl: domain,
+        errorMessage: message,
+        timestamp: new Date(),
+      });
       this.toast.show(message, 'error');
     }
   }
