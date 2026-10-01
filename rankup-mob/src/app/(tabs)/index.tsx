@@ -210,11 +210,16 @@ export default function GlobalLeaderboardScreen() {
     router.push(`/listing/${listingId}` as any);
   };
 
-  const handleOpenUrlDirect = (listingId: number, url: string) => {
+  const handleOpenUrlDirect = (listingId: number, url?: string | null) => {
     recordListingClick(listingId).catch(() => {});
-    if (url) {
-      const target = url.startsWith('http') ? url : `https://${url}`;
-      Linking.openURL(target).catch(() => {});
+    if (url && url.trim()) {
+      const clean = url.trim();
+      const target = clean.startsWith('http://') || clean.startsWith('https://') ? clean : `https://${clean}`;
+      Linking.openURL(target).catch(() => {
+        router.push(`/listing/${listingId}` as any);
+      });
+    } else {
+      router.push(`/listing/${listingId}` as any);
     }
   };
 
@@ -546,7 +551,7 @@ export default function GlobalLeaderboardScreen() {
                         borderColor: isDark ? 'rgba(255, 185, 95, 0.45)' : 'rgba(224, 169, 38, 0.5)',
                       },
                     ]}
-                    onPress={() => handleOpenListing(row.listingId, row.listingUrl)}>
+                    onPress={() => handleOpenUrlDirect(row.listingId, row.listingUrl)}>
                     {/* Gold Top Shimmer Bar */}
                     <View style={[styles.goldBar, { backgroundColor: colors.gold }]} />
 
@@ -599,13 +604,6 @@ export default function GlobalLeaderboardScreen() {
                                 {getCategoryIcon(row.categorySlug)} {row.categoryName}
                               </Text>
                             </View>
-
-                            <Pressable
-                              style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}
-                              onPress={() => handleOpenUrlDirect(row.listingId, row.listingUrl)}>
-                              <Ionicons name="open-outline" size={10} color={colors.textMuted} />
-                              <Text style={[styles.chipText, { color: colors.primary }]}>Visit</Text>
-                            </Pressable>
 
                             <View style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}>
                               <Ionicons name="flame" size={10} color={colors.primary} />
@@ -665,7 +663,7 @@ export default function GlobalLeaderboardScreen() {
                             : '#fed7aa',
                       },
                     ]}
-                    onPress={() => handleOpenListing(row.listingId, row.listingUrl)}>
+                    onPress={() => handleOpenUrlDirect(row.listingId, row.listingUrl)}>
                     <View style={styles.championBody}>
                       <View style={styles.championLeft}>
                         <View
@@ -750,7 +748,7 @@ export default function GlobalLeaderboardScreen() {
                     styles.compactCard,
                     { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
-                  onPress={() => handleOpenListing(row.listingId, row.listingUrl)}>
+                  onPress={() => handleOpenUrlDirect(row.listingId, row.listingUrl)}>
                   <View style={styles.compactLeft}>
                     <View style={[styles.compactBadge, { backgroundColor: colors.surfaceSubtle }]}>
                       <Text style={[styles.compactBadgeText, { color: colors.textMuted }]}>

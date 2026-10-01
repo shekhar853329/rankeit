@@ -6,6 +6,7 @@ import {
   Animated,
   Image,
   LayoutAnimation,
+  Linking,
   Platform,
   Pressable,
   RefreshControl,
@@ -132,9 +133,17 @@ export default function CategoryLeaderboardScreen() {
     });
   };
 
-  const handleOpenListing = (listingId: number) => {
+  const handleOpenUrlDirect = (listingId: number, url?: string | null) => {
     recordListingClick(listingId).catch(() => {});
-    router.push(`/listing/${listingId}` as any);
+    if (url && url.trim()) {
+      const clean = url.trim();
+      const target = clean.startsWith('http://') || clean.startsWith('https://') ? clean : `https://${clean}`;
+      Linking.openURL(target).catch(() => {
+        router.push(`/listing/${listingId}` as any);
+      });
+    } else {
+      router.push(`/listing/${listingId}` as any);
+    }
   };
 
   return (
@@ -369,7 +378,7 @@ export default function CategoryLeaderboardScreen() {
                           : colors.border,
                     },
                   ]}
-                  onPress={() => handleOpenListing(row.listingId)}>
+                  onPress={() => handleOpenUrlDirect(row.listingId, row.listingUrl)}>
                   <View style={styles.itemCardBody}>
                     <View style={styles.itemLeft}>
                       <View style={[styles.rankBadge, { backgroundColor: rankBg }]}>
