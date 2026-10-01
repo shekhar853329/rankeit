@@ -69,12 +69,15 @@ export default function GlobalLeaderboardScreen() {
   const [platformStats, setPlatformStats] = useState<PlatformStatsDto | null>(null);
 
   // Command bar hero state
-  const [heroBidAmount, setHeroBidAmount] = useState<number>(10);
+  const [heroBidAmount, setHeroBidAmount] = useState<number>(1);
   const [heroUrl, setHeroUrl] = useState<string>('');
   const [claimCategory, setClaimCategory] = useState<CategoryDto | null>(null);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState<boolean>(false);
   const [catSearch, setCatSearch] = useState<string>('');
   const [isClaimCollapsed, setIsClaimCollapsed] = useState<boolean>(true);
+
+  const scrollViewRef = React.useRef<ScrollView>(null);
+  const heroUrlInputRef = React.useRef<TextInput>(null);
 
   const toggleClaimCollapse = () => {
     setIsClaimCollapsed((prev) => !prev);
@@ -129,9 +132,17 @@ export default function GlobalLeaderboardScreen() {
       if (selectedSlug) {
         const catRes = await getCategoryLeaderboard(selectedSlug, 1, 30, timeMode, searchQuery);
         setCategoryData(catRes);
+        if (catRes?.leaderboard?.items?.length) {
+          setHeroBidAmount((prev) =>
+            prev <= 1 ? catRes.leaderboard.items[0].currentBidAmount + (catRes.minBidIncrement ?? 1) : prev,
+          );
+        }
       } else {
         const globalRes = await getGlobalLeaderboard(30, timeMode, searchQuery);
         setGlobalEntries(globalRes || []);
+        if (globalRes && globalRes.length > 0) {
+          setHeroBidAmount((prev) => (prev <= 1 ? globalRes[0].currentBidAmount + 1 : prev));
+        }
       }
     } catch {
       // Fallback
@@ -226,17 +237,54 @@ export default function GlobalLeaderboardScreen() {
   const handleClaimRank = (amount?: number, rank?: number, catSlug?: string, catName?: string) => {
     const slug = catSlug ?? claimCategory?.slug ?? 'general';
     const cat = categories.find((c) => c.slug === slug) ?? claimCategory;
-    const bid = amount ?? heroBidAmount;
+    const minBid = cat?.minStartingBid ?? 1;
+    const bid = Math.max(minBid, amount ?? heroBidAmount);
 
     openClaimModal({
       rank: rank ?? 1,
       categoryName: catName ?? cat?.name ?? 'General',
       categorySlug: slug,
       categoryId: cat?.id ?? 1,
+      minStartingBid: minBid,
+      minBidIncrement: cat?.minBidIncrement ?? 1,
       amount: bid,
       listingUrl: heroUrl.trim() || undefined,
       onSuccess: () => loadData(),
     });
+  };
+
+  const handleClaimCard = (row: {
+    currentBidAmount: number;
+    rank: number;
+    categorySlug: string;
+    categoryName: string;
+  }) => {
+    const cat = categories.find((c) => c.slug === row.categorySlug);
+    if (cat) {
+      setClaimCategory(cat);
+    }
+    const increment = cat?.minBidIncrement ?? 1;
+    const nextBid = row.currentBidAmount + increment;
+    setHeroBidAmount(nextBid);
+
+    setIsClaimCollapsed(false);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    setTimeout(() => {
+      heroUrlInputRef.current?.focus();
+    }, 360);
+  };
+
+  const handleSelectCategory = (cat: CategoryDto) => {
+    setClaimCategory(cat);
+    const topInCat = globalEntries.find(
+      (e) => (e.categoryId === cat.id || e.categorySlug === cat.slug) && e.rank === 1,
+    );
+    const minStarting = cat.minStartingBid ?? 1;
+    const nextBid = topInCat
+      ? topInCat.currentBidAmount + (cat.minBidIncrement ?? 1)
+      : minStarting;
+    setHeroBidAmount(nextBid);
+    setCategoryPickerOpen(false);
   };
 
   const filteredCategories = useMemo(() => {
@@ -251,6 +299,7 @@ export default function GlobalLeaderboardScreen() {
       <AppHeader />
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -319,7 +368,11 @@ export default function GlobalLeaderboardScreen() {
                   <View style={[styles.heroStepper, { backgroundColor: colors.surfaceSubtle }]}>
                     <Pressable
                       style={styles.stepperActionBtn}
-                      onPress={() => setHeroBidAmount((prev) => Math.max(1, prev - 1))}>
+                      onPress={() =>
+                        setHeroBidAmount((prev) =>
+                          Math.max(claimCategory?.minStartingBid ?? 1, prev - 1),
+                        )
+                      }>
                       <Text style={[styles.stepperActionText, { color: colors.text }]}>−</Text>
                     </Pressable>
                     <Text style={[styles.stepperDisplay, { color: colors.primary }]}>
@@ -327,7 +380,9 @@ export default function GlobalLeaderboardScreen() {
                     </Text>
                     <Pressable
                       style={styles.stepperActionBtn}
-                      onPress={() => setHeroBidAmount((prev) => prev + 1)}>
+                      onPress={() =>
+                        setHeroBidAmount((prev) => prev + (claimCategory?.minBidIncrement ?? 1))
+                      }>
                       <Text style={[styles.stepperActionText, { color: colors.text }]}>+</Text>
                     </Pressable>
                   </View>
@@ -355,6 +410,7 @@ export default function GlobalLeaderboardScreen() {
                 <View style={styles.commandField}>
                   <Ionicons name="link-outline" size={14} color={colors.textMuted} />
                   <TextInput
+                    ref={heroUrlInputRef}
                     style={[styles.commandInput, { color: colors.text }]}
                     placeholder="Website or @X Handle"
                     placeholderTextColor={colors.textFaint}
@@ -521,15 +577,23 @@ export default function GlobalLeaderboardScreen() {
           <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Ionicons name="rocket-outline" size={40} color={colors.primary} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              Rank #1 is wide open — grab it for ₹10!
+              Rank #1 is wide open — grab it for ₹{claimCategory?.minStartingBid ?? 1}!
             </Text>
             <Text style={[styles.emptySub, { color: colors.textMuted }]}>
               Today's leaderboard is a blank slate. Be the first name everyone sees.
             </Text>
             <Pressable
               style={[styles.emptyClaimBtn, { backgroundColor: colors.primary }]}
-              onPress={() => handleClaimRank(10, 1)}>
-              <Text style={styles.emptyClaimBtnText}>Claim #1 for ₹10</Text>
+              onPress={() => {
+                const minBid = claimCategory?.minStartingBid ?? 1;
+                setHeroBidAmount(minBid);
+                setIsClaimCollapsed(false);
+                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                setTimeout(() => heroUrlInputRef.current?.focus(), 360);
+              }}>
+              <Text style={styles.emptyClaimBtnText}>
+                Claim #1 for ₹{claimCategory?.minStartingBid ?? 1}
+              </Text>
             </Pressable>
           </View>
         ) : (
@@ -629,12 +693,12 @@ export default function GlobalLeaderboardScreen() {
                         <Pressable
                           style={[styles.outbidBtn, { backgroundColor: colors.primary }]}
                           onPress={() =>
-                            handleClaimRank(
-                              row.currentBidAmount + 1,
-                              1,
-                              row.categorySlug,
-                              row.categoryName,
-                            )
+                            handleClaimCard({
+                              currentBidAmount: row.currentBidAmount,
+                              rank: 1,
+                              categorySlug: row.categorySlug,
+                              categoryName: row.categoryName,
+                            })
                           }>
                           <Ionicons name="flash" size={13} color="#ffffff" />
                           <Text style={styles.outbidBtnText}>Claim</Text>
@@ -723,12 +787,12 @@ export default function GlobalLeaderboardScreen() {
                         <Pressable
                           style={[styles.outbidBtnSec, { backgroundColor: colors.surfaceSubtle }]}
                           onPress={() =>
-                            handleClaimRank(
-                              row.currentBidAmount + 1,
-                              row.rank,
-                              row.categorySlug,
-                              row.categoryName,
-                            )
+                            handleClaimCard({
+                              currentBidAmount: row.currentBidAmount,
+                              rank: row.rank,
+                              categorySlug: row.categorySlug,
+                              categoryName: row.categoryName,
+                            })
                           }>
                           <Text style={[styles.outbidBtnSecText, { color: colors.text }]}>
                             Outbid
@@ -782,12 +846,12 @@ export default function GlobalLeaderboardScreen() {
                     <Pressable
                       style={[styles.compactOutbidBtn, { backgroundColor: colors.surfaceSubtle }]}
                       onPress={() =>
-                        handleClaimRank(
-                          row.currentBidAmount + 1,
-                          row.rank,
-                          row.categorySlug,
-                          row.categoryName,
-                        )
+                        handleClaimCard({
+                          currentBidAmount: row.currentBidAmount,
+                          rank: row.rank,
+                          categorySlug: row.categorySlug,
+                          categoryName: row.categoryName,
+                        })
                       }>
                       <Text style={[styles.compactOutbidText, { color: colors.primary }]}>
                         Claim
@@ -869,10 +933,7 @@ export default function GlobalLeaderboardScreen() {
                       backgroundColor: colors.surfaceSubtle,
                     },
                   ]}
-                  onPress={() => {
-                    setClaimCategory(c);
-                    setCategoryPickerOpen(false);
-                  }}>
+                  onPress={() => handleSelectCategory(c)}>
                   <Text style={{ fontSize: 20 }}>{getCategoryIcon(c.slug)}</Text>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.catModalItemName, { color: colors.text }]}>{c.name}</Text>

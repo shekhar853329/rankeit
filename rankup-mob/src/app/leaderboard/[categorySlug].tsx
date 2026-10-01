@@ -54,9 +54,12 @@ export default function CategoryLeaderboardScreen() {
   const [stats, setStats] = useState<PlatformStatsDto | null>(null);
 
   // Command bar hero
-  const [claimBid, setClaimBid] = useState<number>(10);
+  const [claimBid, setClaimBid] = useState<number>(1);
   const [claimUrl, setClaimUrl] = useState<string>('');
   const [isCatClaimCollapsed, setIsCatClaimCollapsed] = useState<boolean>(true);
+
+  const scrollViewRef = React.useRef<ScrollView>(null);
+  const catUrlInputRef = React.useRef<TextInput>(null);
 
   const toggleCatClaimCollapse = () => {
     setIsCatClaimCollapsed((prev) => !prev);
@@ -78,9 +81,12 @@ export default function CategoryLeaderboardScreen() {
       ]);
       if (catRes) {
         setData(catRes);
-        if (catRes.minStartingBid && claimBid < catRes.minStartingBid) {
-          setClaimBid(catRes.minStartingBid);
-        }
+        const topItem = catRes.leaderboard?.items?.[0];
+        setClaimBid(
+          topItem
+            ? topItem.currentBidAmount + (catRes.minBidIncrement ?? 1)
+            : (catRes.minStartingBid ?? 1),
+        );
       }
       if (statsRes) setStats(statsRes);
     } catch {
@@ -134,7 +140,7 @@ export default function CategoryLeaderboardScreen() {
   };
 
   const handleOpenUrlDirect = (listingId: number, url?: string | null) => {
-    recordListingClick(listingId).catch(() => {});
+    recordListingClick(listingId).catch(() => { });
     if (url && url.trim()) {
       const clean = url.trim();
       const target = clean.startsWith('http://') || clean.startsWith('https://') ? clean : `https://${clean}`;
@@ -146,11 +152,22 @@ export default function CategoryLeaderboardScreen() {
     }
   };
 
+  const handleCardOutbid = (currentBidAmount: number) => {
+    const nextBid = currentBidAmount + (data?.minBidIncrement ?? 1);
+    setClaimBid(nextBid);
+    setIsCatClaimCollapsed(false);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    setTimeout(() => {
+      catUrlInputRef.current?.focus();
+    }, 360);
+  };
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <AppHeader />
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -223,17 +240,18 @@ export default function CategoryLeaderboardScreen() {
                   styles.catExpandedBody,
                   catClaimMeasuredHeight === null && isCatClaimCollapsed
                     ? {
-                        position: 'absolute',
-                        top: -9999,
-                        left: 0,
-                        right: 0,
-                        opacity: 0,
-                      }
+                      position: 'absolute',
+                      top: -9999,
+                      left: 0,
+                      right: 0,
+                      opacity: 0,
+                    }
                     : undefined,
                 ]}>
                 <View style={styles.catCommandInputRow}>
                   <Ionicons name="link-outline" size={14} color={colors.textMuted} />
                   <TextInput
+                    ref={catUrlInputRef}
                     style={[styles.catCommandInput, { color: colors.text }]}
                     placeholder="Your website URL or @handle"
                     placeholderTextColor={colors.textFaint}
@@ -335,7 +353,12 @@ export default function CategoryLeaderboardScreen() {
             </Text>
             <Pressable
               style={[styles.emptyClaimBtn, { backgroundColor: colors.primary }]}
-              onPress={() => handleClaim(data?.minStartingBid ?? 1, 1)}>
+              onPress={() => {
+                setClaimBid(data?.minStartingBid ?? 1);
+                setIsCatClaimCollapsed(false);
+                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                setTimeout(() => catUrlInputRef.current?.focus(), 360);
+              }}>
               <Text style={styles.emptyClaimBtnText}>
                 Claim #1 for ₹{data?.minStartingBid ?? 1}
               </Text>
@@ -424,18 +447,13 @@ export default function CategoryLeaderboardScreen() {
                             backgroundColor: isGold ? colors.primary : colors.surfaceSubtle,
                           },
                         ]}
-                        onPress={() =>
-                          handleClaim(
-                            row.currentBidAmount + (data?.minBidIncrement ?? 1),
-                            row.rank,
-                          )
-                        }>
+                        onPress={() => handleCardOutbid(row.currentBidAmount)}>
                         <Text
                           style={[
                             styles.outbidBtnText,
                             { color: isGold ? '#ffffff' : colors.text },
                           ]}>
-                          Outbid
+                          Claim
                         </Text>
                       </Pressable>
                     </View>
