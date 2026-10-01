@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import { useAppTheme } from '../../context/ThemeContext';
 
 export default function TabLayout() {
-  const { colors, isDark } = useAppTheme();
+  const { colors } = useAppTheme();
 
   return (
     <Tabs
@@ -17,22 +17,31 @@ export default function TabLayout() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 78 : 52,
-          paddingBottom: Platform.OS === 'ios' ? 22 : 5,
-          paddingTop: 5,
-          paddingHorizontal: 20,
+          height: Platform.OS === 'ios' ? 82 : 56,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 6,
+          paddingTop: 4,
+          paddingHorizontal: 12,
+        },
+        tabBarItemStyle: {
+          paddingTop: 2,
+          paddingBottom: Platform.OS === 'ios' ? 0 : 2,
+        },
+        tabBarIconStyle: {
+          marginTop: -3,
+          marginBottom: 2,
         },
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',
+          marginTop: -1,
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Leaderboard',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="flame-outline" size={18} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'flame' : 'flame-outline'} size={19} color={color} />
           ),
         }}
       />
@@ -40,8 +49,8 @@ export default function TabLayout() {
         name="categories"
         options={{
           title: 'Categories',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="grid-outline" size={18} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={19} color={color} />
           ),
         }}
       />
@@ -49,8 +58,8 @@ export default function TabLayout() {
         name="daily"
         options={{
           title: 'Daily',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="calendar-outline" size={18} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={19} color={color} />
           ),
         }}
       />
@@ -58,8 +67,8 @@ export default function TabLayout() {
         name="analytics"
         options={{
           title: 'Analytics',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="stats-chart-outline" size={18} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'stats-chart' : 'stats-chart-outline'} size={19} color={color} />
           ),
         }}
       />
@@ -67,8 +76,8 @@ export default function TabLayout() {
         name="more"
         options={{
           title: 'More',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="ellipsis-horizontal-circle-outline" size={18} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'ellipsis-horizontal-circle' : 'ellipsis-horizontal-circle-outline'} size={19} color={color} />
           ),
         }}
       />

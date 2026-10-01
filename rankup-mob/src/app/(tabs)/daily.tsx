@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { AppFooter } from '../../components/AppFooter';
 import { AppHeader } from '../../components/AppHeader';
+import { SmoothChevron, SmoothCollapsible } from '../../components/SmoothCollapsible';
 import { getCategoryIcon } from '../../constants/icons';
 import { Radius, Spacing } from '../../constants/theme';
 import { useSignalR } from '../../context/SignalRContext';
@@ -149,15 +150,15 @@ export default function DailyListingsScreen() {
                       </View>
                     </View>
 
-                    <Ionicons
-                      name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                    <SmoothChevron
+                      expanded={isExpanded}
                       size={18}
                       color={colors.textMuted}
                     />
                   </Pressable>
 
-                  {/* Expanded Rows */}
-                  {isExpanded && (
+                  {/* Expanded Rows with Smooth Transition */}
+                  <SmoothCollapsible collapsed={!isExpanded} duration={340}>
                     <View
                       style={[
                         styles.entriesList,
@@ -216,7 +217,7 @@ export default function DailyListingsScreen() {
                         );
                       })}
                     </View>
-                  )}
+                  </SmoothCollapsible>
                 </View>
               );
             })}

@@ -9,3 +9,4 @@ backend/ranker/appsettings.Production.json
 .env
 .env.local
 .env.*.local
+/rankup-mob/.vscode

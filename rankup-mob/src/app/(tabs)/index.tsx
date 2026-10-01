@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Image,
   LayoutAnimation,
   Linking,
@@ -24,6 +25,8 @@ if (Platform.OS === 'android' && !((globalThis as any).nativeFabricUIManager) &&
 import { AppFooter } from '../../components/AppFooter';
 import { AppHeader } from '../../components/AppHeader';
 import { CategoryPills } from '../../components/CategoryPills';
+import { ProductAvatar } from '../../components/ProductAvatar';
+import { SmoothChevron, useCollapsible } from '../../components/SmoothCollapsible';
 import { getCategoryIcon } from '../../constants/icons';
 import { Radius, Spacing } from '../../constants/theme';
 import { useClaimModal } from '../../context/ModalContext';
@@ -74,9 +77,15 @@ export default function GlobalLeaderboardScreen() {
   const [isClaimCollapsed, setIsClaimCollapsed] = useState<boolean>(true);
 
   const toggleClaimCollapse = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsClaimCollapsed((prev) => !prev);
   };
+
+  const {
+    animProgress: claimAnimProgress,
+    containerStyle: claimCollapsibleStyle,
+    handleLayout: handleClaimLayout,
+    measuredHeight: claimMeasuredHeight,
+  } = useCollapsible(isClaimCollapsed, { duration: 340 });
 
   // Countdown timer
   const [countdown, setCountdown] = useState<string>('05h : 42m : 18s');
@@ -270,17 +279,31 @@ export default function GlobalLeaderboardScreen() {
             </View>
 
             <View style={[styles.collapseChevronBtn, { backgroundColor: colors.surfaceSubtle }]}>
-              <Ionicons
-                name={isClaimCollapsed ? 'chevron-down' : 'chevron-up'}
+              <SmoothChevron
+                animProgress={claimAnimProgress}
                 size={14}
                 color={colors.text}
               />
             </View>
           </Pressable>
 
-          {/* Uncollapsed / Expanded Content */}
-          {!isClaimCollapsed && (
-            <View style={styles.expandedHeroBody}>
+          {/* Smooth Animated Collapsible Content */}
+          <Animated.View style={claimCollapsibleStyle} pointerEvents={isClaimCollapsed ? 'none' : 'auto'}>
+            <View
+              onLayout={handleClaimLayout}
+              pointerEvents={isClaimCollapsed ? 'none' : 'auto'}
+              style={[
+                styles.expandedHeroBody,
+                claimMeasuredHeight === null && isClaimCollapsed
+                  ? {
+                      position: 'absolute',
+                      top: -9999,
+                      left: 0,
+                      right: 0,
+                      opacity: 0,
+                    }
+                  : undefined,
+              ]}>
               {/* Stepper + Timer Row */}
               <View style={styles.heroExpandedTopRow}>
                 {/* Stepper */}
@@ -367,7 +390,7 @@ export default function GlobalLeaderboardScreen() {
                 </View>
               </View>
             </View>
-          )}
+          </Animated.View>
         </View>
 
         {/* ═══════════════════════════════════════════════════════════
@@ -537,22 +560,16 @@ export default function GlobalLeaderboardScreen() {
 
                         {/* Avatar */}
                         <View style={styles.avatarWrap}>
-                          {row.logoUrl || row.faviconUrl ? (
-                            <Image
-                              source={{ uri: row.logoUrl || row.faviconUrl || '' }}
-                              style={styles.avatarImg}
-                            />
-                          ) : (
-                            <View
-                              style={[
-                                styles.avatarPlaceholder,
-                                { backgroundColor: colors.goldBg },
-                              ]}>
-                              <Text style={[styles.avatarLetter, { color: colors.gold }]}>
-                                {row.listingName.charAt(0).toUpperCase()}
-                              </Text>
-                            </View>
-                          )}
+                          <ProductAvatar
+                            name={row.siteName || row.listingName}
+                            url={row.listingUrl}
+                            logoUrl={row.logoUrl}
+                            faviconUrl={row.faviconUrl}
+                            size={34}
+                            borderRadius={Radius.md}
+                            fallbackBg={colors.goldBg}
+                            fallbackTextColor={colors.gold}
+                          />
                           <View style={styles.beaconDotWrap}>
                             <View
                               style={[styles.beaconDotSmall, { backgroundColor: colors.secondaryGreen }]}
@@ -668,28 +685,16 @@ export default function GlobalLeaderboardScreen() {
                         </View>
 
                         <View style={styles.avatarWrap}>
-                          {row.logoUrl || row.faviconUrl ? (
-                            <Image
-                              source={{ uri: row.logoUrl || row.faviconUrl || '' }}
-                              style={styles.avatarImg}
-                            />
-                          ) : (
-                            <View
-                              style={[
-                                styles.avatarPlaceholder,
-                                {
-                                  backgroundColor: isSilver ? colors.silverBg : colors.bronzeBg,
-                                },
-                              ]}>
-                              <Text
-                                style={[
-                                  styles.avatarLetter,
-                                  { color: isSilver ? colors.silver : colors.bronze },
-                                ]}>
-                                {row.listingName.charAt(0).toUpperCase()}
-                              </Text>
-                            </View>
-                          )}
+                          <ProductAvatar
+                            name={row.siteName || row.listingName}
+                            url={row.listingUrl}
+                            logoUrl={row.logoUrl}
+                            faviconUrl={row.faviconUrl}
+                            size={34}
+                            borderRadius={Radius.md}
+                            fallbackBg={isSilver ? colors.silverBg : colors.bronzeBg}
+                            fallbackTextColor={isSilver ? colors.silver : colors.bronze}
+                          />
                         </View>
 
                         <View style={styles.payloadInfo}>
@@ -752,6 +757,15 @@ export default function GlobalLeaderboardScreen() {
                         #{row.rank}
                       </Text>
                     </View>
+
+                    <ProductAvatar
+                      name={row.siteName || row.listingName}
+                      url={row.listingUrl}
+                      logoUrl={row.logoUrl}
+                      faviconUrl={row.faviconUrl}
+                      size={24}
+                      borderRadius={Radius.sm}
+                    />
 
                     <View style={styles.compactInfo}>
                       <Text numberOfLines={1} style={[styles.compactTitle, { color: colors.text }]}>

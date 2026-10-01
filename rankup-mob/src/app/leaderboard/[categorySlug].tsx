@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Image,
   LayoutAnimation,
   Platform,
@@ -21,6 +22,8 @@ if (Platform.OS === 'android' && !((globalThis as any).nativeFabricUIManager) &&
 }
 import { AppFooter } from '../../components/AppFooter';
 import { AppHeader } from '../../components/AppHeader';
+import { ProductAvatar } from '../../components/ProductAvatar';
+import { SmoothChevron, useCollapsible } from '../../components/SmoothCollapsible';
 import { getCategoryIcon } from '../../constants/icons';
 import { Radius, Spacing } from '../../constants/theme';
 import { useClaimModal } from '../../context/ModalContext';
@@ -55,9 +58,15 @@ export default function CategoryLeaderboardScreen() {
   const [isCatClaimCollapsed, setIsCatClaimCollapsed] = useState<boolean>(true);
 
   const toggleCatClaimCollapse = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsCatClaimCollapsed((prev) => !prev);
   };
+
+  const {
+    animProgress: catClaimAnimProgress,
+    containerStyle: catClaimCollapsibleStyle,
+    handleLayout: handleCatClaimLayout,
+    measuredHeight: catClaimMeasuredHeight,
+  } = useCollapsible(isCatClaimCollapsed, { duration: 340 });
 
   const loadData = useCallback(async () => {
     if (!categorySlug) return;
@@ -189,16 +198,30 @@ export default function CategoryLeaderboardScreen() {
               </View>
 
               <View style={styles.catCommandToggleRight}>
-                <Ionicons
-                  name={isCatClaimCollapsed ? 'chevron-down' : 'chevron-up'}
+                <SmoothChevron
+                  animProgress={catClaimAnimProgress}
                   size={14}
                   color={colors.textMuted}
                 />
               </View>
             </Pressable>
 
-            {!isCatClaimCollapsed && (
-              <View style={styles.catExpandedBody}>
+            <Animated.View style={catClaimCollapsibleStyle} pointerEvents={isCatClaimCollapsed ? 'none' : 'auto'}>
+              <View
+                onLayout={handleCatClaimLayout}
+                pointerEvents={isCatClaimCollapsed ? 'none' : 'auto'}
+                style={[
+                  styles.catExpandedBody,
+                  catClaimMeasuredHeight === null && isCatClaimCollapsed
+                    ? {
+                        position: 'absolute',
+                        top: -9999,
+                        left: 0,
+                        right: 0,
+                        opacity: 0,
+                      }
+                    : undefined,
+                ]}>
                 <View style={styles.catCommandInputRow}>
                   <Ionicons name="link-outline" size={14} color={colors.textMuted} />
                   <TextInput
@@ -234,7 +257,7 @@ export default function CategoryLeaderboardScreen() {
                   </Pressable>
                 </View>
               </View>
-            )}
+            </Animated.View>
           </View>
         </View>
 
@@ -355,18 +378,16 @@ export default function CategoryLeaderboardScreen() {
                         </Text>
                       </View>
 
-                      {row.logoUrl || row.faviconUrl ? (
-                        <Image
-                          source={{ uri: row.logoUrl || row.faviconUrl || '' }}
-                          style={styles.avatarImg}
-                        />
-                      ) : (
-                        <View style={[styles.avatarPlaceholder, { backgroundColor: colors.surfaceSubtle }]}>
-                          <Text style={[styles.avatarLetter, { color: colors.primary }]}>
-                            {row.listingName.charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
-                      )}
+                      <ProductAvatar
+                        name={row.siteName || row.listingName}
+                        url={row.listingUrl}
+                        logoUrl={row.logoUrl}
+                        faviconUrl={row.faviconUrl}
+                        size={34}
+                        borderRadius={Radius.md}
+                        fallbackBg={isGold ? colors.goldBg : rankBg}
+                        fallbackTextColor={isGold ? colors.gold : rankColor}
+                      />
 
                       <View style={styles.itemMeta}>
                         <Text numberOfLines={1} style={[styles.itemTitle, { color: colors.text }]}>

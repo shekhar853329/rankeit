@@ -311,15 +311,15 @@ export async function fetchUrlMetadata(url: string): Promise<UrlMetadataDto> {
 // ── GOOGLE ANALYTICS APIS ─────────────────────────────────────
 
 export async function getAnalyticsReport(days = 30): Promise<GoogleAnalyticsReportDto> {
-  return request<GoogleAnalyticsReportDto>(`/api/analytics/report?days=${days}`);
+  return request<GoogleAnalyticsReportDto>(`/api/analytics/ga/overview?days=${days}`);
 }
 
 export async function getAnalyticsRealtime(): Promise<GaRealtimeReportDto> {
-  return request<GaRealtimeReportDto>('/api/analytics/realtime');
+  return request<GaRealtimeReportDto>('/api/analytics/ga/realtime');
 }
 
 export async function getAnalyticsStatus(): Promise<GaConfigStatusDto> {
-  return request<GaConfigStatusDto>('/api/analytics/status');
+  return request<GaConfigStatusDto>('/api/analytics/ga/status');
 }
 
 // ── HEALTH & SITE VISIT ───────────────────────────────────────

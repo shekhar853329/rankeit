@@ -3,7 +3,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Linking,
   Pressable,
   ScrollView,
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import { AppFooter } from '../../components/AppFooter';
 import { AppHeader } from '../../components/AppHeader';
+import { ProductAvatar } from '../../components/ProductAvatar';
 import { getCategoryIcon } from '../../constants/icons';
 import { Radius, Spacing } from '../../constants/theme';
 import { useClaimModal } from '../../context/ModalContext';
@@ -123,18 +123,14 @@ export default function ListingDetailScreen() {
             {/* Main Product Hero Card */}
             <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.heroTop}>
-                {listing.logoUrl || listing.faviconUrl ? (
-                  <Image
-                    source={{ uri: listing.logoUrl || listing.faviconUrl || '' }}
-                    style={styles.logoImg}
-                  />
-                ) : (
-                  <View style={[styles.logoPlaceholder, { backgroundColor: colors.surfaceSubtle }]}>
-                    <Text style={[styles.logoLetter, { color: colors.primary }]}>
-                      {listing.listingName.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
-                )}
+                <ProductAvatar
+                  logoUrl={listing.logoUrl}
+                  faviconUrl={listing.faviconUrl}
+                  websiteUrl={listing.listingUrl}
+                  name={listing.siteName || listing.listingName}
+                  size={54}
+                  borderRadius={Radius.md}
+                />
 
                 <View style={styles.heroMeta}>
                   <View style={styles.titleRow}>

@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Radius, Spacing } from '../constants/theme';
+import { ProductAvatar } from './ProductAvatar';
 import { useClaimModal } from '../context/ModalContext';
 import { useAppTheme } from '../context/ThemeContext';
 import { GlobalLeaderboardEntryDto } from '../models';
@@ -62,18 +63,16 @@ export const ReigningSpotlightCard: React.FC<ReigningSpotlightCardProps> = ({ ch
       {/* Champion Info */}
       <Pressable style={styles.heroRow} onPress={handleOpenDetail}>
         <View style={[styles.avatarRing, { borderColor: colors.gold }]}>
-          {champion?.logoUrl || champion?.faviconUrl ? (
-            <Image
-              source={{ uri: champion.logoUrl || champion.faviconUrl || '' }}
-              style={styles.avatarImg}
-            />
-          ) : (
-            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.goldBg }]}>
-              <Text style={[styles.avatarLetter, { color: colors.gold }]}>
-                {champion?.listingName ? champion.listingName.charAt(0).toUpperCase() : '👑'}
-              </Text>
-            </View>
-          )}
+          <ProductAvatar
+            name={champion?.siteName || champion?.listingName || ''}
+            url={champion?.listingUrl}
+            logoUrl={champion?.logoUrl}
+            faviconUrl={champion?.faviconUrl}
+            size={38}
+            borderRadius={Radius.pill}
+            fallbackBg={colors.goldBg}
+            fallbackTextColor={colors.gold}
+          />
           <View style={[styles.crownIconWrap, { backgroundColor: colors.gold }]}>
             <Ionicons name="sparkles" size={9} color="#fff" />
           </View>

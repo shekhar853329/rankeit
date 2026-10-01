@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { AppFooter } from '../../components/AppFooter';
 import { AppHeader } from '../../components/AppHeader';
@@ -9,7 +9,7 @@ import { Radius, Spacing } from '../../constants/theme';
 import { useAppTheme } from '../../context/ThemeContext';
 
 export default function MoreScreen() {
-  const { colors, isDark, toggleTheme } = useAppTheme();
+  const { colors } = useAppTheme();
   const router = useRouter();
 
   const menuSections = [
@@ -82,27 +82,6 @@ export default function MoreScreen() {
           </View>
         </View>
 
-        {/* Theme Switch Row */}
-        <View style={[styles.themeRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.themeLeft}>
-            <Ionicons
-              name={isDark ? 'moon' : 'sunny'}
-              size={20}
-              color={colors.primary}
-            />
-            <View>
-              <Text style={[styles.themeTitle, { color: colors.text }]}>Dark Mode</Text>
-              <Text style={[styles.themeSub, { color: colors.textMuted }]}>
-                {isDark ? 'OLED black active' : 'Warm cream light active'}
-              </Text>
-            </View>
-          </View>
-          <Switch
-            value={isDark}
-            onValueChange={toggleTheme}
-            trackColor={{ false: colors.border, true: colors.primary }}
-          />
-        </View>
 
         {/* Menu Sections */}
         {menuSections.map((section) => (
@@ -187,27 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
   },
-  themeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: Spacing.three,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    marginTop: Spacing.two,
-  },
-  themeLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  themeTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  themeSub: {
-    fontSize: 11,
-  },
+
   sectionWrap: {
     marginTop: Spacing.three,
     gap: Spacing.one,
