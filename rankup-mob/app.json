@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "rankup-mob",
+    "name": "RankUp",
     "slug": "rankup-mob",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,6 +11,8 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.shekharshine25.rankup",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -37,6 +39,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7543d8ee-fdf6-4469-bb7e-35f2ad1ec85b"
+      }
+    },
+    "owner": "shekhaarshine25"
   }
 }
