@@ -7,8 +7,9 @@
  */
 function getApiBaseUrl(): string {
   if (typeof window !== 'undefined' && window.location) {
-    if (window.location.hostname === 'localhost' && window.location.port === '4200') {
-      return 'http://localhost:5196';
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return `http://${host}:5196`;
     }
     return window.location.origin;
   }
@@ -22,8 +23,9 @@ function getApiBaseUrl(): string {
 
 function getHubUrl(): string {
   if (typeof window !== 'undefined' && window.location) {
-    if (window.location.hostname === 'localhost' && window.location.port === '4200') {
-      return 'http://localhost:5196/hubs/leaderboard';
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return `http://${host}:5196/hubs/leaderboard`;
     }
     return `${window.location.origin}/hubs/leaderboard`;
   }
