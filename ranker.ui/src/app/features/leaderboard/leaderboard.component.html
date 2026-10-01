@@ -67,7 +67,8 @@
           <!-- URL / @Handle Input -->
           <div class="command-bar__field command-bar__field--url">
             @if (faviconDisplayUrl()) {
-            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" width="24" height="24" decoding="async" (error)="onFaviconError($event)" />
+            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" width="24" height="24" decoding="async"
+              (error)="onFaviconError($event)" />
             } @else {
             <span class="material-symbols-outlined field-icon">link</span>
             }
@@ -115,12 +116,21 @@
           </div>
 
           <div class="command-bar__action">
-            <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()">
+            <!-- <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()"></button> -->
+            <button type="button" class="claim-submit-btn" [disabled]="true"
+              title="Payment gateway has not been integrated yet, the application is under review, will soon attach the gateway">
               <span>Claim Rank</span>
               <span class="material-symbols-outlined icon-sm">bolt</span>
             </button>
           </div>
         </form>
+
+        <!-- Gateway Review Notice -->
+        <div class="gateway-review-notice">
+          <span class="material-symbols-outlined notice-icon">info</span>
+          <span>Payment gateway has not been integrated yet, the application is under review, will soon attach the
+            gateway</span>
+        </div>
       </div>
     </div>
   </section>
@@ -175,10 +185,12 @@
           <span class="material-symbols-outlined empty-icon">rocket_launch</span>
           @if (timeMode() === 'today') {
           <h3>No bids placed in this arena today</h3>
-          <p>Be the first to claim Rank #1 today — starting at just {{ currencySymbol }}{{ claimPrice() ?? minStartingBid() }}!</p>
+          <p>Be the first to claim Rank #1 today — starting at just {{ currencySymbol }}{{ claimPrice() ??
+            minStartingBid() }}!</p>
           } @else {
           <h3>No listings in this arena yet</h3>
-          <p>Be the first pioneer! Claim Rank #1 right now for just {{ currencySymbol }}{{ claimPrice() ?? minStartingBid() }}.</p>
+          <p>Be the first pioneer! Claim Rank #1 right now for just {{ currencySymbol }}{{ claimPrice() ??
+            minStartingBid() }}.</p>
           }
         </div>
         } @else {
@@ -420,36 +432,22 @@
           <div class="chart-controls-bar">
             <!-- View Modes -->
             <div class="control-tab-group" role="tablist" aria-label="Chart views">
-              <button
-                type="button"
-                class="chart-tab-btn"
-                role="tab"
+              <button type="button" class="chart-tab-btn" role="tab"
                 [attr.aria-selected]="chartViewMode() === 'timeline'"
-                [class.chart-tab-btn--active]="chartViewMode() === 'timeline'"
-                (click)="setChartViewMode('timeline')"
+                [class.chart-tab-btn--active]="chartViewMode() === 'timeline'" (click)="setChartViewMode('timeline')"
                 title="Show each payment as its own distinct spike on a continuous timeline">
                 <span class="material-symbols-outlined icon-xs">bolt</span>
                 <span>Live Timeline</span>
                 <span class="tab-chip">{{ (categoryStats()?.recentBidsTimeline?.length ?? 0) }}</span>
               </button>
-              <button
-                type="button"
-                class="chart-tab-btn"
-                role="tab"
-                [attr.aria-selected]="chartViewMode() === 'hourly'"
-                [class.chart-tab-btn--active]="chartViewMode() === 'hourly'"
-                (click)="setChartViewMode('hourly')"
+              <button type="button" class="chart-tab-btn" role="tab" [attr.aria-selected]="chartViewMode() === 'hourly'"
+                [class.chart-tab-btn--active]="chartViewMode() === 'hourly'" (click)="setChartViewMode('hourly')"
                 title="Hourly liquidity distribution over 24 hours">
                 <span class="material-symbols-outlined icon-xs">schedule</span>
                 <span>24H Hourly</span>
               </button>
-              <button
-                type="button"
-                class="chart-tab-btn"
-                role="tab"
-                [attr.aria-selected]="chartViewMode() === 'weekly'"
-                [class.chart-tab-btn--active]="chartViewMode() === 'weekly'"
-                (click)="setChartViewMode('weekly')"
+              <button type="button" class="chart-tab-btn" role="tab" [attr.aria-selected]="chartViewMode() === 'weekly'"
+                [class.chart-tab-btn--active]="chartViewMode() === 'weekly'" (click)="setChartViewMode('weekly')"
                 title="7-day bidding volume trend">
                 <span class="material-symbols-outlined icon-xs">date_range</span>
                 <span>7D Trend</span>
@@ -461,24 +459,15 @@
               @if (chartViewMode() === 'hourly') {
               <!-- Metric Toggle for Hourly mode -->
               <div class="metric-filter-group" aria-label="Metric filter">
-                <button
-                  type="button"
-                  class="metric-btn"
-                  [class.metric-btn--active]="chartMetric() === 'both'"
+                <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'both'"
                   (click)="setChartMetric('both')">
                   Both
                 </button>
-                <button
-                  type="button"
-                  class="metric-btn"
-                  [class.metric-btn--active]="chartMetric() === 'volume'"
+                <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'volume'"
                   (click)="setChartMetric('volume')">
                   Volume
                 </button>
-                <button
-                  type="button"
-                  class="metric-btn"
-                  [class.metric-btn--active]="chartMetric() === 'count'"
+                <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'count'"
                   (click)="setChartMetric('count')">
                   Bids
                 </button>
@@ -488,31 +477,19 @@
               @if (chartViewMode() === 'timeline') {
               <!-- Time Presets for Timeline mode -->
               <div class="metric-filter-group" aria-label="Timeline range">
-                <button
-                  type="button"
-                  class="metric-btn"
-                  [class.metric-btn--active]="chartTimePreset() === '1h'"
+                <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === '1h'"
                   (click)="setChartTimePreset('1h')">
                   1H
                 </button>
-                <button
-                  type="button"
-                  class="metric-btn"
-                  [class.metric-btn--active]="chartTimePreset() === '6h'"
+                <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === '6h'"
                   (click)="setChartTimePreset('6h')">
                   6H
                 </button>
-                <button
-                  type="button"
-                  class="metric-btn"
-                  [class.metric-btn--active]="chartTimePreset() === 'today'"
+                <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === 'today'"
                   (click)="setChartTimePreset('today')">
                   Today
                 </button>
-                <button
-                  type="button"
-                  class="metric-btn"
-                  [class.metric-btn--active]="chartTimePreset() === 'all'"
+                <button type="button" class="metric-btn" [class.metric-btn--active]="chartTimePreset() === 'all'"
                   (click)="setChartTimePreset('all')">
                   All
                 </button>

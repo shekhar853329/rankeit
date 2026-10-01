@@ -55,7 +55,8 @@
           <!-- URL / @Handle Input -->
           <div class="command-bar__field command-bar__field--url">
             @if (faviconDisplayUrl()) {
-            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" width="24" height="24" decoding="async" (error)="onFaviconError($event)" />
+            <img [src]="faviconDisplayUrl()!" alt="" class="field-favicon" width="24" height="24" decoding="async"
+              (error)="onFaviconError($event)" />
             } @else {
             <span class="material-symbols-outlined field-icon">link</span>
             }
@@ -74,8 +75,7 @@
           <div class="command-bar__field command-bar__field--category"
             [class.command-bar__field--open]="categoryDropdownOpen()" (click)="toggleCategoryDropdown($event)"
             tabindex="0" role="combobox" aria-haspopup="listbox" [attr.aria-expanded]="categoryDropdownOpen()"
-            aria-label="Category Slot"
-            (keydown.enter)="toggleCategoryDropdown($event)"
+            aria-label="Category Slot" (keydown.enter)="toggleCategoryDropdown($event)"
             (keydown.space)="toggleCategoryDropdown($event); $event.preventDefault()">
             <span class="material-symbols-outlined field-icon">category</span>
             <div class="field-content">
@@ -158,8 +158,7 @@
               </div>
               <div class="amount-stepper-row">
                 <span class="amount-currency">{{ currencySymbol() }}</span>
-                <input id="claim-amount" type="number" class="field-input field-input--amount"
-                  aria-label="Bid Amount"
+                <input id="claim-amount" type="number" class="field-input field-input--amount" aria-label="Bid Amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? claimPrice() ?? 10)"
                   (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
@@ -179,12 +178,21 @@
 
           <!-- Primary Claim CTA Button -->
           <div class="command-bar__action">
-            <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()">
+            <!-- <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()"></button> -->
+            <button type="button" class="claim-submit-btn" [disabled]="true"
+              title="Payment gateway has not been integrated yet, the application is under review, will soon attach the gateway">
               <span>Claim Rank</span>
               <span class="material-symbols-outlined icon-sm">bolt</span>
             </button>
           </div>
         </form>
+
+        <!-- Gateway Review Notice -->
+        <div class="gateway-review-notice">
+          <span class="material-symbols-outlined notice-icon">info</span>
+          <span>Payment gateway has not been integrated yet, the application is under review, will soon attach the
+            gateway</span>
+        </div>
       </div>
 
     </div>
@@ -601,22 +609,21 @@
           <!-- View Modes -->
           <div class="control-tab-group" role="tablist" aria-label="Chart views">
             <button type="button" class="chart-tab-btn" [class.chart-tab-btn--active]="chartViewMode() === 'timeline'"
-              role="tab" [attr.aria-selected]="chartViewMode() === 'timeline'"
-              (click)="setChartViewMode('timeline')"
+              role="tab" [attr.aria-selected]="chartViewMode() === 'timeline'" (click)="setChartViewMode('timeline')"
               title="Show each payment as its own distinct spike on a continuous timeline">
               <span class="material-symbols-outlined icon-xs">bolt</span>
               <span>Live Timeline</span>
               <span class="tab-chip">{{ (platformStats()?.recentBidsTimeline?.length ?? 0) }}</span>
             </button>
             <button type="button" class="chart-tab-btn" [class.chart-tab-btn--active]="chartViewMode() === 'hourly'"
-              role="tab" [attr.aria-selected]="chartViewMode() === 'hourly'"
-              (click)="setChartViewMode('hourly')" title="Hourly liquidity distribution over 24 hours">
+              role="tab" [attr.aria-selected]="chartViewMode() === 'hourly'" (click)="setChartViewMode('hourly')"
+              title="Hourly liquidity distribution over 24 hours">
               <span class="material-symbols-outlined icon-xs">schedule</span>
               <span>24H Hourly</span>
             </button>
             <button type="button" class="chart-tab-btn" [class.chart-tab-btn--active]="chartViewMode() === 'weekly'"
-              role="tab" [attr.aria-selected]="chartViewMode() === 'weekly'"
-              (click)="setChartViewMode('weekly')" title="7-day bidding volume trend">
+              role="tab" [attr.aria-selected]="chartViewMode() === 'weekly'" (click)="setChartViewMode('weekly')"
+              title="7-day bidding volume trend">
               <span class="material-symbols-outlined icon-xs">date_range</span>
               <span>7D Trend</span>
             </button>
