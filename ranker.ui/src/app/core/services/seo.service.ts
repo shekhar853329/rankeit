@@ -10,6 +10,7 @@ export interface SeoConfig {
   type?: 'website' | 'article' | 'product';
   keywords?: string[];
   schema?: Record<string, unknown> | Array<Record<string, unknown>>;
+  breadcrumbs?: Array<{ name: string; url?: string }>;
 }
 
 const DEFAULT_ORIGIN = 'https://rankup.cyou';
@@ -69,7 +70,19 @@ export class SeoService {
     this.updateCanonicalLink(canonicalUrl);
 
     // 6. JSON-LD Structured Data
-    if (config.schema) {
+    if (config.breadcrumbs && config.breadcrumbs.length > 0) {
+      const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': config.breadcrumbs.map((b, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: b.name,
+          item: b.url ? b.url : undefined
+        }))
+      };
+      this.setJsonLd(breadcrumbSchema);
+    } else if (config.schema) {
       this.setJsonLd(config.schema);
     } else {
       this.removeJsonLd();
