@@ -55,11 +55,11 @@
 
           <!-- URL & Site Name -->
           <div class="profile-url-row">
-            <button type="button" class="btn-visit-site" (click)="openExternalUrl(p.listingUrl, p.listingId)"
-              title="Visit website">
+            <a [href]="p.listingUrl" target="_blank" rel="noopener" class="btn-visit-site"
+              (click)="onOutboundLinkClick(p.listingId)" [title]="'Visit ' + p.listingName">
               <span class="material-symbols-outlined text-[16px]">open_in_new</span>
               <span>{{ formatDomain(p.listingUrl) }}</span>
-            </button>
+            </a>
             @if (p.siteName) {
             <span class="url-sep">•</span>
             <span class="site-name-label">{{ p.siteName }}</span>
@@ -92,10 +92,11 @@
     </div>
     <p class="about-text">{{ p.description }}</p>
     <div class="about-link-row">
-      <button type="button" class="btn-about-visit" (click)="openExternalUrl(p.listingUrl, p.listingId)">
+      <a [href]="p.listingUrl" target="_blank" rel="noopener" class="btn-about-visit"
+        (click)="onOutboundLinkClick(p.listingId)" [title]="'Visit ' + p.listingName">
         <span class="material-symbols-outlined text-[16px]">open_in_new</span>
         Visit {{ formatDomain(p.listingUrl) }}
-      </button>
+      </a>
     </div>
   </section>
   }
@@ -107,10 +108,11 @@
         <span class="material-symbols-outlined info-icon">language</span>
         <span class="info-label">Website URL</span>
       </div>
-      <button type="button" class="info-value info-value--link" (click)="openExternalUrl(p.listingUrl, p.listingId)">
+      <a [href]="p.listingUrl" target="_blank" rel="noopener" class="info-value info-value--link"
+        (click)="onOutboundLinkClick(p.listingId)" [title]="'Visit ' + p.listingName">
         {{ formatDomain(p.listingUrl) }}
         <span class="material-symbols-outlined text-[14px]">open_in_new</span>
-      </button>
+      </a>
     </div>
 
     <div class="info-card card">

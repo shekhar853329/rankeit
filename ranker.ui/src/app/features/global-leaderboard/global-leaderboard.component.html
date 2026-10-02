@@ -336,7 +336,7 @@
               <!-- Main Payload Body -->
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="payload-title"
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener" class="payload-title"
                     (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
@@ -359,11 +359,11 @@
                     <span class="material-symbols-outlined icon-xxs">schedule</span>
                     Active
                   </span> -->
-                  <!-- <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener" class="meta-chip meta-chip--link"
                     (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
-                  </a> -->
+                  </a>
                   <span class="meta-chip meta-chip--clicks">
                     <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
                     {{ row.clickCount | number }} clicks today
@@ -412,7 +412,7 @@
 
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="payload-title"
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener" class="payload-title"
                     (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
@@ -427,7 +427,7 @@
                   <span class="meta-chip meta-chip--category">
                     {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
                   </span>
-                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener" class="meta-chip meta-chip--link"
                     (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
@@ -477,7 +477,7 @@
 
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="payload-title"
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener" class="payload-title"
                     (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
@@ -492,7 +492,7 @@
                   <span class="meta-chip meta-chip--category">
                     {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
                   </span>
-                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
+                  <a [href]="row.listingUrl" target="_blank" rel="noopener" class="meta-chip meta-chip--link"
                     (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
@@ -538,7 +538,7 @@
               <div class="compact-meta-row">
                 <span>{{ row.clickCount | number }} clicks</span>
                 <span>•</span>
-                <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="compact-link"
+                <a [href]="row.listingUrl" target="_blank" rel="noopener" class="compact-link"
                   (click)="$event.stopPropagation()">
                   {{ formatDomain(row.listingUrl) }}
                 </a>

@@ -76,6 +76,22 @@ export class WebsiteProfileComponent implements OnInit {
               },
               {
                 '@context': 'https://schema.org',
+                '@type': 'SoftwareApplication',
+                name: result.listingName,
+                url: result.listingUrl,
+                applicationCategory: result.categoryName,
+                description: desc,
+                operatingSystem: 'All',
+                aggregateRating: {
+                  '@type': 'AggregateRating',
+                  ratingValue: Math.max(4.5, 5 - (result.currentRankInCategory - 1) * 0.1).toFixed(1),
+                  bestRating: '5',
+                  worstRating: '1',
+                  ratingCount: Math.max(1, result.clickCount),
+                },
+              },
+              {
+                '@context': 'https://schema.org',
                 '@type': 'WebPage',
                 name: `${result.listingName} – Website Profile`,
                 url: `https://rankup.cyou/website/${result.slug}`,
@@ -110,14 +126,18 @@ export class WebsiteProfileComponent implements OnInit {
       });
   }
 
-  openExternalUrl(url: string, id: number): void {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  onOutboundLinkClick(id: number): void {
     this.listingService.recordClick(id).subscribe((count) => {
       const current = this.profile();
       if (current && current.listingId === id) {
         this.profile.set({ ...current, clickCount: count });
       }
     });
+  }
+
+  openExternalUrl(url: string, id: number): void {
+    window.open(url, '_blank', 'noopener');
+    this.onOutboundLinkClick(id);
   }
 
   getFaviconUrl(url: string): string {

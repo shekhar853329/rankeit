@@ -38,6 +38,7 @@ builder.Services.AddScoped<IBidRepository, BidRepository>();
 builder.Services.AddSingleton<GlobalLeaderboardCache>();
 builder.Services.AddSingleton<OnlineUsersTracker>();
 builder.Services.AddScoped<IGoogleAnalyticsService, GoogleAnalyticsService>();
+builder.Services.AddScoped<Ranker.Services.Seo.IIndexNowService, Ranker.Services.Seo.IndexNowService>();
 
 // ── URL Metadata ──────────────────────────────────────────────────────────
 // Direct HTTP scrape with enhanced browser mimicry to avoid bot detection
@@ -176,7 +177,8 @@ app.Use(async (context, next) =>
 
     if (!app.Environment.IsDevelopment() &&
         path.StartsWithSegments("/api") &&
-        !path.StartsWithSegments("/api/health"))
+        !path.StartsWithSegments("/api/health") &&
+        !path.StartsWithSegments("/api/sitemap"))
     {
         // 1. Allow if Angular application verification header is present
         if (context.Request.Headers.TryGetValue("X-App-Client", out var clientHeader) &&
@@ -209,5 +211,6 @@ app.UseCors(AngularDevCorsPolicy);
 
 app.MapControllers();
 app.MapHub<LeaderboardHub>("/hubs/leaderboard");
+app.MapGet($"/{Ranker.Services.Seo.IndexNowService.DefaultKey}.txt", () => Results.Text(Ranker.Services.Seo.IndexNowService.DefaultKey, "text/plain"));
 
 app.Run();

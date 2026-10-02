@@ -222,7 +222,7 @@
 
                 <div class="info-box">
                   <div class="title-row">
-                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="item-title"
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener" class="item-title"
                       (click)="$event.stopPropagation()">
                       {{ entry.siteName || entry.listingName }}
                     </a>
@@ -236,11 +236,11 @@
                       <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
                       {{ clickCountFor(entry) | number }} clicks
                     </span>
-                    <!-- <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener" class="chip chip--link"
                       (click)="$event.stopPropagation()">
                       <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                       {{ formatDomain(entry.listingUrl) }}
-                    </a> -->
+                    </a>
                     <a [routerLink]="['/website', slugifyUrl(entry.listingUrl)]" class="chip chip--profile"
                       (click)="$event.stopPropagation()">
                       <span class="material-symbols-outlined icon-xxs">badge</span>
@@ -278,7 +278,7 @@
                   }
                 </div>
                 <div class="info-box">
-                  <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="item-title"
+                  <a [href]="entry.listingUrl" target="_blank" rel="noopener" class="item-title"
                     (click)="$event.stopPropagation()">
                     {{ entry.siteName || entry.listingName }}
                   </a>
@@ -287,7 +287,7 @@
                   }
                   <div class="chips-row">
                     <span class="chip">{{ clickCountFor(entry) | number }} clicks</span>
-                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener" class="chip chip--link"
                       (click)="$event.stopPropagation()">
                       {{ formatDomain(entry.listingUrl) }}
                     </a>
@@ -327,7 +327,7 @@
                   }
                 </div>
                 <div class="info-box">
-                  <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="item-title"
+                  <a [href]="entry.listingUrl" target="_blank" rel="noopener" class="item-title"
                     (click)="$event.stopPropagation()">
                     {{ entry.siteName || entry.listingName }}
                   </a>
@@ -336,7 +336,7 @@
                   }
                   <div class="chips-row">
                     <span class="chip">{{ clickCountFor(entry) | number }} clicks</span>
-                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
+                    <a [href]="entry.listingUrl" target="_blank" rel="noopener" class="chip chip--link"
                       (click)="$event.stopPropagation()">
                       {{ formatDomain(entry.listingUrl) }}
                     </a>
@@ -371,7 +371,7 @@
                 <div class="compact-meta">
                   <span>{{ clickCountFor(entry) | number }} clicks</span>
                   <span>•</span>
-                  <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="compact-link"
+                  <a [href]="entry.listingUrl" target="_blank" rel="noopener" class="compact-link"
                     (click)="$event.stopPropagation()">
                     {{ formatDomain(entry.listingUrl) }}
                   </a>
