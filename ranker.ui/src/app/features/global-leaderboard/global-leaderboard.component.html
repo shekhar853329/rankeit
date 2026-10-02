@@ -355,19 +355,24 @@
                   <span class="meta-chip meta-chip--category">
                     {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
                   </span>
-                  <span class="meta-chip meta-chip--time">
+                  <!-- <span class="meta-chip meta-chip--time">
                     <span class="material-symbols-outlined icon-xxs">schedule</span>
                     Active
-                  </span>
-                  <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
+                  </span> -->
+                  <!-- <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="meta-chip meta-chip--link"
                     (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
-                  </a>
+                  </a> -->
                   <span class="meta-chip meta-chip--clicks">
                     <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
                     {{ row.clickCount | number }} clicks today
                   </span>
+                  <a [routerLink]="['/website', slugifyUrl(row.listingUrl)]" class="meta-chip meta-chip--profile"
+                    (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined icon-xxs">badge</span>
+                    Profile
+                  </a>
                 </div>
               </div>
             </div>
@@ -430,6 +435,11 @@
                   <span class="meta-chip meta-chip--clicks">
                     {{ row.clickCount | number }} clicks
                   </span>
+                  <a [routerLink]="['/website', slugifyUrl(row.listingUrl)]" class="meta-chip meta-chip--profile"
+                    (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined icon-xxs">badge</span>
+                    Profile
+                  </a>
                 </div>
               </div>
             </div>
@@ -490,6 +500,11 @@
                   <span class="meta-chip meta-chip--clicks">
                     {{ row.clickCount | number }} clicks
                   </span>
+                  <a [routerLink]="['/website', slugifyUrl(row.listingUrl)]" class="meta-chip meta-chip--profile"
+                    (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined icon-xxs">badge</span>
+                    Profile
+                  </a>
                 </div>
               </div>
             </div>
@@ -526,6 +541,11 @@
                 <a [href]="row.listingUrl" target="_blank" rel="noopener noreferrer" class="compact-link"
                   (click)="$event.stopPropagation()">
                   {{ formatDomain(row.listingUrl) }}
+                </a>
+                <span>•</span>
+                <a [routerLink]="['/website', slugifyUrl(row.listingUrl)]" class="compact-link compact-link--profile"
+                  (click)="$event.stopPropagation()">
+                  Profile
                 </a>
               </div>
             </div>
@@ -724,9 +744,18 @@
             <div class="champion-meta">
               <h3 class="champion-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName || 'No Leader
                 Yet' }}</h3>
-              <p class="champion-holding">
-                <strong class="text-on-surface">{{ reigningChampion()?.categoryName || 'Global' }}</strong>
-              </p>
+              <div class="champion-holding-row">
+                <span class="champion-holding">
+                  <strong class="text-on-surface">{{ reigningChampion()?.categoryName || 'Global' }}</strong>
+                </span>
+                @if (reigningChampion(); as champ) {
+                <span>•</span>
+                <a [routerLink]="['/website', slugifyUrl(champ.listingUrl)]" class="champion-profile-link"
+                  (click)="$event.stopPropagation()">
+                  Profile
+                </a>
+                }
+              </div>
             </div>
           </div>
 
@@ -790,7 +819,14 @@
               </span>
               <div class="hof-row__info">
                 <span class="hof-name">{{ hof.siteName || hof.name }}</span>
-                <span class="hof-clicks">{{ hof.clickCount | number }} clicks generated</span>
+                <div class="hof-meta-row">
+                  <span class="hof-clicks">{{ hof.clickCount | number }} clicks generated</span>
+                  <span>•</span>
+                  <a [routerLink]="['/website', slugifyUrl(hof.url)]" class="hof-profile-link"
+                    (click)="$event.stopPropagation()">
+                    Profile
+                  </a>
+                </div>
               </div>
             </div>
             <span class="hof-bid">{{ currencySymbol() }}{{ hof.bid | number: '1.0-0' }}</span>

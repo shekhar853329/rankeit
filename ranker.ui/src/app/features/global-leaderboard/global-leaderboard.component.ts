@@ -508,8 +508,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.loadPlatformStats();
 
     // Critical above-the-fold content: Trending category tabs and primary leaderboard
-    this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 12 }).subscribe((result) => {
-      this.tabs.set(result.items);
+    this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 12 }).subscribe({
+      next: (result) => {
+        this.tabs.set(result.items);
+      },
+      error: () => {},
     });
 
     this.loadTop3Bidders();
@@ -522,8 +525,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         this.loadAllTimeHallOfFame();
         this.loadTodayAuctionTop();
         if (this.allCategories().length === 0) {
-          this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
-            this.allCategories.set(result.items);
+          this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe({
+            next: (result) => {
+              this.allCategories.set(result.items);
+            },
+            error: () => {},
           });
         }
         void this.signalr.joinGlobalGroup();
@@ -805,8 +811,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     if (!nextState) {
       this.categorySearchQuery.set('');
     } else if (this.allCategories().length === 0) {
-      this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe((result) => {
-        this.allCategories.set(result.items);
+      this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe({
+        next: (result) => {
+          this.allCategories.set(result.items);
+        },
+        error: () => {},
       });
     }
   }
@@ -1008,6 +1017,19 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /** Converts a listing URL to a slug for the /website/:slug profile page. */
+  slugifyUrl(url: string): string {
+    try {
+      let clean = url.trim();
+      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = 'https://' + clean;
+      }
+      return new URL(clean).hostname.replace(/^www\./, '').replace(/\./g, '-');
+    } catch {
+      return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].replace(/\./g, '-');
+    }
+  }
+
   formatDomain(url: string): string {
     if (!url) return '';
     try {
@@ -1044,9 +1066,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   private loadTop3Bidders(): void {
-    this.leaderboardService.getDailyListings(1, 3).subscribe((result) => {
-      const today = result.items[0];
-      if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+    this.leaderboardService.getDailyListings(1, 3).subscribe({
+      next: (result) => {
+        const today = result.items[0];
+        if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+      },
+      error: () => {},
     });
   }
 
@@ -1123,6 +1148,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           setTimeout(() => this.updateChart(), 40);
         }
       },
+      error: () => {},
     });
   }
 
@@ -1142,6 +1168,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           );
         }
       },
+      error: () => {},
     });
   }
 

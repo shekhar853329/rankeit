@@ -23,6 +23,13 @@ public class ListingsController(ISender sender) : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("profile/{slug}")]
+    public async Task<ActionResult<Dtos.WebsiteProfileDto>> GetWebsiteProfile(string slug, CancellationToken ct)
+    {
+        var result = await sender.Send(new GetWebsiteProfileQuery(slug), ct);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     [HttpPost("{id:int}/click")]
     public async Task<ActionResult<int>> RecordClick(int id, CancellationToken ct)
     {

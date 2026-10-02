@@ -15,10 +15,16 @@ function getApiBaseUrl(): string {
   }
 
   if (typeof process !== 'undefined' && process.env) {
-    return process.env['API_INTERNAL_URL'] || 'http://127.0.0.1:5000';
+    if (process.env['API_INTERNAL_URL']) {
+      return process.env['API_INTERNAL_URL'];
+    }
+    if (process.env['NODE_ENV'] === 'production') {
+      return 'http://127.0.0.1:5000';
+    }
+    return 'http://127.0.0.1:5196';
   }
 
-  return 'http://127.0.0.1:5000';
+  return 'http://127.0.0.1:5196';
 }
 
 function getHubUrl(): string {
@@ -29,8 +35,14 @@ function getHubUrl(): string {
     }
     return `${window.location.origin}/hubs/leaderboard`;
   }
-  return 'http://127.0.0.1:5000/hubs/leaderboard';
+  const base =
+    (typeof process !== 'undefined' &&
+      (process.env?.['API_INTERNAL_URL'] ||
+        (process.env?.['NODE_ENV'] === 'production' ? 'http://127.0.0.1:5000' : 'http://127.0.0.1:5196'))) ||
+    'http://127.0.0.1:5196';
+  return `${base}/hubs/leaderboard`;
 }
 
 export const API_BASE_URL = getApiBaseUrl();
 export const HUB_URL = getHubUrl();
+

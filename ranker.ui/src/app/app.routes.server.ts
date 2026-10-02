@@ -8,6 +8,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'categories/:parentSlug', renderMode: RenderMode.Server },
   { path: 'leaderboard/:categorySlug', renderMode: RenderMode.Server },
   { path: 'listings/:listingId', renderMode: RenderMode.Server },
+  { path: 'website/:slug', renderMode: RenderMode.Server },
   { path: 'daily', renderMode: RenderMode.Server },
   { path: 'analytics', renderMode: RenderMode.Server },
   { path: 'rules', renderMode: RenderMode.Prerender },

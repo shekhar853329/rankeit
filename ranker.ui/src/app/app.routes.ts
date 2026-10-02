@@ -37,6 +37,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'website/:slug',
+    loadComponent: () =>
+      import('./features/website-profile/website-profile.component').then(
+        (m) => m.WebsiteProfileComponent
+      ),
+  },
+  {
     path: 'daily',
     loadComponent: () =>
       import('./features/daily-listings/daily-listings.component').then(

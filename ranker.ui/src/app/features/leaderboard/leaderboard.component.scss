@@ -867,6 +867,24 @@
     gap: 3px;
     &:hover { color: var(--color-on-surface); }
   }
+
+  &--profile {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(249, 87, 56, 0.1);
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(249, 87, 56, 0.2);
+
+    &:hover {
+      background: var(--color-primary);
+      color: #ffffff;
+      border-color: var(--color-primary);
+    }
+  }
 }
 
 .price-box {
@@ -982,6 +1000,13 @@
   color: var(--color-primary);
   text-decoration: none;
   &:hover { text-decoration: underline; }
+
+  &--profile {
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 }
 
 .compact-entry-right {

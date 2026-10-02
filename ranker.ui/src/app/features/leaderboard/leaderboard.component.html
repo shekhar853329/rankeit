@@ -236,10 +236,15 @@
                       <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
                       {{ clickCountFor(entry) | number }} clicks
                     </span>
-                    <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
+                    <!-- <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="chip chip--link"
                       (click)="$event.stopPropagation()">
                       <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                       {{ formatDomain(entry.listingUrl) }}
+                    </a> -->
+                    <a [routerLink]="['/website', slugifyUrl(entry.listingUrl)]" class="chip chip--profile"
+                      (click)="$event.stopPropagation()">
+                      <span class="material-symbols-outlined icon-xxs">badge</span>
+                      Profile
                     </a>
                   </div>
                 </div>
@@ -286,6 +291,11 @@
                       (click)="$event.stopPropagation()">
                       {{ formatDomain(entry.listingUrl) }}
                     </a>
+                    <a [routerLink]="['/website', slugifyUrl(entry.listingUrl)]" class="chip chip--profile"
+                      (click)="$event.stopPropagation()">
+                      <span class="material-symbols-outlined icon-xxs">badge</span>
+                      Profile
+                    </a>
                   </div>
                 </div>
               </div>
@@ -330,6 +340,11 @@
                       (click)="$event.stopPropagation()">
                       {{ formatDomain(entry.listingUrl) }}
                     </a>
+                    <a [routerLink]="['/website', slugifyUrl(entry.listingUrl)]" class="chip chip--profile"
+                      (click)="$event.stopPropagation()">
+                      <span class="material-symbols-outlined icon-xxs">badge</span>
+                      Profile
+                    </a>
                   </div>
                 </div>
               </div>
@@ -359,6 +374,11 @@
                   <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="compact-link"
                     (click)="$event.stopPropagation()">
                     {{ formatDomain(entry.listingUrl) }}
+                  </a>
+                  <span>•</span>
+                  <a [routerLink]="['/website', slugifyUrl(entry.listingUrl)]"
+                    class="compact-link compact-link--profile" (click)="$event.stopPropagation()">
+                    Profile
                   </a>
                 </div>
               </div>

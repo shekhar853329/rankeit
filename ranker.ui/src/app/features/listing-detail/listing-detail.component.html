@@ -69,6 +69,11 @@
           </button>
           <span class="link-meta">•</span>
           <span class="hero-domain-sub">{{ l.siteName || 'Verified Project' }}</span>
+          <span class="link-meta">•</span>
+          <a [routerLink]="['/website', getProfileSlug(l.listingUrl)]" class="btn-visit" title="View public profile">
+            <span class="material-symbols-outlined text-[16px]">person</span>
+            <span>Profile</span>
+          </a>
         </div>
       </div>
     </div>

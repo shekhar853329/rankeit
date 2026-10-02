@@ -12,7 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DecimalPipe, isPlatformBrowser } from '@angular/common';
 import type * as echarts from 'echarts';
 import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
@@ -39,6 +39,7 @@ import { SeoService } from '../../core/services/seo.service';
 })
 export class LeaderboardComponent implements OnInit, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly categoryService = inject(CategoryService);
   private readonly signalr = inject(SignalrService);
@@ -174,8 +175,11 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     this.startCountdownTimer();
 
     // Load trending categories for the sidebar
-    this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 6 }).subscribe((result) => {
-      this.trendingCategories.set(result.items);
+    this.categoryService.getCategories({ sortBy: 'Trending', pageSize: 6 }).subscribe({
+      next: (result) => {
+        this.trendingCategories.set(result.items);
+      },
+      error: () => {},
     });
 
     this.loadTop3Bidders();
@@ -299,9 +303,12 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   private loadTop3Bidders(): void {
-    this.leaderboardService.getDailyListings(1, 3).subscribe((result) => {
-      const today = result.items[0];
-      if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+    this.leaderboardService.getDailyListings(1, 3).subscribe({
+      next: (result) => {
+        const today = result.items[0];
+        if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+      },
+      error: () => {},
     });
   }
 
@@ -319,10 +326,13 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   refresh(): void {
     this.leaderboardService
       .getCategoryLeaderboard(this.categorySlug(), this.page(), this.pageSize(), this.timeMode())
-      .subscribe((result) => {
-        this.entries.set(result.leaderboard.items);
-        this.totalCount.set(result.leaderboard.totalCount);
-        this.claimCategoryData.set(result);
+      .subscribe({
+        next: (result) => {
+          this.entries.set(result.leaderboard.items);
+          this.totalCount.set(result.leaderboard.totalCount);
+          this.claimCategoryData.set(result);
+        },
+        error: () => {},
       });
   }
 
@@ -508,6 +518,19 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /** Converts a listing URL to a slug for the /website/:slug profile page. */
+  slugifyUrl(url: string): string {
+    try {
+      let clean = url.trim();
+      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = 'https://' + clean;
+      }
+      return new URL(clean).hostname.replace(/^www\./, '').replace(/\./g, '-');
+    } catch {
+      return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].replace(/\./g, '-');
+    }
+  }
+
   formatDomain(url: string): string {
     if (!url) return '';
     try {
@@ -596,6 +619,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           setTimeout(() => this.updateChart(), 40);
         }
       },
+      error: () => {},
     });
   }
 

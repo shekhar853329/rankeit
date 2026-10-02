@@ -1432,6 +1432,21 @@
     color: var(--color-primary);
     font-weight: 700;
   }
+
+  &--profile {
+    text-decoration: none;
+    background: rgba(249, 87, 56, 0.1);
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(249, 87, 56, 0.2);
+
+    &:hover {
+      background: var(--color-primary);
+      color: #ffffff;
+      border-color: var(--color-primary);
+    }
+  }
 }
 
 .champion-card__right {
@@ -1613,6 +1628,13 @@
 
   &:hover {
     text-decoration: underline;
+  }
+
+  &--profile {
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 }
 
@@ -2086,10 +2108,30 @@
   text-overflow: ellipsis;
 }
 
+.champion-holding-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--color-on-surface-variant);
+}
+
 .champion-holding {
   font-size: 0.76rem;
   color: var(--color-on-surface-variant);
   margin: 0;
+}
+
+.champion-profile-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: 0.76rem;
+
+  &:hover {
+    color: var(--color-on-surface);
+  }
 }
 
 .defense-grid {
@@ -2336,6 +2378,25 @@
 .hof-clicks {
   font-size: 0.72rem;
   color: var(--color-on-surface-variant);
+}
+
+.hof-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--color-on-surface-variant);
+}
+
+.hof-profile-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: var(--color-on-surface);
+  }
 }
 
 .hof-bid {

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api-config';
 import { ListingDetailDto, ListingLookupResultDto } from '../models/listing-detail.model';
+import { WebsiteProfileDto } from '../models/website-profile.model';
 
 @Injectable({ providedIn: 'root' })
 export class ListingService {
@@ -10,6 +11,11 @@ export class ListingService {
 
   getListingDetail(listingId: number): Observable<ListingDetailDto> {
     return this.http.get<ListingDetailDto>(`${API_BASE_URL}/api/listings/${listingId}`);
+  }
+
+  /** Fetches the full public website profile by URL-slug (e.g. "example-com"). */
+  getWebsiteProfile(slug: string): Observable<WebsiteProfileDto> {
+    return this.http.get<WebsiteProfileDto>(`${API_BASE_URL}/api/listings/profile/${encodeURIComponent(slug)}`);
   }
 
   /** Records a click-through to the listing's product URL; the hub broadcasts the new count live. */
@@ -24,3 +30,4 @@ export class ListingService {
     });
   }
 }
+

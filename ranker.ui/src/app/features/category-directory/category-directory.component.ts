@@ -144,7 +144,10 @@ export class CategoryDirectoryComponent implements OnInit {
     this.categoryService
       .getCategories({ parentSlug: this.parentSlug(), sortBy: 'Trending', page: 1, pageSize: 3 })
       .pipe(switchMap((result) => this.attachTopEntries(result.items)))
-      .subscribe((cards) => this.hotCategories.set(cards));
+      .subscribe({
+        next: (cards) => this.hotCategories.set(cards),
+        error: () => {},
+      });
   }
 
   private load(): void {
@@ -162,9 +165,15 @@ export class CategoryDirectoryComponent implements OnInit {
           return this.attachTopEntries(result.items);
         }),
       )
-      .subscribe((cards) => {
-        this.cards.set(cards);
-        this.loading.set(false);
+      .subscribe({
+        next: (cards) => {
+          this.cards.set(cards);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.cards.set([]);
+          this.loading.set(false);
+        },
       });
   }
 

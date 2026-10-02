@@ -1,0 +1,279 @@
+<section class="website-profile-container">
+  @if (loading()) {
+  <div class="profile-loading">
+    <div class="spinner"></div>
+    <span>Loading website profile...</span>
+  </div>
+  } @else if (profile(); as p) {
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="profile-breadcrumb" aria-label="Breadcrumb">
+    <ol class="breadcrumb-list">
+      <li><a routerLink="/">Home</a></li>
+      <li><span class="breadcrumb-sep">/</span></li>
+      <li><a [routerLink]="['/leaderboard', p.categorySlug]">{{ p.categoryName }}</a></li>
+      <li><span class="breadcrumb-sep">/</span></li>
+      <li class="breadcrumb-current">{{ p.listingName }}</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Profile Card -->
+  <header class="profile-hero card" [class.profile-hero--champion]="p.currentRankInCategory === 1">
+    <!-- Background Pattern -->
+    <div class="hero-bg-pattern"></div>
+
+    <div class="hero-content">
+      <div class="hero-identity">
+        <!-- Logo / Avatar -->
+        <div class="profile-avatar" [class.avatar--large]="true">
+          @if (p.logoUrl || p.faviconUrl || getFaviconUrl(p.listingUrl)) {
+          <img [src]="p.logoUrl || p.faviconUrl || getFaviconUrl(p.listingUrl)" [alt]="p.listingName + ' logo'"
+            class="avatar-img" (error)="onImageError($event)" />
+          }
+          <span class="avatar-fallback">{{ p.listingName.charAt(0).toUpperCase() }}</span>
+        </div>
+
+        <div class="hero-meta">
+          <!-- Badges Row -->
+          <div class="hero-badges-row">
+            <a [routerLink]="['/leaderboard', p.categorySlug]" class="badge-category">
+              @if (p.categoryIcon) {
+              <span class="cat-icon">{{ p.categoryIcon }}</span>
+              } @else {
+              <span class="material-symbols-outlined text-[13px]">category</span>
+              }
+              {{ p.categoryName }}
+            </a>
+
+            <span class="badge-rank" [class]="getRankBadgeClass(p.currentRankInCategory)">
+              {{ getRankLabel(p.currentRankInCategory) }}
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h1 class="profile-title">{{ p.listingName }}</h1>
+
+          <!-- URL & Site Name -->
+          <div class="profile-url-row">
+            <button type="button" class="btn-visit-site" (click)="openExternalUrl(p.listingUrl, p.listingId)"
+              title="Visit website">
+              <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+              <span>{{ formatDomain(p.listingUrl) }}</span>
+            </button>
+            @if (p.siteName) {
+            <span class="url-sep">•</span>
+            <span class="site-name-label">{{ p.siteName }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Panel -->
+      <div class="hero-stats-panel">
+        <div class="stat-item stat-item--rank">
+          <span class="stat-eyebrow">RankUp Position</span>
+          <span class="stat-value stat-value--rank">#{{ p.currentRankInCategory }}</span>
+          <span class="stat-sub">of {{ p.totalListingsInCategory }} in {{ p.categoryName }}</span>
+        </div>
+        <div class="stat-item stat-item--bid">
+          <span class="stat-eyebrow">Active Bid</span>
+          <span class="stat-value stat-value--bid">${{ p.currentBidAmount | number: '1.0-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- About / Description Section -->
+  @if (p.description) {
+  <section class="profile-about card" id="about">
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">info</span>
+      <h2>About {{ p.listingName }}</h2>
+    </div>
+    <p class="about-text">{{ p.description }}</p>
+    <div class="about-link-row">
+      <button type="button" class="btn-about-visit" (click)="openExternalUrl(p.listingUrl, p.listingId)">
+        <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+        Visit {{ formatDomain(p.listingUrl) }}
+      </button>
+    </div>
+  </section>
+  }
+
+  <!-- Website Information Grid -->
+  <section class="profile-info-grid" id="details">
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">language</span>
+        <span class="info-label">Website URL</span>
+      </div>
+      <button type="button" class="info-value info-value--link" (click)="openExternalUrl(p.listingUrl, p.listingId)">
+        {{ formatDomain(p.listingUrl) }}
+        <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+      </button>
+    </div>
+
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">category</span>
+        <span class="info-label">Category</span>
+      </div>
+      <a [routerLink]="['/leaderboard', p.categorySlug]" class="info-value info-value--link">
+        @if (p.categoryIcon) { {{ p.categoryIcon }} }
+        {{ p.categoryName }}
+      </a>
+    </div>
+
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">event_available</span>
+        <span class="info-label">Date Added</span>
+      </div>
+      <span class="info-value">{{ p.firstBidAt | date: 'mediumDate' }}</span>
+      <span class="info-sub">{{ timeAgo(p.firstBidAt) }}</span>
+    </div>
+
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">leaderboard</span>
+        <span class="info-label">Current Position</span>
+      </div>
+      <span class="info-value info-value--rank">#{{ p.currentRankInCategory }}</span>
+      <span class="info-sub">of {{ p.totalListingsInCategory }} websites</span>
+    </div>
+
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">visibility</span>
+        <span class="info-label">Verified Clicks</span>
+      </div>
+      <div class="info-clicks-row">
+        <span class="info-value">{{ p.clickCount | number }}</span>
+        <span class="pulse-dot" title="Real-time tracking active"></span>
+      </div>
+      <span class="info-sub">Direct referral traffic</span>
+    </div>
+
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">payments</span>
+        <span class="info-label">Total Bids</span>
+      </div>
+      <span class="info-value">{{ p.bidCount }}</span>
+      <span class="info-sub">Auction transactions</span>
+    </div>
+
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">update</span>
+        <span class="info-label">Last Activity</span>
+      </div>
+      <span class="info-value">{{ p.lastBidAt | date: 'mediumDate' }}</span>
+      <span class="info-sub">{{ timeAgo(p.lastBidAt) }}</span>
+    </div>
+
+    @if (p.ownerContactEmailMasked) {
+    <div class="info-card card">
+      <div class="info-card-header">
+        <span class="material-symbols-outlined info-icon">person</span>
+        <span class="info-label">Owner Contact</span>
+      </div>
+      <span class="info-value info-value--email">{{ p.ownerContactEmailMasked }}</span>
+      <span class="info-sub">Partially masked for privacy</span>
+    </div>
+    }
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="profile-cta card">
+    <div class="cta-content">
+      <div class="cta-text">
+        <h2>Want to outrank {{ p.listingName }}?</h2>
+        <p>Claim your position in the <strong>{{ p.categoryName }}</strong> leaderboard and get your website noticed.</p>
+      </div>
+      <a [routerLink]="['/leaderboard', p.categorySlug]" fragment="claim-rank-section" class="btn-cta">
+        <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
+        Claim Your Rank
+      </a>
+    </div>
+  </section>
+
+  <!-- Same Category Websites -->
+  @if (p.sameCategoryListings.length > 0) {
+  <section class="profile-related" id="related">
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">grid_view</span>
+      <div>
+        <h2>Other Websites in {{ p.categoryName }}</h2>
+        <p class="section-sub">Explore similar websites competing in the same category</p>
+      </div>
+    </div>
+
+    <div class="related-grid">
+      @for (related of p.sameCategoryListings; track related.listingId) {
+      <a [routerLink]="['/website', getProfileSlug(related.listingUrl)]" class="related-card card">
+        <div class="related-card-top">
+          <div class="related-avatar">
+            @if (related.logoUrl || related.faviconUrl || getFaviconUrl(related.listingUrl)) {
+            <img [src]="related.logoUrl || related.faviconUrl || getFaviconUrl(related.listingUrl)"
+              [alt]="related.listingName" class="related-avatar-img" (error)="onImageError($event)" />
+            }
+            <span class="related-avatar-fallback">{{ related.listingName.charAt(0).toUpperCase() }}</span>
+          </div>
+
+          <span class="related-rank-pill" [class]="getRankBadgeClass(related.rank)">
+            #{{ related.rank }}
+          </span>
+        </div>
+
+        <h3 class="related-name">{{ related.listingName }}</h3>
+        <span class="related-domain">{{ formatDomain(related.listingUrl) }}</span>
+
+        @if (related.description) {
+        <p class="related-desc">{{ related.description }}</p>
+        }
+
+        <div class="related-stats">
+          <span class="related-stat">
+            <span class="material-symbols-outlined text-[14px]">payments</span>
+            ${{ related.currentBidAmount | number: '1.0-2' }}
+          </span>
+          <span class="related-stat">
+            <span class="material-symbols-outlined text-[14px]">visibility</span>
+            {{ related.clickCount | number }}
+          </span>
+        </div>
+      </a>
+      }
+    </div>
+
+    <div class="related-see-all">
+      <a [routerLink]="['/leaderboard', p.categorySlug]" class="btn-see-all">
+        View All {{ p.categoryName }} Rankings
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
+    </div>
+  </section>
+  }
+
+  <!-- Full Details Link -->
+  <div class="profile-footer-link">
+    <a [routerLink]="['/listings', p.listingId]" class="btn-full-details">
+      <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+      View Full Bid History & Auction Details
+      <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+    </a>
+  </div>
+
+  } @else {
+  <div class="profile-not-found card">
+    <span class="material-symbols-outlined not-found-icon">search_off</span>
+    <h2>Website Not Found</h2>
+    <p>The website profile you're looking for doesn't exist on RankUp yet. It may not have been submitted or the URL might be incorrect.</p>
+    <a routerLink="/" class="btn-return-home">
+      <span class="material-symbols-outlined text-[18px]">home</span>
+      Return to Global Leaderboard
+    </a>
+  </div>
+  }
+</section>

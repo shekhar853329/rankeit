@@ -214,4 +214,15 @@ export class ListingDetailComponent implements OnInit {
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
   }
+
+  getProfileSlug(url: string): string {
+    try {
+      const host = new URL(url.includes('://') ? url : 'https://' + url).hostname
+        .replace(/^www\./, '')
+        .replace(/\./g, '-');
+      return host;
+    } catch {
+      return url.replace(/\./g, '-');
+    }
+  }
 }
