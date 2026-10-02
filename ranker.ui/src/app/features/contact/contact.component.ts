@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '../../core/services/toast.service';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-contact',
@@ -9,12 +10,22 @@ import { ToastService } from '../../core/services/toast.service';
   styleUrl: './contact.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   private readonly toast = inject(ToastService);
+  private readonly seo = inject(SeoService);
 
   readonly email = 'shekhar3355@hotmail.com';
   readonly creationDate = 'September 22, 2026';
   readonly copied = signal(false);
+
+  ngOnInit(): void {
+    this.seo.updateTags({
+      title: 'Contact Support & About the Project',
+      description:
+        'Connect directly with the creator of RankUp. Inquiries, listing support, partnership proposals, and transparent feedback.',
+      url: 'https://rankup.cyou/contact',
+    });
+  }
 
   copyEmail(): void {
     if (navigator?.clipboard?.writeText) {

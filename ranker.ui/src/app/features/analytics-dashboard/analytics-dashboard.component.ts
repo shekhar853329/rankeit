@@ -18,6 +18,7 @@ import { FormsModule } from '@angular/forms';
 import type * as echarts from 'echarts';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { SeoService } from '../../core/services/seo.service';
 import {
   GaConfigStatusDto,
   GaRealtimeReportDto,
@@ -37,6 +38,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   protected readonly theme = inject(ThemeService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly seo = inject(SeoService);
 
   @ViewChild('mainChartRef') mainChartRef?: ElementRef<HTMLDivElement>;
   @ViewChild('sourcesChartRef') sourcesChartRef?: ElementRef<HTMLDivElement>;
@@ -98,6 +100,12 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   };
 
   ngOnInit(): void {
+    this.seo.updateTags({
+      title: 'Public Telemetry & Google Analytics Insights',
+      description: 'Transparent real-time website analytics, visitor traffic telemetry, top referring pages, and audience demographics for RankUp.',
+      url: 'https://rankup.cyou/analytics',
+    });
+
     this.loadData();
     this.loadStatus();
 

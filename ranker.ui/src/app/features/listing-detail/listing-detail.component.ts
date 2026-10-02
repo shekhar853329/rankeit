@@ -8,6 +8,7 @@ import { ListingService } from '../../core/services/listing.service';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { ModalService } from '../../core/services/modal.service';
 import { SignalrService } from '../../core/services/signalr.service';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-listing-detail',
@@ -25,6 +26,7 @@ export class ListingDetailComponent implements OnInit {
   private readonly modalService = inject(ModalService);
   private readonly signalr = inject(SignalrService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly seo = inject(SeoService);
 
   private joinedCategoryGroup: string | null = null;
   private currentListingId = 0;
@@ -55,6 +57,31 @@ export class ListingDetailComponent implements OnInit {
         if (result) {
           this.joinedCategoryGroup = result.categorySlug;
           void this.signalr.joinCategoryGroup(result.categorySlug);
+
+          this.seo.updateTags({
+            title: `${result.listingName} - Rank #${result.currentRankInCategory} in ${result.categoryName}`,
+            description:
+              result.description ||
+              `${result.listingName} is ranked #${result.currentRankInCategory} in ${result.categoryName} on RankUp with an active bid of $${result.currentBidAmount}.`,
+            url: `https://rankup.cyou/listings/${result.listingId}`,
+            image: result.logoUrl || result.faviconUrl || undefined,
+            type: 'product',
+            schema: {
+              '@context': 'https://schema.org',
+              '@type': 'Product',
+              name: result.listingName,
+              description: result.description || `${result.listingName} on RankUp`,
+              url: `https://rankup.cyou/listings/${result.listingId}`,
+              image: result.logoUrl || result.faviconUrl || undefined,
+              category: result.categoryName,
+              offers: {
+                '@type': 'Offer',
+                price: result.currentBidAmount,
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+              },
+            },
+          });
         }
       });
 

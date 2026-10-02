@@ -5,6 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -42,6 +43,19 @@ app.use(
     redirect: false,
   }),
 );
+
+/**
+ * Check if a pre-rendered static index.html exists for clean route URLs (e.g. /rules -> /rules/index.html)
+ */
+app.use((req, res, next) => {
+  if (req.path !== '/' && !req.path.includes('.')) {
+    const candidate = join(browserDistFolder, req.path, 'index.html');
+    if (existsSync(candidate)) {
+      return res.sendFile(candidate);
+    }
+  }
+  next();
+});
 
 /**
  * Handle all other requests by rendering the Angular application.

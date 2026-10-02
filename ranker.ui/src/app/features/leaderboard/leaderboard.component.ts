@@ -27,6 +27,7 @@ import { SignalrService } from '../../core/services/signalr.service';
 import { ListingService } from '../../core/services/listing.service';
 import { ModalService } from '../../core/services/modal.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-leaderboard',
@@ -46,6 +47,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlMetadataService = inject(UrlMetadataService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly seo = inject(SeoService);
 
   @ViewChild('bidChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
   private echartsModule: typeof import('echarts') | null = null;
@@ -224,6 +226,31 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         this.entries.set(result.leaderboard.items);
         this.totalCount.set(result.leaderboard.totalCount);
         this.claimCategoryData.set(result);
+
+        const catName = result.categoryName;
+        const catSlug = result.categorySlug;
+        this.seo.updateTags({
+          title: `Top ${catName} Products & Live Leaderboard`,
+          description: `Browse real-time ${catName} rankings on RankUp. Verified live bids, transparent ranking algorithms, and active competition for the #1 spot in ${catName}.`,
+          url: `https://rankup.cyou/leaderboard/${catSlug}`,
+          keywords: [catName, `${catName} rankings`, `${catName} leaderboard`, 'product discovery', 'top products'],
+          schema: {
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: `Top ${catName} Products & Leaderboard`,
+            description: `Live competitive rankings for ${catName} products on RankUp.`,
+            url: `https://rankup.cyou/leaderboard/${catSlug}`,
+            mainEntity: {
+              '@type': 'ItemList',
+              itemListElement: result.leaderboard.items.slice(0, 10).map((item, idx) => ({
+                '@type': 'ListItem',
+                position: idx + 1,
+                name: item.listingName,
+                url: `https://rankup.cyou/listings/${item.listingId}`,
+              })),
+            },
+          },
+        });
       });
 
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {

@@ -29,6 +29,7 @@ import { ListingService } from '../../core/services/listing.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ModalService } from '../../core/services/modal.service';
+import { SeoService } from '../../core/services/seo.service';
 
 export interface FeedRow {
   rank: number;
@@ -86,6 +87,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   private readonly toast = inject(ToastService);
   private readonly modalService = inject(ModalService);
   private readonly elementRef = inject(ElementRef);
+  private readonly seo = inject(SeoService);
 
   @ViewChild('bidChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
   private echartsModule: typeof import('echarts') | null = null;
@@ -482,6 +484,26 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   });
 
   ngOnInit(): void {
+    this.seo.updateTags({
+      title: 'Live Product Leaderboard & Real-Time Rankings',
+      description:
+        'RankUp: real-time bid-based competitive rankings and product discovery across 50+ curated categories. Outbid competitors and claim the #1 spot in your vertical.',
+      url: 'https://rankup.cyou/',
+      keywords: ['product leaderboard', 'startup ranking', 'live rankings', 'bid to rank', 'product discovery', 'top products'],
+      schema: {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'RankUp',
+        url: 'https://rankup.cyou/',
+        description: 'Real-time bid-based competitive rankings and discovery across every category.',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: 'https://rankup.cyou/categories?q={search_term_string}',
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    });
+
     this.startCountdownTimer();
     this.loadPlatformStats();
 

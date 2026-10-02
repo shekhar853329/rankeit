@@ -7,6 +7,7 @@ import { LeaderboardEntryDto } from '../../core/models/leaderboard.model';
 import { CategoryService } from '../../core/services/category.service';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { ListingService } from '../../core/services/listing.service';
+import { SeoService } from '../../core/services/seo.service';
 
 export interface CategoryCard {
   category: CategoryDto;
@@ -28,6 +29,7 @@ export class CategoryDirectoryComponent implements OnInit {
   private readonly categoryService = inject(CategoryService);
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly listingService = inject(ListingService);
+  private readonly seo = inject(SeoService);
 
   readonly parentSlug = signal<string | null>(null);
   readonly sortBy = signal<CategorySortBy>('Trending');
@@ -50,6 +52,13 @@ export class CategoryDirectoryComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.seo.updateTags({
+      title: 'Category Directory & Industry Arenas',
+      description: 'Explore 50+ curated product categories and competitive arenas on RankUp. Discover top-ranked tools, developer software, AI infrastructure, and SaaS startups.',
+      url: 'https://rankup.cyou/categories',
+      keywords: ['category directory', 'software categories', 'top tools directory', 'curated leaderboards'],
+    });
+
     this.parentSlug.set(this.route.snapshot.paramMap.get('parentSlug'));
     this.loadHotCategories();
     this.load();

@@ -1,4 +1,5 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { HUB_URL } from '../config/api-config';
@@ -10,6 +11,7 @@ import { ListingClickedPayload, RankUpdatedPayload } from '../models/leaderboard
  */
 @Injectable({ providedIn: 'root' })
 export class SignalrService implements OnDestroy {
+  private readonly platformId = inject(PLATFORM_ID);
   private connection: signalR.HubConnection | null = null;
   private startPromise: Promise<void> | null = null;
 
@@ -31,6 +33,9 @@ export class SignalrService implements OnDestroy {
   readonly visitsToday$: Observable<number | null> = this.visitsTodaySubject.asObservable();
 
   private async ensureConnected(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return Promise.resolve();
+    }
     if (!this.connection) {
       this.connection = new signalR.HubConnectionBuilder()
         .withUrl(HUB_URL, {

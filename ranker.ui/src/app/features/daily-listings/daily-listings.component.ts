@@ -7,6 +7,8 @@ import { ListingService } from '../../core/services/listing.service';
 import { SignalrService } from '../../core/services/signalr.service';
 import { DailyListingEntryDto, DailyListingGroupDto } from '../../core/models/daily-listing.model';
 
+import { SeoService } from '../../core/services/seo.service';
+
 const TOP_ENTRIES_PREVIEW = 4;
 
 @Component({
@@ -22,6 +24,7 @@ export class DailyListingsComponent implements OnInit {
   private readonly listingService = inject(ListingService);
   private readonly signalr = inject(SignalrService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly seo = inject(SeoService);
 
   readonly groups = signal<DailyListingGroupDto[]>([]);
   readonly expandedDays = signal<ReadonlySet<string>>(new Set());
@@ -36,6 +39,12 @@ export class DailyListingsComponent implements OnInit {
   readonly previewCount = TOP_ENTRIES_PREVIEW;
 
   ngOnInit(): void {
+    this.seo.updateTags({
+      title: "Today's Active Auctions & Daily Listing Feed",
+      description: "Track today's live competitive bidding activity, new product claims, and daily auction champions on RankUp.",
+      url: 'https://rankup.cyou/daily',
+    });
+
     this.load(1, false);
     void this.signalr.joinGlobalGroup();
 
