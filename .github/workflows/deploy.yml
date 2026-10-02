@@ -222,6 +222,7 @@ jobs:
             echo "Restarting services..."
             sudo systemctl restart ranker-backend
             sudo systemctl restart ranker-frontend
+            sudo systemctl reload nginx
 
             # 4. Verify systemd service status
             sleep 3

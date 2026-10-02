@@ -563,7 +563,9 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     };
 
     tick();
-    this.countdownTimerId = setInterval(tick, 1000);
+    if (isPlatformBrowser(this.platformId)) {
+      this.countdownTimerId = setInterval(tick, 1000);
+    }
   }
 
   onProductTitleChange(value: string): void {

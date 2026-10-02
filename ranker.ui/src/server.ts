@@ -10,8 +10,31 @@ import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
+const defaultAllowedHosts = [
+  'rankup.cyou',
+  'www.rankup.cyou',
+  'localhost',
+  '127.0.0.1',
+  'localhost:4000',
+  '127.0.0.1:4000',
+  'localhost:4200',
+  'localhost:4999',
+  '127.0.0.1:4999',
+];
+
+const envAllowed = process.env['NG_ALLOWED_HOSTS']
+  ? process.env['NG_ALLOWED_HOSTS'].split(',').map((h) => h.trim())
+  : [];
+
+const allowedHosts = Array.from(new Set([...defaultAllowedHosts, ...envAllowed]));
+
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+app.set('trust proxy', true);
+
+const angularApp = new AngularNodeAppEngine({
+  allowedHosts,
+  trustProxyHeaders: true,
+});
 
 /**
  * Example Express Rest API endpoints can be defined here.

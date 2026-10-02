@@ -33,6 +33,14 @@
             "outputMode": "server",
             "ssr": {
               "entry": "src/server.ts"
+            },
+            "security": {
+              "allowedHosts": [
+                "rankup.cyou",
+                "www.rankup.cyou",
+                "localhost",
+                "127.0.0.1"
+              ]
             }
           },
           "configurations": {
