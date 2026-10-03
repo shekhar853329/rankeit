@@ -14,7 +14,7 @@
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
-            Live Product Leaderboard: Claim a Spot for
+            Claim a Spot for
           </h1>
           <div class="bid-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
@@ -158,7 +158,8 @@
               </div>
               <div class="amount-stepper-row">
                 <span class="amount-currency">{{ currencySymbol() }}</span>
-                <input id="claim-amount" type="number" class="field-input field-input--amount" aria-label="Placement Amount"
+                <input id="claim-amount" type="number" class="field-input field-input--amount"
+                  aria-label="Placement Amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? claimPrice() ?? 10)"
                   (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
@@ -837,7 +838,8 @@
               {{ hallOfFameMode() === 'alltime' ? 'emoji_events' : 'trending_up' }}
             </span>
             <span>
-              {{ hallOfFameMode() === 'alltime' ? 'No all-time champions found yet.' : 'No placements on today\'s showcase yet.' }}
+              {{ hallOfFameMode() === 'alltime' ? 'No all-time champions found yet.' : 'No placements on today\'s
+              showcase yet.' }}
             </span>
           </div>
           }
@@ -848,7 +850,8 @@
           <button type="button" class="side-card__action-btn" (click)="toggleLeaderboardTimeMode()"
             id="hof-toggle-mode-btn">
             <span>
-              {{ hallOfFameMode() === 'alltime' ? 'Switch View to All-Time Pantheon' : 'Switch View to Today\'s Showcase'
+              {{ hallOfFameMode() === 'alltime' ? 'Switch View to All-Time Pantheon' : 'Switch View to Today\'s
+              Showcase'
               }}
             </span>
             <span class="material-symbols-outlined icon-xs">swap_horiz</span>
