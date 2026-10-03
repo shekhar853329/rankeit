@@ -15,6 +15,7 @@ export class ContactComponent implements OnInit {
   private readonly seo = inject(SeoService);
 
   readonly email = 'shekhar3355@hotmail.com';
+  readonly address = 'Bhagwanpur, District - Muzaffarpur, Bihar, PIN: 842001';
   readonly creationDate = 'September 22, 2026';
   readonly copied = signal(false);
 

@@ -53,6 +53,10 @@
             <span>Email: <strong>{{ email }}</strong></span>
           </div>
           <div class="chip">
+            <span class="material-symbols-outlined chip-icon">location_on</span>
+            <span>Operating Address: <strong>{{ address }}</strong></span>
+          </div>
+          <div class="chip">
             <span class="material-symbols-outlined chip-icon">rocket_launch</span>
             <span>Project: <strong>RankUp Discovery Engine</strong></span>
           </div>
@@ -150,6 +154,30 @@
             <span class="material-symbols-outlined text-[16px]">feedback</span>
             <span>{{ email }}</span>
           </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Channel 4: Physical & Operating Address -->
+    <div class="contact-card card">
+      <div class="contact-card__icon-wrap contact-card__icon-wrap--emerald">
+        <span class="material-symbols-outlined text-[26px]">location_on</span>
+      </div>
+
+      <div class="contact-card__body">
+        <div class="card-top-row">
+          <h3>Operating &amp; Physical Address</h3>
+          <span class="sla-badge sla-badge--emerald">Registered Location</span>
+        </div>
+        <p>
+          {{ address }}, India
+        </p>
+
+        <div class="channel-action">
+          <span class="contact-link" style="cursor: default; user-select: text;">
+            <span class="material-symbols-outlined text-[16px]">pin_drop</span>
+            <span>Muzaffarpur, Bihar - 842001</span>
+          </span>
         </div>
       </div>
     </div>

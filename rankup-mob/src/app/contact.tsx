@@ -106,6 +106,13 @@ export default function ContactScreen() {
             </Pressable>
 
             <View style={[styles.contactChip, { backgroundColor: colors.surfaceSubtle }]}>
+              <Ionicons name="location" size={14} color={colors.primary} />
+              <Text style={[styles.chipText, { color: colors.text }]}>
+                Bhagwanpur, District - Muzaffarpur, Bihar, PIN: 842001
+              </Text>
+            </View>
+
+            <View style={[styles.contactChip, { backgroundColor: colors.surfaceSubtle }]}>
               <Ionicons name="rocket" size={14} color={colors.secondaryGreen} />
               <Text style={[styles.chipText, { color: colors.text }]}>
                 RankUp Discovery Engine
