@@ -3,6 +3,7 @@ name: Build & Deploy to Ubuntu Server
 on:
   push:
     branches:
+      - Production-V1
       - main
       - feature/postgres-migration
   workflow_dispatch:
