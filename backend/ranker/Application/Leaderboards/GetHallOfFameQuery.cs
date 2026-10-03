@@ -16,8 +16,8 @@ public class GetHallOfFameQueryHandler(RankerDbContext dbContext)
 
         var listings = await dbContext.Listings
             .AsNoTracking()
-            .OrderByDescending(l => l.CurrentBidAmount)
-            .ThenBy(l => l.FirstBidAt)
+            .OrderByDescending(l => l.CurrentClaimAmount)
+            .ThenBy(l => l.FirstClaimAt)
             .Take(topN)
             .Select(l => new
             {
@@ -25,7 +25,7 @@ public class GetHallOfFameQueryHandler(RankerDbContext dbContext)
                 l.Name,
                 l.SiteName,
                 l.Url,
-                l.CurrentBidAmount,
+                l.CurrentClaimAmount,
                 l.ClickCount
             })
             .ToListAsync(ct);
@@ -37,7 +37,7 @@ public class GetHallOfFameQueryHandler(RankerDbContext dbContext)
                 l.Name,
                 l.SiteName,
                 l.Url,
-                l.CurrentBidAmount,
+                l.CurrentClaimAmount,
                 l.ClickCount))
             .ToList();
     }

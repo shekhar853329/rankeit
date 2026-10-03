@@ -224,7 +224,7 @@
   }
 }
 
-.bid-stepper {
+.placement-stepper {
   display: inline-flex;
   align-items: center;
   background: var(--color-surface-container-low);
@@ -907,7 +907,7 @@
   color: var(--color-on-surface);
 }
 
-.outbid-action-btn {
+.claim-action-btn {
   border: none;
   border-radius: 0.75rem;
   padding: 0.5rem 0.95rem;
@@ -1016,7 +1016,7 @@
   flex-shrink: 0;
 }
 
-.compact-bid {
+.compact-price {
   font-family: var(--font-numeric);
   font-size: 1.1rem;
   font-weight: 700;

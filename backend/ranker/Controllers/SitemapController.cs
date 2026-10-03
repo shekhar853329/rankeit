@@ -50,8 +50,8 @@ public class SitemapController(RankerDbContext dbContext, IMemoryCache cache) : 
         // 3. All active paid listings (websites)
         var listings = await dbContext.Listings
             .AsNoTracking()
-            .Where(l => l.CurrentBidAmount > 0)
-            .Select(l => new { l.Url, l.LastBidAt })
+            .Where(l => l.CurrentClaimAmount > 0)
+            .Select(l => new { l.Url, l.LastClaimAt })
             .ToListAsync(ct);
 
         var seenSlugs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -64,7 +64,7 @@ public class SitemapController(RankerDbContext dbContext, IMemoryCache cache) : 
                 continue;
             }
 
-            var lastMod = listing.LastBidAt.ToString("yyyy-MM-dd");
+            var lastMod = listing.LastClaimAt.ToString("yyyy-MM-dd");
             AddUrl(sb, $"{BaseUrl}/website/{slug}", "daily", "0.7", lastMod);
         }
 

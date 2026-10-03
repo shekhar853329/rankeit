@@ -231,8 +231,8 @@ export default function CategoriesScreen() {
                             style={[styles.previewName, { color: colors.text }]}>
                             {entry.siteName || entry.listingName}
                           </Text>
-                          <Text style={[styles.previewBid, { color: colors.primary }]}>
-                            ₹{entry.currentBidAmount.toFixed(0)}
+                          <Text style={[styles.previewClaim, { color: colors.primary }]}>
+                            ₹{entry.currentClaimAmount.toFixed(0)}
                           </Text>
                         </View>
                       ))}
@@ -240,7 +240,7 @@ export default function CategoriesScreen() {
                   ) : (
                     <View style={[styles.emptyPreview, { backgroundColor: colors.surfaceSubtle }]}>
                       <Text style={[styles.emptyPreviewText, { color: colors.textMuted }]}>
-                        Rank #1 open! Start this category at ₹{category.minStartingBid}
+                        Rank #1 open! Start this category at ₹{category.minStartingClaim}
                       </Text>
                     </View>
                   )}
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
-  previewBid: {
+  previewClaim: {
     fontSize: 12,
     fontWeight: '800',
   },

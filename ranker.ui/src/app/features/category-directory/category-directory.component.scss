@@ -556,7 +556,7 @@
   text-overflow: ellipsis;
 }
 
-.king-bid {
+.king-claim {
   font-family: var(--font-numeric);
   font-size: 1.15rem;
   font-weight: 800;
@@ -724,21 +724,21 @@
   color: var(--color-on-surface-variant);
 }
 
-.arena-min-bid {
+.arena-min-claim {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   flex-shrink: 0;
 }
 
-.min-bid-label {
+.min-claim-label {
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--color-on-surface-variant);
 }
 
-.min-bid-val {
+.min-claim-val {
   font-family: var(--font-numeric);
   font-size: 1rem;
   font-weight: 800;
@@ -839,7 +839,7 @@
   flex-shrink: 0;
 }
 
-.arena-leader-bid {
+.arena-leader-claim {
   font-family: var(--font-numeric);
   font-weight: 700;
   color: var(--color-primary);

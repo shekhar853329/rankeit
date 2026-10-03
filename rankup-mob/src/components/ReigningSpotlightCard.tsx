@@ -23,13 +23,13 @@ export const ReigningSpotlightCard: React.FC<ReigningSpotlightCardProps> = ({ ch
       onClaim();
       return;
     }
-    const currentBid = champion?.currentBidAmount ?? 10;
+    const currentClaim = champion?.currentClaimAmount ?? 10;
     openClaimModal({
       rank: 1,
       categoryName: champion?.categoryName ?? 'General',
       categorySlug: champion?.categorySlug ?? 'general',
       categoryId: champion?.categoryId ?? 1,
-      amount: currentBid + 1,
+      amount: currentClaim + 1,
     });
   };
 
@@ -95,14 +95,14 @@ export const ReigningSpotlightCard: React.FC<ReigningSpotlightCardProps> = ({ ch
       <View style={styles.defenseGrid}>
         <View style={[styles.defenseBox, { backgroundColor: colors.surfaceSubtle }]}>
           <Text style={[styles.defenseVal, { color: colors.text }]}>
-            {champion?.bidCount ?? 1} {(champion?.bidCount ?? 1) === 1 ? 'Time' : 'Times'}
+            {champion?.claimCount ?? 1} {(champion?.claimCount ?? 1) === 1 ? 'Time' : 'Times'}
           </Text>
           <Text style={[styles.defenseLabel, { color: colors.textMuted }]}>Defended Today</Text>
         </View>
 
         <View style={[styles.defenseBox, { backgroundColor: colors.surfaceSubtle }]}>
           <Text style={[styles.defenseVal, { color: colors.primary }]}>
-            ₹{(champion?.currentBidAmount ?? 0).toFixed(0)}
+            ₹{(champion?.currentClaimAmount ?? 0).toFixed(0)}
           </Text>
           <Text style={[styles.defenseLabel, { color: colors.textMuted }]}>Capital Spent</Text>
         </View>

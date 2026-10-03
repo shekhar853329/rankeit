@@ -71,7 +71,7 @@
   color: var(--color-primary);
   border: 1px solid rgba(249, 87, 56, 0.25);
 
-  &--rebid {
+  &--reclaim {
     background: rgba(34, 197, 94, 0.12);
     color: #16a34a;
     border-color: rgba(34, 197, 94, 0.25);
@@ -126,7 +126,7 @@
   }
 }
 
-/* ── Summary Row (read-only: category / product / bid) ───── */
+/* ── Summary Row (read-only: category / product / claim) ───── */
 .summary-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

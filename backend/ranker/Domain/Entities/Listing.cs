@@ -12,17 +12,17 @@ public class Listing
 
     public required string Url { get; set; }
 
-    public decimal CurrentBidAmount { get; set; }
+    public decimal CurrentClaimAmount { get; set; }
 
-    /// <summary>Tiebreaker for equal bids: whoever bid first keeps the higher spot.</summary>
-    public DateTime FirstBidAt { get; set; }
+    /// <summary>Tiebreaker for equal claims: whoever claimed first keeps the higher spot.</summary>
+    public DateTime FirstClaimAt { get; set; }
 
-    public DateTime LastBidAt { get; set; }
+    public DateTime LastClaimAt { get; set; }
 
     /// <summary>Number of times a client has clicked through to this listing's product URL.</summary>
     public int ClickCount { get; set; }
 
-    /// <summary>Used to authenticate re-bids/reclaims by the listing owner.</summary>
+    /// <summary>Used to authenticate reclaims / position raises by the listing owner.</summary>
     public required string OwnerContactEmail { get; set; }
 
     /// <summary>Human-readable site/brand name scraped from the submitted URL (og:site_name or &lt;title&gt;).</summary>
@@ -40,5 +40,5 @@ public class Listing
     /// <summary>Optimistic-concurrency guard using PostgreSQL's built-in xmin system column.</summary>
     public uint Xmin { get; set; }
 
-    public ICollection<Bid> Bids { get; set; } = new List<Bid>();
+    public ICollection<Claim> Claims { get; set; } = new List<Claim>();
 }

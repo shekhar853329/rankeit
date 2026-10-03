@@ -84,8 +84,8 @@ export default function ListingDetailScreen() {
       listingId: listing.listingId,
       listingName: listing.listingName,
       listingUrl: listing.listingUrl,
-      currentBidAmount: listing.currentBidAmount,
-      amount: listing.currentBidAmount + 1,
+      currentClaimAmount: listing.currentClaimAmount,
+      amount: listing.currentClaimAmount + 1,
       onSuccess: () => loadListing(),
     });
   };
@@ -169,7 +169,7 @@ export default function ListingDetailScreen() {
                 <View style={[styles.statBox, { backgroundColor: colors.surfaceSubtle }]}>
                   <Text style={[styles.statLabel, { color: colors.textMuted }]}>Active Placement</Text>
                   <Text style={[styles.statVal, { color: colors.primary }]}>
-                    ₹{listing.currentBidAmount.toFixed(0)}
+                    ₹{listing.currentClaimAmount.toFixed(0)}
                   </Text>
                 </View>
                 <View style={[styles.statBox, { backgroundColor: colors.surfaceSubtle }]}>
@@ -198,7 +198,7 @@ export default function ListingDetailScreen() {
               </View>
             </View>
 
-            {/* Bids & Payments Audit Timeline */}
+            {/* Claims & Payments Audit Timeline */}
             <View style={[styles.timelineCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.timelineHeader}>
                 <Ionicons name="receipt-outline" size={18} color={colors.primary} />
@@ -208,43 +208,43 @@ export default function ListingDetailScreen() {
               </View>
 
               <View style={styles.timelineList}>
-                {(listing.bids || []).map((bid, i) => (
+                {(listing.claims || []).map((claim, i) => (
                   <View
                     key={i}
                     style={[
                       styles.timelineItem,
                       {
                         borderBottomColor: colors.border,
-                        borderBottomWidth: i === listing.bids.length - 1 ? 0 : StyleSheet.hairlineWidth,
+                        borderBottomWidth: i === listing.claims.length - 1 ? 0 : StyleSheet.hairlineWidth,
                       },
                     ]}>
                     <View style={styles.timelineLeft}>
                       <View style={[styles.timelineDot, { backgroundColor: colors.primary }]} />
                       <View>
                         <Text style={[styles.timelineItemAmount, { color: colors.text }]}>
-                          Bid level ₹{bid.amount.toFixed(2)}
+                          Placement level ₹{claim.amount.toFixed(2)}
                         </Text>
                         <Text style={[styles.timelineItemDate, { color: colors.textMuted }]}>
-                          {new Date(bid.createdAt).toLocaleString()}
+                          {new Date(claim.createdAt).toLocaleString()}
                         </Text>
                       </View>
                     </View>
 
                     <View style={styles.timelineRight}>
                       <Text style={[styles.timelinePayment, { color: colors.primary }]}>
-                        +₹{bid.paymentAmount.toFixed(2)} paid
+                        +₹{claim.paymentAmount.toFixed(2)} paid
                       </Text>
                       <Text style={[styles.timelineRef, { color: colors.textMuted }]}>
-                        {bid.paymentReferenceMasked || 'Settled'}
+                        {claim.paymentReferenceMasked || 'Settled'}
                       </Text>
                     </View>
                   </View>
                 ))}
 
-                {(!listing.bids || listing.bids.length === 0) && (
+                {(!listing.claims || listing.claims.length === 0) && (
                   <View style={styles.emptyTimeline}>
                     <Text style={[styles.emptyTimelineText, { color: colors.textMuted }]}>
-                      Initial bid placed at listing creation.
+                      Initial placement sponsored at listing creation.
                     </Text>
                   </View>
                 )}

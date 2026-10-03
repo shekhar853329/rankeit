@@ -5,9 +5,9 @@ export interface ClaimModalPayload {
   categoryName: string;
   amount: number;
   categoryId: number;
-  minStartingBid: number;
-  minBidIncrement: number;
-  /** Pre-fill for a re-bid on an existing listing; null means new listing. */
+  minStartingClaim: number;
+  minClaimIncrement: number;
+  /** Pre-fill for raising a claim on an existing listing; null means new listing. */
   listingId: number | null;
   listingName: string;
   listingUrl: string;
@@ -16,13 +16,13 @@ export interface ClaimModalPayload {
   logoUrl: string | null;
   description: string | null;
   faviconUrl: string | null;
-  /** Current bid amount on this listing (if raising an existing bid; 0 for new listing). */
-  currentBidAmount?: number;
-  /** Current highest bid in this category (null if category empty). */
-  currentTopBid?: number | null;
+  /** Current claim amount on this listing (if raising an existing claim; 0 for new listing). */
+  currentClaimAmount?: number;
+  /** Current highest claim in this category (null if category empty). */
+  currentTopClaim?: number | null;
   /** Category slug for routing or listings lookup. */
   categorySlug?: string;
-  /** Called after a successful bid so the leaderboard can refresh. */
+  /** Called after a successful claim so the leaderboard can refresh. */
   onSuccess: () => void;
 }
 

@@ -53,63 +53,63 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         }
 
         var topLeaderClicks = await leaderQuery
-            .OrderByDescending(l => l.CurrentBidAmount)
-            .ThenBy(l => l.FirstBidAt)
+            .OrderByDescending(l => l.CurrentClaimAmount)
+            .ThenBy(l => l.FirstClaimAt)
             .Select(l => l.ClickCount)
             .FirstOrDefaultAsync(ct);
 
         // If listing clicks are low in dev, compute based on total impressions / visits or actual leader clicks
         var avgLeaderViews = topLeaderClicks > 0 ? topLeaderClicks : (todayVisits > 0 ? (int)(todayVisits * 0.6) : 3850);
 
-        // Retrieve bids from the past 7 days to calculate true incremental transaction volume
-        // (A re-bid only charges the difference between the new target bid and the previous bid)
+        // Retrieve claims from the past 7 days to calculate true incremental transaction volume
+        // (A re-claim only charges the difference between the new target claim and the previous claim)
         var sevenDaysAgo = todayUtc.AddDays(-6);
-        var recentBidsQuery = dbContext.Bids
+        var recentClaimsQuery = dbContext.Claims
             .AsNoTracking()
-            .Include(b => b.Listing)
+            .Include(c => c.Listing)
                 .ThenInclude(l => l!.Category)
-            .Where(b => b.CreatedAt >= sevenDaysAgo);
+            .Where(c => c.CreatedAt >= sevenDaysAgo);
 
         if (category != null)
         {
-            recentBidsQuery = recentBidsQuery.Where(b => b.Listing!.CategoryId == category.Id);
+            recentClaimsQuery = recentClaimsQuery.Where(c => c.Listing!.CategoryId == category.Id);
         }
 
-        var recentBidsForStats = await recentBidsQuery
-            .OrderBy(b => b.ListingId)
-            .ThenBy(b => b.CreatedAt)
+        var recentClaimsForStats = await recentClaimsQuery
+            .OrderBy(c => c.ListingId)
+            .ThenBy(c => c.CreatedAt)
             .ToListAsync(ct);
 
-        // For any listing that had bids before 7 days ago, get their baseline bid amount
-        var activeListingIds = recentBidsForStats.Select(b => b.ListingId).Distinct().ToList();
-        var priorListingBids = await dbContext.Bids
+        // For any listing that had claims before 7 days ago, get their baseline claim amount
+        var activeListingIds = recentClaimsForStats.Select(c => c.ListingId).Distinct().ToList();
+        var priorListingClaims = await dbContext.Claims
             .AsNoTracking()
-            .Where(b => activeListingIds.Contains(b.ListingId) && b.CreatedAt < sevenDaysAgo)
-            .GroupBy(b => b.ListingId)
+            .Where(c => activeListingIds.Contains(c.ListingId) && c.CreatedAt < sevenDaysAgo)
+            .GroupBy(c => c.ListingId)
             .Select(g => new
             {
                 ListingId = g.Key,
-                LastAmount = g.OrderByDescending(b => b.CreatedAt).Select(b => b.Amount).FirstOrDefault()
+                LastAmount = g.OrderByDescending(c => c.CreatedAt).Select(c => c.Amount).FirstOrDefault()
             })
             .ToDictionaryAsync(x => x.ListingId, x => x.LastAmount, ct);
 
-        var runningBidMap = new Dictionary<int, decimal>(priorListingBids);
-        var processedBids = new List<(Bid Bid, decimal ActualPaid)>(recentBidsForStats.Count);
+        var runningClaimMap = new Dictionary<int, decimal>(priorListingClaims);
+        var processedClaims = new List<(Claim Claim, decimal ActualPaid)>(recentClaimsForStats.Count);
 
-        foreach (var b in recentBidsForStats)
+        foreach (var c in recentClaimsForStats)
         {
-            var prevAmount = runningBidMap.GetValueOrDefault(b.ListingId, 0m);
-            var paid = b.PaymentAmount > 0m ? b.PaymentAmount : Math.Max(0m, b.Amount - prevAmount);
-            runningBidMap[b.ListingId] = b.Amount;
-            processedBids.Add((b, paid));
+            var prevAmount = runningClaimMap.GetValueOrDefault(c.ListingId, 0m);
+            var paid = c.PaymentAmount > 0m ? c.PaymentAmount : Math.Max(0m, c.Amount - prevAmount);
+            runningClaimMap[c.ListingId] = c.Amount;
+            processedClaims.Add((c, paid));
         }
 
-        var todayProcessedBids = processedBids
-            .Where(x => x.Bid.CreatedAt >= todayUtc)
+        var todayProcessedClaims = processedClaims
+            .Where(x => x.Claim.CreatedAt >= todayUtc)
             .ToList();
 
         // 3. Average CPC today: Total actual payment volume / Total clicks
-        var totalBidsVolumeToday = todayProcessedBids.Sum(x => x.ActualPaid);
+        var totalClaimsVolumeToday = todayProcessedClaims.Sum(x => x.ActualPaid);
 
         var listingsClicksQuery = dbContext.Listings.AsNoTracking();
         if (category != null)
@@ -119,14 +119,14 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         var totalClicks = await listingsClicksQuery.SumAsync(l => (int?)l.ClickCount, ct) ?? 0;
 
         decimal averageCpc;
-        if (totalClicks > 0 && totalBidsVolumeToday > 0)
+        if (totalClicks > 0 && totalClaimsVolumeToday > 0)
         {
-            averageCpc = Math.Round(totalBidsVolumeToday / totalClicks, 2);
+            averageCpc = Math.Round(totalClaimsVolumeToday / totalClicks, 2);
         }
         else
         {
-            var totalAllTimeBids = await listingsClicksQuery.SumAsync(l => (decimal?)l.CurrentBidAmount, ct) ?? 0m;
-            averageCpc = totalClicks > 0 ? Math.Round(totalAllTimeBids / Math.Max(totalClicks, 1), 2) : 0.78m;
+            var totalAllTimeClaims = await listingsClicksQuery.SumAsync(l => (decimal?)l.CurrentClaimAmount, ct) ?? 0m;
+            averageCpc = totalClicks > 0 ? Math.Round(totalAllTimeClaims / Math.Max(totalClicks, 1), 2) : 0.78m;
         }
 
         // 4. Direct CTR rate: Total clicks / Total visits
@@ -144,19 +144,19 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         string protocolAuditId;
         if (category != null)
         {
-            var categoryBidsCount = await dbContext.Bids.Where(b => b.Listing!.CategoryId == category.Id).CountAsync(ct);
-            protocolAuditId = $"#{category.Slug.ToUpper()}-{(categoryBidsCount + 100)}-B";
+            var categoryClaimsCount = await dbContext.Claims.Where(c => c.Listing!.CategoryId == category.Id).CountAsync(ct);
+            protocolAuditId = $"#{category.Slug.ToUpper()}-{(categoryClaimsCount + 100)}-C";
         }
         else
         {
-            var totalBidsCount = await dbContext.Bids.CountAsync(ct);
-            var totalReconciliationsCount = await dbContext.BidReconciliations.CountAsync(ct);
-            protocolAuditId = $"#{(totalBidsCount + totalReconciliationsCount + 400)}-B";
+            var totalClaimsCount = await dbContext.Claims.CountAsync(ct);
+            var totalReconciliationsCount = await dbContext.ClaimReconciliations.CountAsync(ct);
+            protocolAuditId = $"#{(totalClaimsCount + totalReconciliationsCount + 400)}-C";
         }
 
-        // 6. Hourly Bid Pressure (Today) - Using actual payment volume received per hour
-        var hourlyBids = todayProcessedBids
-            .GroupBy(x => x.Bid.CreatedAt.Hour)
+        // 6. Hourly Claim Pressure (Today) - Using actual payment volume received per hour
+        var hourlyClaims = todayProcessedClaims
+            .GroupBy(x => x.Claim.CreatedAt.Hour)
             .Select(g => new
             {
                 Hour = g.Key,
@@ -165,55 +165,55 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
             })
             .ToList();
 
-        var hourlyMap = hourlyBids.ToDictionary(h => h.Hour, h => (h.Volume, h.Count));
-        var hourlyPoints = new List<HourlyBidPointDto>(24);
+        var hourlyMap = hourlyClaims.ToDictionary(h => h.Hour, h => (h.Volume, h.Count));
+        var hourlyPoints = new List<HourlyClaimPointDto>(24);
 
         for (var h = 0; h <= 23; h++)
         {
             if (hourlyMap.TryGetValue(h, out var stat))
             {
-                var avgBid = stat.Count > 0 ? Math.Round(stat.Volume / stat.Count, 2) : 0m;
-                hourlyPoints.Add(new HourlyBidPointDto(h, stat.Volume, stat.Count, avgBid));
+                var avgClaim = stat.Count > 0 ? Math.Round(stat.Volume / stat.Count, 2) : 0m;
+                hourlyPoints.Add(new HourlyClaimPointDto(h, stat.Volume, stat.Count, avgClaim));
             }
             else
             {
-                hourlyPoints.Add(new HourlyBidPointDto(h, 0m, 0, 0m));
+                hourlyPoints.Add(new HourlyClaimPointDto(h, 0m, 0, 0m));
             }
         }
 
-        // 7. Recent Bids Timeline (Individual bid payments with actual charged amount and resulting bid level)
-        var timelineSource = todayProcessedBids.Count > 0 ? todayProcessedBids : processedBids;
+        // 7. Recent Claims Timeline (Individual claim payments with actual charged amount and resulting claim level)
+        var timelineSource = todayProcessedClaims.Count > 0 ? todayProcessedClaims : processedClaims;
         var recentTimeline = timelineSource
-            .OrderBy(x => x.Bid.CreatedAt)
+            .OrderBy(x => x.Claim.CreatedAt)
             .Take(150)
-            .Select(x => new BidTimelinePointDto(
-                x.Bid.Id,
-                x.Bid.ListingId,
-                x.Bid.Listing?.Name ?? "Listing",
-                x.Bid.Listing?.Category?.Name ?? (category?.Name ?? "General"),
+            .Select(x => new ClaimTimelinePointDto(
+                x.Claim.Id,
+                x.Claim.ListingId,
+                x.Claim.Listing?.Name ?? "Listing",
+                x.Claim.Listing?.Category?.Name ?? (category?.Name ?? "General"),
                 x.ActualPaid,
-                x.Bid.CreatedAt,
-                x.Bid.PaymentReference,
-                x.Bid.Amount))
+                x.Claim.CreatedAt,
+                x.Claim.PaymentReference,
+                x.Claim.Amount))
             .ToList();
 
-        // 8. Daily Bid Pressure (Last 7 Days)
-        var dailyMap = processedBids
-            .GroupBy(x => DateOnly.FromDateTime(x.Bid.CreatedAt))
+        // 8. Daily Claim Pressure (Last 7 Days)
+        var dailyMap = processedClaims
+            .GroupBy(x => DateOnly.FromDateTime(x.Claim.CreatedAt))
             .ToDictionary(g => g.Key, g => (Volume: g.Sum(x => x.ActualPaid), Count: g.Count()));
 
-        var dailyPoints = new List<DailyBidPointDto>(7);
+        var dailyPoints = new List<DailyClaimPointDto>(7);
         for (var i = 6; i >= 0; i--)
         {
             var d = todayDate.AddDays(-i);
             var dateLabel = d.ToString("MMM dd");
             if (dailyMap.TryGetValue(d, out var dStat))
             {
-                dailyPoints.Add(new DailyBidPointDto(dateLabel, dStat.Volume, dStat.Count));
+                dailyPoints.Add(new DailyClaimPointDto(dateLabel, dStat.Volume, dStat.Count));
             }
             else
             {
-                dailyPoints.Add(new DailyBidPointDto(dateLabel, 0m, 0));
+                dailyPoints.Add(new DailyClaimPointDto(dateLabel, 0m, 0));
             }
         }
 

@@ -7,7 +7,7 @@ namespace Ranker.Data;
 /// seed only category reference data and are safe to run in any environment.</summary>
 public static class DbSeeder
 {
-    private sealed record CategorySeed(string Name, string Slug, string Icon, decimal MinStartingBid, decimal MinBidIncrement, int BaseDaysAgo);
+    private sealed record CategorySeed(string Name, string Slug, string Icon, decimal MinStartingClaim, decimal MinClaimIncrement, int BaseDaysAgo);
 
     private static readonly CategorySeed[] CategorySeeds =
     [
@@ -69,7 +69,7 @@ public static class DbSeeder
     ];
 
     /// <summary>
-    /// Idempotent. Seeds only category rows (no listings or bids).
+    /// Idempotent. Seeds only category rows (no listings or claims).
     /// Safe to call in any environment, including Production.
     /// </summary>
     public static async Task SeedCategoriesAsync(RankerDbContext dbContext, CancellationToken ct = default)
@@ -97,8 +97,8 @@ public static class DbSeeder
                 Name = seed.Name,
                 Slug = seed.Slug,
                 Icon = seed.Icon,
-                MinBidIncrement = seed.MinBidIncrement,
-                MinStartingBid = seed.MinStartingBid,
+                MinClaimIncrement = seed.MinClaimIncrement,
+                MinStartingClaim = seed.MinStartingClaim,
             });
         }
 
@@ -107,7 +107,7 @@ public static class DbSeeder
 
     /// <summary>
     /// Idempotent. Seeds category reference data only — identical to Production.
-    /// No fake listings, bids, or visit counts are created.
+    /// No fake listings, claims, or visit counts are created.
     /// </summary>
     public static async Task SeedAsync(RankerDbContext dbContext, CancellationToken ct = default)
     {

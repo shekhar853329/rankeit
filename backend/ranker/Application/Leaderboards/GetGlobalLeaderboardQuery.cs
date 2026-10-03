@@ -4,7 +4,7 @@ using Ranker.Dtos;
 namespace Ranker.Application.Leaderboards;
 
 /// <summary>
-/// Cross-category leaderboard: all listings ranked by raw bid amount (highest payer first).
+/// Cross-category leaderboard: all listings ranked by raw claim amount (highest payer first).
 /// No per-category normalization — whoever paid the most globally sits at the top.
 /// </summary>
 public sealed record GetGlobalLeaderboardQuery(int TopN, string TimeMode = "today", string? Query = null) : IRequest<IReadOnlyList<GlobalLeaderboardEntryDto>>;

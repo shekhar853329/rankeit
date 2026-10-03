@@ -11,11 +11,11 @@ public class ListingRepository(RankerDbContext dbContext) : IListingRepository
 
     public Task<Listing?> GetTopListingForUpdateAsync(int categoryId, CancellationToken ct = default) =>
         // Plain LINQ read - the caller's Serializable transaction takes the range lock needed to make this
-        // safe against concurrent bidders on the same category (no table hints/raw SQL required).
+        // safe against concurrent claimants on the same category (no table hints/raw SQL required).
         dbContext.Listings
             .Where(l => l.CategoryId == categoryId)
-            .OrderByDescending(l => l.CurrentBidAmount)
-            .ThenBy(l => l.FirstBidAt)
+            .OrderByDescending(l => l.CurrentClaimAmount)
+            .ThenBy(l => l.FirstClaimAt)
             .FirstOrDefaultAsync(ct);
 
     public void Add(Listing listing) => dbContext.Listings.Add(listing);

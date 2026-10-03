@@ -9,9 +9,9 @@ public class RankerDbContext(DbContextOptions<RankerDbContext> options) : DbCont
 
     public DbSet<Listing> Listings => Set<Listing>();
 
-    public DbSet<Bid> Bids => Set<Bid>();
+    public DbSet<Claim> Claims => Set<Claim>();
 
-    public DbSet<BidReconciliation> BidReconciliations => Set<BidReconciliation>();
+    public DbSet<ClaimReconciliation> ClaimReconciliations => Set<ClaimReconciliation>();
 
     public DbSet<DailyVisitCount> DailyVisitCounts => Set<DailyVisitCount>();
 

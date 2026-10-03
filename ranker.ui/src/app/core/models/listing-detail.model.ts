@@ -1,4 +1,4 @@
-export interface BidHistoryEntryDto {
+export interface ClaimHistoryEntryDto {
   amount: number;
   paymentAmount: number;
   createdAt: string;
@@ -12,15 +12,15 @@ export interface ListingDetailDto {
   categoryName: string;
   categorySlug: string;
   currentRankInCategory: number;
-  currentBidAmount: number;
-  firstBidAt: string;
-  lastBidAt: string;
+  currentClaimAmount: number;
+  firstClaimAt: string;
+  lastClaimAt: string;
   clickCount: number;
   siteName: string | null;
   logoUrl: string | null;
   description: string | null;
   faviconUrl: string | null;
-  bids: BidHistoryEntryDto[];
+  claims: ClaimHistoryEntryDto[];
 }
 
 export interface ListingLookupResultDto {
@@ -28,7 +28,7 @@ export interface ListingLookupResultDto {
   listingId: number | null;
   listingName: string | null;
   listingUrl: string | null;
-  currentBidAmount: number;
+  currentClaimAmount: number;
   currentRankInCategory: number | null;
   ownerContactEmailMasked: string | null;
   siteName: string | null;

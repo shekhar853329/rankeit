@@ -474,7 +474,7 @@ public class GoogleAnalyticsService : IGoogleAnalyticsService
             new("session_start", sessions, totalUsers),
             new("first_visit", newUsers, newUsers),
             new("scroll", (int)(pageViews * 0.62), (int)(totalUsers * 0.7)),
-            new("claim_bid_click", (int)(sessions * 0.18), (int)(totalUsers * 0.15))
+            new("claim_placement_click", (int)(sessions * 0.18), (int)(totalUsers * 0.15))
         };
 
         return new GoogleAnalyticsReportDto(
@@ -595,7 +595,7 @@ public class GoogleAnalyticsService : IGoogleAnalyticsService
             new("session_start", totalSessions, totalUsers),
             new("first_visit", totalNewUsers, totalNewUsers),
             new("scroll", (int)(totalViews * 0.65), (int)(totalUsers * 0.72)),
-            new("claim_bid_click", (int)(totalSessions * 0.22), (int)(totalUsers * 0.18)),
+            new("claim_placement_click", (int)(totalSessions * 0.22), (int)(totalUsers * 0.18)),
             new("category_filter", (int)(totalSessions * 0.35), (int)(totalUsers * 0.31))
         };
 

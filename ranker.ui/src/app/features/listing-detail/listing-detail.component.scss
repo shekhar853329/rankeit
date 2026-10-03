@@ -287,7 +287,7 @@
       line-height: 1.1;
     }
 
-    .btn-outbid-cta {
+    .btn-claim-cta {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -432,8 +432,8 @@
   }
 }
 
-/* ── Bid Ledger / History ──────────────────────────────────── */
-.bid-ledger {
+/* ── Claim Ledger / History ─────────────────────────────────── */
+.claim-ledger {
   background: var(--surface-container-lowest);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
@@ -535,7 +535,7 @@
         border-bottom: none;
       }
 
-      &.latest-bid-row {
+      &.latest-claim-row {
         background: rgba(224, 169, 38, 0.04);
       }
     }

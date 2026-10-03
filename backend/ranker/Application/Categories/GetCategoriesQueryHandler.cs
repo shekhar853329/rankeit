@@ -32,23 +32,23 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
         var cutoff = DateTime.UtcNow.AddDays(-TrendingWindowDays);
         var now = DateTime.UtcNow;
 
-        // ActivityScore (rule E2): recency-weighted recent bid count. A bid today counts ~1.0, one from
-        // 29 days ago counts ~1/30 - recent activity dominates without ignoring older bids entirely.
-        // RecentClaimCount is the plain count of bids in the same window, for a human-readable "N claims".
+        // ActivityScore (rule E2): recency-weighted recent claim count. A claim today counts ~1.0, one from
+        // 29 days ago counts ~1/30 - recent activity dominates without ignoring older claims entirely.
+        // RecentClaimCount is the plain count of claims in the same window, for a human-readable "N claims".
         // Materialized on its own (rather than left-joined against Categories in one query) because EF
         // Core can't translate that combination - a GroupBy/Sum aggregate correlated inside a LEFT JOIN.
-        var activityScores = await dbContext.Bids
-            .Where(b => b.CreatedAt >= cutoff)
-            .Select(b => new { b.Listing!.CategoryId, b.CreatedAt })
+        var activityScores = await dbContext.Claims
+            .Where(c => c.CreatedAt >= cutoff)
+            .Select(c => new { c.Listing!.CategoryId, c.CreatedAt })
             .ToListAsync(ct);
 
         // Recency-weighted score: computed in memory to keep it provider-agnostic
         var statsByCategory = activityScores
-            .GroupBy(b => b.CategoryId)
+            .GroupBy(c => c.CategoryId)
             .ToDictionary(
                 g => g.Key,
                 g => (
-                    Score: g.Sum(b => 1.0 / (1 + (now - b.CreatedAt).TotalDays)),
+                    Score: g.Sum(c => 1.0 / (1 + (now - c.CreatedAt).TotalDays)),
                     Count: g.Count()
                 ));
 
@@ -84,7 +84,7 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
 
         var todayUtc = DateTime.UtcNow.Date;
         var todayCounts = await dbContext.Listings
-            .Where(l => l.LastBidAt >= todayUtc)
+            .Where(l => l.LastClaimAt >= todayUtc)
             .GroupBy(l => l.CategoryId)
             .Select(g => new { CategoryId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.CategoryId, g => g.Count, ct);
@@ -98,8 +98,8 @@ public class GetCategoriesQueryHandler(RankerDbContext dbContext) : IRequestHand
                 x.Category.Slug,
                 x.Category.Icon,
                 x.Category.ParentCategoryId,
-                x.Category.MinBidIncrement,
-                x.Category.MinStartingBid,
+                x.Category.MinClaimIncrement,
+                x.Category.MinStartingClaim,
                 x.Score,
                 x.RecentClaimCount,
                 x.ListingCount,

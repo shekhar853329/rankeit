@@ -14,7 +14,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, of, Subject, switchMap } from 'rxjs';
 import { ModalService } from '../../core/services/modal.service';
-import { BidService } from '../../core/services/bid.service';
+import { ClaimService } from '../../core/services/claim.service';
 import { CategoryService } from '../../core/services/category.service';
 import { ListingService } from '../../core/services/listing.service';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
@@ -28,8 +28,8 @@ export interface CompletedTransactionDetails {
   paymentId?: string;
   orderId?: string;
   amountPaid?: number;
-  newBidAmount?: number;
-  targetBidAmount?: number;
+  newClaimAmount?: number;
+  targetClaimAmount?: number;
   categoryName: string;
   listingName: string;
   listingUrl: string;
@@ -47,7 +47,7 @@ export interface CompletedTransactionDetails {
 })
 export class ConfirmClaimModalComponent implements OnInit {
   protected readonly modal = inject(ModalService);
-  private readonly bidService = inject(BidService);
+  private readonly claimService = inject(ClaimService);
   private readonly categoryService = inject(CategoryService);
   private readonly listingService = inject(ListingService);
   private readonly leaderboardService = inject(LeaderboardService);
@@ -72,17 +72,17 @@ export class ConfirmClaimModalComponent implements OnInit {
   protected readonly faviconUrl = signal<string | null>(null);
 
   // Dynamic identification state
-  protected readonly isRebid = signal<boolean>(false);
+  protected readonly isReclaim = signal<boolean>(false);
   protected readonly listingId = signal<number | null>(null);
-  protected readonly existingBidAmount = signal<number>(0);
+  protected readonly existingClaimAmount = signal<number>(0);
   protected readonly matchedRank = signal<number | null>(null);
   protected readonly maskedOwnerEmail = signal<string | null>(null);
   protected readonly checkingDomain = signal<boolean>(false);
 
   // Benchmarks for selected category
-  protected readonly currentTopBid = signal<number | null>(null);
-  protected readonly minStartingBid = signal<number>(1);
-  protected readonly minBidIncrement = signal<number>(1);
+  protected readonly currentTopClaim = signal<number | null>(null);
+  protected readonly minStartingClaim = signal<number>(1);
+  protected readonly minClaimIncrement = signal<number>(1);
 
   // Categories list
   protected readonly categories = signal<CategoryDto[]>([]);
@@ -103,21 +103,21 @@ export class ConfirmClaimModalComponent implements OnInit {
 
   // ── Computeds ──────────────────────────────────────────────
   protected readonly creditedAmount = computed(() =>
-    this.isRebid() ? this.existingBidAmount() : 0,
+    this.isReclaim() ? this.existingClaimAmount() : 0,
   );
 
   // Minimum required to claim Rank #1
-  protected readonly minRank1Bid = computed(() => {
-    const top = this.currentTopBid();
-    const inc = this.minBidIncrement();
-    const start = this.minStartingBid();
+  protected readonly minRank1Claim = computed(() => {
+    const top = this.currentTopClaim();
+    const inc = this.minClaimIncrement();
+    const start = this.minStartingClaim();
     return top !== null && top !== undefined ? top + inc : start;
   });
 
-  // Minimum bid allowed to enter this arena or raise bid
-  protected readonly absoluteMinimumBid = computed(() => {
-    if (this.isRebid()) {
-      return this.existingBidAmount() + this.minBidIncrement();
+  // Minimum claim allowed to enter this arena or raise claim
+  protected readonly absoluteMinimumClaim = computed(() => {
+    if (this.isReclaim()) {
+      return this.existingClaimAmount() + this.minClaimIncrement();
     }
     return 1;
   });
@@ -131,20 +131,20 @@ export class ConfirmClaimModalComponent implements OnInit {
   protected readonly isBelowMinimum = computed(() => {
     const target = this.targetAmount();
     if (target === null || target === undefined) return false;
-    return target < this.absoluteMinimumBid();
+    return target < this.absoluteMinimumClaim();
   });
 
   protected readonly isBelowRank1 = computed(() => {
     const target = this.targetAmount();
     if (target === null || target === undefined) return false;
-    return target < this.minRank1Bid();
+    return target < this.minRank1Claim();
   });
 
   protected readonly isNotHigherThanExisting = computed(() => {
-    if (!this.isRebid()) return false;
+    if (!this.isReclaim()) return false;
     const target = this.targetAmount();
     if (target === null || target === undefined) return false;
-    return target <= this.existingBidAmount();
+    return target <= this.existingClaimAmount();
   });
 
   protected readonly isFormValid = computed(() => {
@@ -174,12 +174,12 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.domainUrl.set(url);
       this.listingName.set(fallbackTitle);
       this.ownerEmail.set('');
-      this.existingBidAmount.set(payload.currentBidAmount ?? 0);
+      this.existingClaimAmount.set(payload.currentClaimAmount ?? 0);
       this.listingId.set(payload.listingId ?? null);
-      this.isRebid.set(payload.listingId !== null || (payload.currentBidAmount ?? 0) > 0);
-      this.currentTopBid.set(payload.currentTopBid ?? null);
-      this.minStartingBid.set(payload.minStartingBid);
-      this.minBidIncrement.set(payload.minBidIncrement);
+      this.isReclaim.set(payload.listingId !== null || (payload.currentClaimAmount ?? 0) > 0);
+      this.currentTopClaim.set(payload.currentTopClaim ?? null);
+      this.minStartingClaim.set(payload.minStartingClaim);
+      this.minClaimIncrement.set(payload.minClaimIncrement);
       this.siteName.set(payload.siteName?.trim() || (fallbackTitle || null));
       this.logoUrl.set(payload.logoUrl ?? null);
       this.description.set(payload.description ?? null);
@@ -198,9 +198,9 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.loadCategoryBenchmarks(payload.categoryId, payload.categorySlug);
 
       // Default target amount
-      const minReq = payload.currentTopBid !== null && payload.currentTopBid !== undefined
-        ? payload.currentTopBid + payload.minBidIncrement
-        : payload.minStartingBid;
+      const minReq = payload.currentTopClaim !== null && payload.currentTopClaim !== undefined
+        ? payload.currentTopClaim + payload.minClaimIncrement
+        : payload.minStartingClaim;
       const initialTarget = payload.amount !== undefined && payload.amount !== null && payload.amount > 0
         ? payload.amount
         : minReq;
@@ -236,9 +236,9 @@ export class ConfirmClaimModalComponent implements OnInit {
           this.checkingDomain.set(false);
           if (lookup.found && lookup.listingId) {
             // Existing listing identified!
-            this.isRebid.set(true);
+            this.isReclaim.set(true);
             this.listingId.set(lookup.listingId);
-            this.existingBidAmount.set(lookup.currentBidAmount);
+            this.existingClaimAmount.set(lookup.currentClaimAmount);
             this.matchedRank.set(lookup.currentRankInCategory);
             this.maskedOwnerEmail.set(lookup.ownerContactEmailMasked);
             if (!this.listingName() && lookup.listingName) {
@@ -249,16 +249,16 @@ export class ConfirmClaimModalComponent implements OnInit {
             if (lookup.description) this.description.set(lookup.description);
             if (lookup.faviconUrl) this.faviconUrl.set(lookup.faviconUrl);
 
-            // Ensure target is above current bid
-            const nextTarget = lookup.currentBidAmount + this.minBidIncrement();
+            // Ensure target is above current claim
+            const nextTarget = lookup.currentClaimAmount + this.minClaimIncrement();
             if ((this.targetAmount() ?? 0) < nextTarget) {
               this.targetAmount.set(nextTarget);
             }
           } else {
             // Brand-new listing
-            this.isRebid.set(false);
+            this.isReclaim.set(false);
             this.listingId.set(null);
-            this.existingBidAmount.set(0);
+            this.existingClaimAmount.set(0);
             this.matchedRank.set(null);
             this.maskedOwnerEmail.set(null);
 
@@ -297,8 +297,8 @@ export class ConfirmClaimModalComponent implements OnInit {
     if (cat) {
       this.selectedCategoryId.set(cat.id);
       this.selectedCategoryName.set(cat.name);
-      this.minStartingBid.set(cat.minStartingBid);
-      this.minBidIncrement.set(cat.minBidIncrement);
+      this.minStartingClaim.set(cat.minStartingClaim);
+      this.minClaimIncrement.set(cat.minClaimIncrement);
       this.loadCategoryBenchmarks(cat.id, cat.slug);
       this.triggerDomainLookup(cat.id, this.domainUrl());
     }
@@ -306,9 +306,9 @@ export class ConfirmClaimModalComponent implements OnInit {
 
   private triggerDomainLookup(categoryId: number, url: string): void {
     if (!url || url.trim().length < 3) {
-      this.isRebid.set(false);
+      this.isReclaim.set(false);
       this.listingId.set(null);
-      this.existingBidAmount.set(0);
+      this.existingClaimAmount.set(0);
       this.matchedRank.set(null);
       return;
     }
@@ -320,28 +320,28 @@ export class ConfirmClaimModalComponent implements OnInit {
     if (!s) return;
     this.leaderboardService.getCategoryLeaderboard(s, 1, 5, 'alltime').subscribe({
       next: (res) => {
-        this.minStartingBid.set(res.minStartingBid);
-        this.minBidIncrement.set(res.minBidIncrement);
-        const top = res.leaderboard.items[0]?.currentBidAmount ?? null;
-        this.currentTopBid.set(top);
+        this.minStartingClaim.set(res.minStartingClaim);
+        this.minClaimIncrement.set(res.minClaimIncrement);
+        const top = res.leaderboard.items[0]?.currentClaimAmount ?? null;
+        this.currentTopClaim.set(top);
       },
     });
   }
 
   protected setRank1Target(): void {
-    this.targetAmount.set(this.minRank1Bid());
+    this.targetAmount.set(this.minRank1Claim());
     this.quoteError.set(null);
   }
 
   protected addIncrement(amount: number): void {
-    const current = this.targetAmount() ?? this.minRank1Bid();
+    const current = this.targetAmount() ?? this.minRank1Claim();
     this.targetAmount.set(current + amount);
     this.quoteError.set(null);
   }
 
   protected subtractIncrement(amount: number): void {
-    const current = this.targetAmount() ?? this.minRank1Bid();
-    const floor = this.absoluteMinimumBid();
+    const current = this.targetAmount() ?? this.minRank1Claim();
+    const floor = this.absoluteMinimumClaim();
     this.targetAmount.set(Math.max(floor, current - amount));
     this.quoteError.set(null);
   }
@@ -410,12 +410,12 @@ export class ConfirmClaimModalComponent implements OnInit {
     try {
       // Step 1: Request authoritative server quote and verify rules
       const quote = await firstValueFrom(
-        this.bidService.calculateBidQuote({
+        this.claimService.calculateClaimQuote({
           categoryId,
-          listingId: this.isRebid() ? this.listingId() : null,
+          listingId: this.isReclaim() ? this.listingId() : null,
           listingUrl: domain,
           ownerContactEmail: email,
-          targetBidAmount: target,
+          targetClaimAmount: target,
         }),
       );
 
@@ -453,7 +453,7 @@ export class ConfirmClaimModalComponent implements OnInit {
         payment = await this.razorpay.checkout({
           amountInRupees: chargeAmount,
           email: email,
-          description: this.isRebid()
+          description: this.isReclaim()
             ? `Upgrade sponsored placement to ₹${target} (Paid ₹${chargeAmount}) for ${quote.listingName || this.listingName()}`
             : `Promote listing with ₹${target} for ${this.listingName()}`,
         });
@@ -465,7 +465,7 @@ export class ConfirmClaimModalComponent implements OnInit {
         this.transactionDetails.set({
           success: false,
           amountPaid: chargeAmount,
-          targetBidAmount: target,
+          targetClaimAmount: target,
           categoryName: this.selectedCategoryName(),
           listingName: resolvedTitle,
           listingUrl: domain,
@@ -476,15 +476,15 @@ export class ConfirmClaimModalComponent implements OnInit {
         return;
       }
 
-      // Step 3: Place bid with matching targetBidAmount and confirmedPaymentAmount
-      this.bidService
-        .placeBid({
+      // Step 3: Place claim with matching targetClaimAmount and confirmedPaymentAmount
+      this.claimService
+        .placeClaim({
           categoryId,
           listingId: resolvedListingId,
           listingName: resolvedTitle,
           listingUrl: domain,
           ownerContactEmail: email,
-          targetBidAmount: quote.targetBidAmount,
+          targetClaimAmount: quote.targetClaimAmount,
           paymentReference: payment.razorpayPaymentId,
           confirmedPaymentAmount: payment.amountInRupees,
           siteName: resolvedSiteName,
@@ -502,15 +502,15 @@ export class ConfirmClaimModalComponent implements OnInit {
                 paymentId: payment.razorpayPaymentId,
                 orderId: payment.razorpayOrderId,
                 amountPaid: result.amountCharged ?? payment.amountInRupees,
-                newBidAmount: result.newCurrentBidAmount ?? target,
-                targetBidAmount: target,
+                newClaimAmount: result.newCurrentClaimAmount ?? target,
+                targetClaimAmount: target,
                 categoryName: this.selectedCategoryName(),
                 listingName: resolvedTitle,
                 listingUrl: domain,
                 timestamp: new Date(),
               });
               this.toast.show(
-                `🎉 Success! New placement: ₹${result.newCurrentBidAmount} (Amount paid: ₹${result.amountCharged})`,
+                `🎉 Success! New placement: ₹${result.newCurrentClaimAmount} (Amount paid: ₹${result.amountCharged})`,
                 'success',
               );
             } else {
@@ -521,7 +521,7 @@ export class ConfirmClaimModalComponent implements OnInit {
                 paymentId: payment.razorpayPaymentId,
                 orderId: payment.razorpayOrderId,
                 amountPaid: payment.amountInRupees,
-                targetBidAmount: target,
+                targetClaimAmount: target,
                 categoryName: this.selectedCategoryName(),
                 listingName: resolvedTitle,
                 listingUrl: domain,
@@ -540,7 +540,7 @@ export class ConfirmClaimModalComponent implements OnInit {
               paymentId: payment.razorpayPaymentId,
               orderId: payment.razorpayOrderId,
               amountPaid: payment.amountInRupees,
-              targetBidAmount: target,
+              targetClaimAmount: target,
               categoryName: this.selectedCategoryName(),
               listingName: resolvedTitle,
               listingUrl: domain,
@@ -558,7 +558,7 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.transactionDetails.set({
         success: false,
         amountPaid: target,
-        targetBidAmount: target,
+        targetClaimAmount: target,
         categoryName: this.selectedCategoryName(),
         listingName: this.listingName() || domain,
         listingUrl: domain,

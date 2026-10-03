@@ -60,7 +60,7 @@ export default function PrivacyScreen() {
           </Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
             This Privacy Policy explains how RankUp collects, uses, and protects information when you
-            visit, click a listing, or submit a bid.
+            visit, click a listing, or sponsor a placement.
           </Text>
         </View>
 

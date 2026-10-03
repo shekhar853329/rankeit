@@ -69,7 +69,7 @@ export default function GlobalLeaderboardScreen() {
   const [platformStats, setPlatformStats] = useState<PlatformStatsDto | null>(null);
 
   // Command bar hero state
-  const [heroBidAmount, setHeroBidAmount] = useState<number>(1);
+  const [heroClaimAmount, setHeroClaimAmount] = useState<number>(1);
   const [heroUrl, setHeroUrl] = useState<string>('');
   const [claimCategory, setClaimCategory] = useState<CategoryDto | null>(null);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState<boolean>(false);
@@ -133,15 +133,15 @@ export default function GlobalLeaderboardScreen() {
         const catRes = await getCategoryLeaderboard(selectedSlug, 1, 30, timeMode, searchQuery);
         setCategoryData(catRes);
         if (catRes?.leaderboard?.items?.length) {
-          setHeroBidAmount((prev) =>
-            prev <= 1 ? catRes.leaderboard.items[0].currentBidAmount + (catRes.minBidIncrement ?? 1) : prev,
+          setHeroClaimAmount((prev) =>
+            prev <= 1 ? catRes.leaderboard.items[0].currentClaimAmount + (catRes.minClaimIncrement ?? 1) : prev,
           );
         }
       } else {
         const globalRes = await getGlobalLeaderboard(30, timeMode, searchQuery);
         setGlobalEntries(globalRes || []);
         if (globalRes && globalRes.length > 0) {
-          setHeroBidAmount((prev) => (prev <= 1 ? globalRes[0].currentBidAmount + 1 : prev));
+          setHeroClaimAmount((prev) => (prev <= 1 ? globalRes[0].currentClaimAmount + 1 : prev));
         }
       }
     } catch {
@@ -186,7 +186,7 @@ export default function GlobalLeaderboardScreen() {
         listingId: item.listingId,
         listingName: item.listingName,
         listingUrl: item.listingUrl,
-        currentBidAmount: item.currentBidAmount,
+        currentClaimAmount: item.currentClaimAmount,
         categoryName: categoryData.categoryName,
         categorySlug: categoryData.categorySlug,
         clickCount: liveClickCounts[item.listingId] ?? item.clickCount,
@@ -202,7 +202,7 @@ export default function GlobalLeaderboardScreen() {
       listingId: item.listingId,
       listingName: item.listingName,
       listingUrl: item.listingUrl,
-      currentBidAmount: item.currentBidAmount,
+      currentClaimAmount: item.currentClaimAmount,
       categoryName: item.categoryName,
       categorySlug: item.categorySlug,
       clickCount: liveClickCounts[item.listingId] ?? item.clickCount,
@@ -237,24 +237,24 @@ export default function GlobalLeaderboardScreen() {
   const handleClaimRank = (amount?: number, rank?: number, catSlug?: string, catName?: string) => {
     const slug = catSlug ?? claimCategory?.slug ?? 'general';
     const cat = categories.find((c) => c.slug === slug) ?? claimCategory;
-    const minBid = cat?.minStartingBid ?? 1;
-    const bid = Math.max(minBid, amount ?? heroBidAmount);
+    const minClaim = cat?.minStartingClaim ?? 1;
+    const claim = Math.max(minClaim, amount ?? heroClaimAmount);
 
     openClaimModal({
       rank: rank ?? 1,
       categoryName: catName ?? cat?.name ?? 'General',
       categorySlug: slug,
       categoryId: cat?.id ?? 1,
-      minStartingBid: minBid,
-      minBidIncrement: cat?.minBidIncrement ?? 1,
-      amount: bid,
+      minStartingClaim: minClaim,
+      minClaimIncrement: cat?.minClaimIncrement ?? 1,
+      amount: claim,
       listingUrl: heroUrl.trim() || undefined,
       onSuccess: () => loadData(),
     });
   };
 
   const handleClaimCard = (row: {
-    currentBidAmount: number;
+    currentClaimAmount: number;
     rank: number;
     categorySlug: string;
     categoryName: string;
@@ -263,9 +263,9 @@ export default function GlobalLeaderboardScreen() {
     if (cat) {
       setClaimCategory(cat);
     }
-    const increment = cat?.minBidIncrement ?? 1;
-    const nextBid = row.currentBidAmount + increment;
-    setHeroBidAmount(nextBid);
+    const increment = cat?.minClaimIncrement ?? 1;
+    const nextClaim = row.currentClaimAmount + increment;
+    setHeroClaimAmount(nextClaim);
 
     setIsClaimCollapsed(false);
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -279,11 +279,11 @@ export default function GlobalLeaderboardScreen() {
     const topInCat = globalEntries.find(
       (e) => (e.categoryId === cat.id || e.categorySlug === cat.slug) && e.rank === 1,
     );
-    const minStarting = cat.minStartingBid ?? 1;
-    const nextBid = topInCat
-      ? topInCat.currentBidAmount + (cat.minBidIncrement ?? 1)
+    const minStarting = cat.minStartingClaim ?? 1;
+    const nextClaim = topInCat
+      ? topInCat.currentClaimAmount + (cat.minClaimIncrement ?? 1)
       : minStarting;
-    setHeroBidAmount(nextBid);
+    setHeroClaimAmount(nextClaim);
     setCategoryPickerOpen(false);
   };
 
@@ -327,7 +327,7 @@ export default function GlobalLeaderboardScreen() {
               <View style={styles.claimTitleRow}>
                 <Text style={[styles.headlineText, { color: colors.text }]}>Claim a Spot</Text>
                 <View style={[styles.amountPill, { backgroundColor: colors.surfaceSubtle }]}>
-                  <Text style={[styles.amountPillText, { color: colors.primary }]}>for ₹{heroBidAmount}</Text>
+                  <Text style={[styles.amountPillText, { color: colors.primary }]}>for ₹{heroClaimAmount}</Text>
                 </View>
               </View>
             </View>
@@ -363,25 +363,25 @@ export default function GlobalLeaderboardScreen() {
                 {/* Stepper */}
                 <View style={styles.stepperSubRow}>
                   <Text style={[styles.stepperLabel, { color: colors.textMuted }]}>
-                    Bid Amount:
+                    Placement Amount:
                   </Text>
                   <View style={[styles.heroStepper, { backgroundColor: colors.surfaceSubtle }]}>
                     <Pressable
                       style={styles.stepperActionBtn}
                       onPress={() =>
-                        setHeroBidAmount((prev) =>
-                          Math.max(claimCategory?.minStartingBid ?? 1, prev - 1),
+                        setHeroClaimAmount((prev) =>
+                          Math.max(claimCategory?.minStartingClaim ?? 1, prev - 1),
                         )
                       }>
                       <Text style={[styles.stepperActionText, { color: colors.text }]}>−</Text>
                     </Pressable>
                     <Text style={[styles.stepperDisplay, { color: colors.primary }]}>
-                      ₹{heroBidAmount}
+                      ₹{heroClaimAmount}
                     </Text>
                     <Pressable
                       style={styles.stepperActionBtn}
                       onPress={() =>
-                        setHeroBidAmount((prev) => prev + (claimCategory?.minBidIncrement ?? 1))
+                        setHeroClaimAmount((prev) => prev + (claimCategory?.minClaimIncrement ?? 1))
                       }>
                       <Text style={[styles.stepperActionText, { color: colors.text }]}>+</Text>
                     </Pressable>
@@ -577,7 +577,7 @@ export default function GlobalLeaderboardScreen() {
           <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Ionicons name="rocket-outline" size={40} color={colors.primary} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              Rank #1 is wide open — grab it for ₹{claimCategory?.minStartingBid ?? 1}!
+              Rank #1 is wide open — grab it for ₹{claimCategory?.minStartingClaim ?? 1}!
             </Text>
             <Text style={[styles.emptySub, { color: colors.textMuted }]}>
               Today's leaderboard is a blank slate. Be the first name everyone sees.
@@ -585,14 +585,14 @@ export default function GlobalLeaderboardScreen() {
             <Pressable
               style={[styles.emptyClaimBtn, { backgroundColor: colors.primary }]}
               onPress={() => {
-                const minBid = claimCategory?.minStartingBid ?? 1;
-                setHeroBidAmount(minBid);
+                const minClaim = claimCategory?.minStartingClaim ?? 1;
+                setHeroClaimAmount(minClaim);
                 setIsClaimCollapsed(false);
                 scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                 setTimeout(() => heroUrlInputRef.current?.focus(), 360);
               }}>
               <Text style={styles.emptyClaimBtnText}>
-                Claim #1 for ₹{claimCategory?.minStartingBid ?? 1}
+                Claim #1 for ₹{claimCategory?.minStartingClaim ?? 1}
               </Text>
             </Pressable>
           </View>
@@ -686,22 +686,22 @@ export default function GlobalLeaderboardScreen() {
                             Active Placement
                           </Text>
                           <Text style={[styles.priceVal, { color: colors.primary }]}>
-                            ₹{row.currentBidAmount.toFixed(0)}
+                            ₹{row.currentClaimAmount.toFixed(0)}
                           </Text>
                         </View>
 
                         <Pressable
-                          style={[styles.outbidBtn, { backgroundColor: colors.primary }]}
+                          style={[styles.claimBtn, { backgroundColor: colors.primary }]}
                           onPress={() =>
                             handleClaimCard({
-                              currentBidAmount: row.currentBidAmount,
+                              currentClaimAmount: row.currentClaimAmount,
                               rank: 1,
                               categorySlug: row.categorySlug,
                               categoryName: row.categoryName,
                             })
                           }>
                           <Ionicons name="flash" size={13} color="#ffffff" />
-                          <Text style={styles.outbidBtnText}>Claim</Text>
+                          <Text style={styles.claimBtnText}>Claim</Text>
                         </Pressable>
                       </View>
                     </View>
@@ -780,21 +780,21 @@ export default function GlobalLeaderboardScreen() {
                         <View style={styles.priceStack}>
                           <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Placement</Text>
                           <Text style={[styles.priceVal, { color: colors.text }]}>
-                            ₹{row.currentBidAmount.toFixed(0)}
+                            ₹{row.currentClaimAmount.toFixed(0)}
                           </Text>
                         </View>
 
                         <Pressable
-                          style={[styles.outbidBtnSec, { backgroundColor: colors.surfaceSubtle }]}
+                          style={[styles.claimBtnSec, { backgroundColor: colors.surfaceSubtle }]}
                           onPress={() =>
                             handleClaimCard({
-                              currentBidAmount: row.currentBidAmount,
+                              currentClaimAmount: row.currentClaimAmount,
                               rank: row.rank,
                               categorySlug: row.categorySlug,
                               categoryName: row.categoryName,
                             })
                           }>
-                          <Text style={[styles.outbidBtnSecText, { color: colors.text }]}>
+                          <Text style={[styles.claimBtnSecText, { color: colors.text }]}>
                             Claim
                           </Text>
                         </Pressable>
@@ -841,19 +841,19 @@ export default function GlobalLeaderboardScreen() {
 
                   <View style={styles.compactRight}>
                     <Text style={[styles.compactPrice, { color: colors.text }]}>
-                      ₹{row.currentBidAmount.toFixed(0)}
+                      ₹{row.currentClaimAmount.toFixed(0)}
                     </Text>
                     <Pressable
-                      style={[styles.compactOutbidBtn, { backgroundColor: colors.surfaceSubtle }]}
+                      style={[styles.compactClaimBtn, { backgroundColor: colors.surfaceSubtle }]}
                       onPress={() =>
                         handleClaimCard({
-                          currentBidAmount: row.currentBidAmount,
+                          currentClaimAmount: row.currentClaimAmount,
                           rank: row.rank,
                           categorySlug: row.categorySlug,
                           categoryName: row.categoryName,
                         })
                       }>
-                      <Text style={[styles.compactOutbidText, { color: colors.primary }]}>
+                      <Text style={[styles.compactClaimText, { color: colors.primary }]}>
                         Claim
                       </Text>
                     </Pressable>
@@ -938,7 +938,7 @@ export default function GlobalLeaderboardScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.catModalItemName, { color: colors.text }]}>{c.name}</Text>
                     <Text style={[styles.catModalItemSub, { color: colors.textMuted }]}>
-                      Min bid: ₹{c.minStartingBid} • {c.listingCount} listings
+                      Starting floor: ₹{c.minStartingClaim} • {c.listingCount} listings
                     </Text>
                   </View>
                   {claimCategory?.slug === c.slug && (
@@ -1398,7 +1398,7 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: '900',
   },
-  outbidBtn: {
+  claimBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
@@ -1406,17 +1406,17 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: Radius.pill,
   },
-  outbidBtnText: {
+  claimBtnText: {
     color: '#fff',
     fontSize: 11,
     fontWeight: '800',
   },
-  outbidBtnSec: {
+  claimBtnSec: {
     paddingHorizontal: 8,
     paddingVertical: 3.5,
     borderRadius: Radius.pill,
   },
-  outbidBtnSecText: {
+  claimBtnSecText: {
     fontSize: 10.5,
     fontWeight: '700',
   },
@@ -1466,12 +1466,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
   },
-  compactOutbidBtn: {
+  compactClaimBtn: {
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: Radius.sm,
   },
-  compactOutbidText: {
+  compactClaimText: {
     fontSize: 10.5,
     fontWeight: '800',
   },

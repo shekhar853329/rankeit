@@ -15,7 +15,7 @@ import { Radius, Spacing } from '../constants/theme';
 import { useClaimModal } from '../context/ModalContext';
 import { useAppTheme } from '../context/ThemeContext';
 import { CategoryDto, ListingLookupResultDto } from '../models';
-import { calculateBidQuote, fetchUrlMetadata, getCategories, lookupListing, placeBid } from '../services/api';
+import { calculateClaimQuote, fetchUrlMetadata, getCategories, lookupListing, placeClaim } from '../services/api';
 
 export const ConfirmClaimModal: React.FC = () => {
   const { colors, isDark } = useAppTheme();
@@ -30,7 +30,7 @@ export const ConfirmClaimModal: React.FC = () => {
   const [listingName, setListingName] = useState<string>('');
   const [ownerEmail, setOwnerEmail] = useState<string>('');
   const [targetAmount, setTargetAmount] = useState<number>(10);
-  const [minStartingBid, setMinStartingBid] = useState<number>(1);
+  const [minStartingClaim, setMinStartingClaim] = useState<number>(1);
   const [minIncrement, setMinIncrement] = useState<number>(1);
 
   const [activeListing, setActiveListing] = useState<ListingLookupResultDto | null>(null);
@@ -76,11 +76,11 @@ export const ConfirmClaimModal: React.FC = () => {
     const initAmount = modalPayload.amount || 10;
     setTargetAmount(initAmount);
 
-    if (modalPayload.minStartingBid) {
-      setMinStartingBid(modalPayload.minStartingBid);
+    if (modalPayload.minStartingClaim) {
+      setMinStartingClaim(modalPayload.minStartingClaim);
     }
-    if (modalPayload.minBidIncrement) {
-      setMinIncrement(modalPayload.minBidIncrement);
+    if (modalPayload.minClaimIncrement) {
+      setMinIncrement(modalPayload.minClaimIncrement);
     }
 
     if (modalPayload.listingUrl) {
@@ -142,17 +142,17 @@ export const ConfirmClaimModal: React.FC = () => {
     }
   };
 
-  const existingBid = activeListing?.currentBidAmount ?? 0;
-  const isRebid = activeListing?.found && existingBid > 0;
-  const creditedAmount = isRebid ? existingBid : 0;
+  const existingClaim = activeListing?.currentClaimAmount ?? 0;
+  const isReclaim = activeListing?.found && existingClaim > 0;
+  const creditedAmount = isReclaim ? existingClaim : 0;
   const payableAmount = Math.max(0, targetAmount - creditedAmount);
 
-  const incrementBid = () => {
+  const incrementClaim = () => {
     setTargetAmount((prev) => prev + minIncrement);
   };
 
-  const decrementBid = () => {
-    setTargetAmount((prev) => Math.max(minStartingBid, prev - minIncrement));
+  const decrementClaim = () => {
+    setTargetAmount((prev) => Math.max(minStartingClaim, prev - minIncrement));
   };
 
   const handleSubmit = async () => {
@@ -164,12 +164,12 @@ export const ConfirmClaimModal: React.FC = () => {
       setStatusMessage('Please enter a valid owner contact email.');
       return;
     }
-    if (targetAmount < minStartingBid) {
-      setStatusMessage(`Bid amount must be at least ₹${minStartingBid}.`);
+    if (targetAmount < minStartingClaim) {
+      setStatusMessage(`Placement amount must be at least ₹${minStartingClaim}.`);
       return;
     }
-    if (isRebid && targetAmount <= existingBid) {
-      setStatusMessage(`Target placement must be higher than current placement of ₹${existingBid}.`);
+    if (isReclaim && targetAmount <= existingClaim) {
+      setStatusMessage(`Target placement must be higher than current placement of ₹${existingClaim}.`);
       return;
     }
 
@@ -178,11 +178,11 @@ export const ConfirmClaimModal: React.FC = () => {
 
     try {
       // 1. Calculate Quote
-      const quote = await calculateBidQuote({
+      const quote = await calculateClaimQuote({
         categoryId: selectedCatId,
         listingUrl: url.trim(),
         ownerContactEmail: ownerEmail.trim(),
-        targetBidAmount: targetAmount,
+        targetClaimAmount: targetAmount,
       });
 
       if (!quote.success) {
@@ -193,15 +193,15 @@ export const ConfirmClaimModal: React.FC = () => {
 
       setStatusMessage('Securing placement position...');
 
-      // 2. Place Bid
+      // 2. Place Claim
       const paymentRef = `pay_${Date.now()}_sim`;
-      const placeRes = await placeBid({
+      const placeRes = await placeClaim({
         categoryId: selectedCatId,
         listingId: activeListing?.listingId ?? modalPayload?.listingId ?? null,
         listingName: listingName.trim() || siteName || url.trim(),
         listingUrl: url.trim(),
         ownerContactEmail: ownerEmail.trim(),
-        targetBidAmount: targetAmount,
+        targetClaimAmount: targetAmount,
         paymentReference: paymentRef,
         confirmedPaymentAmount: payableAmount,
         siteName: siteName ?? listingName,
@@ -215,7 +215,7 @@ export const ConfirmClaimModal: React.FC = () => {
           listingName: listingName || siteName || url,
           listingUrl: url,
           amountPaid: payableAmount,
-          newBidAmount: targetAmount,
+          newClaimAmount: targetAmount,
           categoryName: selectedCatName,
           paymentId: paymentRef,
           orderId: `order_${Date.now()}`,
@@ -253,15 +253,15 @@ export const ConfirmClaimModal: React.FC = () => {
                   style={[
                     styles.statusPill,
                     {
-                      backgroundColor: isRebid ? colors.primaryLight : colors.secondaryLight,
+                      backgroundColor: isReclaim ? colors.primaryLight : colors.secondaryLight,
                     },
                   ]}>
                   <Text
                     style={[
                       styles.statusPillText,
-                      { color: isRebid ? colors.primary : colors.secondaryGreen },
+                      { color: isReclaim ? colors.primary : colors.secondaryGreen },
                     ]}>
-                    {isRebid ? '🔄 Raising Existing Position' : '🚀 Claim Position'}
+                    {isReclaim ? '🔄 Raising Existing Position' : '🚀 Claim Position'}
                   </Text>
                 </View>
               </View>
@@ -285,10 +285,10 @@ export const ConfirmClaimModal: React.FC = () => {
                   <Ionicons name="checkmark-circle" size={48} color={colors.secondaryGreen} />
                 </View>
                 <Text style={[styles.successTitle, { color: colors.text }]}>
-                  Payment & Bid Successful!
+                  Payment & Placement Successful!
                 </Text>
                 <Text style={[styles.successSubtitle, { color: colors.textMuted }]}>
-                  Your bid is confirmed and your ranking is now live on the{' '}
+                  Your sponsored placement is confirmed and your ranking is now live on the{' '}
                   <Text style={{ fontWeight: '700', color: colors.text }}>
                     {receiptDetails.categoryName}
                   </Text>{' '}
@@ -324,14 +324,14 @@ export const ConfirmClaimModal: React.FC = () => {
                   </View>
                   <View style={styles.receiptRow}>
                     <Text style={[styles.receiptLabel, { color: colors.textMuted }]}>
-                      New Total Bid
+                      New Placement Level
                     </Text>
                     <Text
                       style={[
                         styles.receiptVal,
                         { color: colors.primary, fontWeight: '800' },
                       ]}>
-                      ₹{receiptDetails.newBidAmount?.toFixed(2)}
+                      ₹{receiptDetails.newClaimAmount?.toFixed(2)}
                     </Text>
                   </View>
                   <View style={styles.receiptRow}>
@@ -355,7 +355,7 @@ export const ConfirmClaimModal: React.FC = () => {
                 </Pressable>
               </View>
             ) : (
-              /* Claim / Bid Form */
+              /* Claim Form */
               <View style={styles.formContainer}>
                 {/* Summary Row */}
                 <View style={[styles.summaryCard, { backgroundColor: colors.surfaceSubtle }]}>
@@ -418,21 +418,21 @@ export const ConfirmClaimModal: React.FC = () => {
                   </View>
                 </View>
 
-                {/* Re-bid Active Alert Banner */}
-                {isRebid && (
+                {/* Re-claim Active Alert Banner */}
+                {isReclaim && (
                   <View
                     style={[
-                      styles.rebidAlert,
+                      styles.reclaimAlert,
                       { backgroundColor: colors.secondaryLight, borderColor: colors.secondaryGreen },
                     ]}>
                     <Ionicons name="checkmark-circle" size={20} color={colors.secondaryGreen} />
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.rebidAlertTitle, { color: colors.secondaryGreen }]}>
+                      <Text style={[styles.reclaimAlertTitle, { color: colors.secondaryGreen }]}>
                         Active Listing Found {activeListing?.currentRankInCategory ? `(Rank #${activeListing.currentRankInCategory})` : ''}
                       </Text>
-                      <Text style={[styles.rebidAlertDesc, { color: colors.text }]}>
+                      <Text style={[styles.reclaimAlertDesc, { color: colors.text }]}>
                         Previous payment of{' '}
-                        <Text style={{ fontWeight: '700' }}>₹{existingBid.toFixed(2)}</Text> will be
+                        <Text style={{ fontWeight: '700' }}>₹{existingClaim.toFixed(2)}</Text> will be
                         credited 100% toward this placement.
                       </Text>
                     </View>
@@ -441,16 +441,16 @@ export const ConfirmClaimModal: React.FC = () => {
 
                 {/* Placement Stepper */}
                 <View style={styles.inputGroup}>
-                  <View style={styles.bidHeaderRow}>
+                  <View style={styles.claimHeaderRow}>
                     <Text style={[styles.inputLabel, { color: colors.text }]}>Target Placement Amount</Text>
-                    <Text style={[styles.minBidLabel, { color: colors.textMuted }]}>
-                      Min: ₹{minStartingBid}
+                    <Text style={[styles.minClaimLabel, { color: colors.textMuted }]}>
+                      Min: ₹{minStartingClaim}
                     </Text>
                   </View>
                   <View style={styles.stepperRow}>
                     <Pressable
                       style={[styles.stepperBtn, { backgroundColor: colors.surfaceSubtle }]}
-                      onPress={decrementBid}>
+                      onPress={decrementClaim}>
                       <Ionicons name="remove" size={20} color={colors.text} />
                     </Pressable>
 
@@ -466,14 +466,14 @@ export const ConfirmClaimModal: React.FC = () => {
                         value={String(targetAmount)}
                         onChangeText={(t) => {
                           const n = parseInt(t, 10);
-                          setTargetAmount(isNaN(n) ? minStartingBid : n);
+                          setTargetAmount(isNaN(n) ? minStartingClaim : n);
                         }}
                       />
                     </View>
 
                     <Pressable
                       style={[styles.stepperBtn, { backgroundColor: colors.surfaceSubtle }]}
-                      onPress={incrementBid}>
+                      onPress={incrementClaim}>
                       <Ionicons name="add" size={20} color={colors.text} />
                     </Pressable>
                   </View>
@@ -481,9 +481,9 @@ export const ConfirmClaimModal: React.FC = () => {
 
                 {/* Owner Email */}
                 <View style={styles.inputGroup}>
-                  <View style={styles.bidHeaderRow}>
+                  <View style={styles.claimHeaderRow}>
                     <Text style={[styles.inputLabel, { color: colors.text }]}>Owner Contact Email *</Text>
-                    {isRebid && activeListing?.ownerContactEmailMasked && (
+                    {isReclaim && activeListing?.ownerContactEmailMasked && (
                       <Text style={[styles.registeredEmailPill, { color: colors.primary }]}>
                         Registered: {activeListing.ownerContactEmailMasked}
                       </Text>
@@ -505,7 +505,7 @@ export const ConfirmClaimModal: React.FC = () => {
                       autoCapitalize="none"
                     />
                   </View>
-                  {isRebid && (
+                  {isReclaim && (
                     <Text style={[styles.fieldHint, { color: colors.textMuted }]}>
                       Must match registered email to authorize your previous payment credit.
                     </Text>
@@ -526,7 +526,7 @@ export const ConfirmClaimModal: React.FC = () => {
                     <Text style={[styles.ledgerItemVal, { color: colors.text }]}>₹{targetAmount.toFixed(2)}</Text>
                   </View>
 
-                  {isRebid && (
+                  {isReclaim && (
                     <View style={styles.ledgerRow}>
                       <Text style={[styles.ledgerItemTitle, { color: colors.success }]}>
                         Previous Payment Credited (100%)
@@ -700,12 +700,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-  bidHeaderRow: {
+  claimHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  minBidLabel: {
+  minClaimLabel: {
     fontSize: 12,
   },
   registeredEmailPill: {
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     marginTop: 2,
   },
-  rebidAlert: {
+  reclaimAlert: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
@@ -737,11 +737,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     borderWidth: 1,
   },
-  rebidAlertTitle: {
+  reclaimAlertTitle: {
     fontSize: 12,
     fontWeight: '700',
   },
-  rebidAlertDesc: {
+  reclaimAlertDesc: {
     fontSize: 11,
     marginTop: 2,
   },

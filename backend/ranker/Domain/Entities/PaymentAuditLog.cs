@@ -8,7 +8,7 @@ public class PaymentAuditLog
 {
     public int Id { get; set; }
 
-    /// <summary>Action or event type, e.g. "CreateOrder", "VerifyPayment", "PlaceBid", "Webhook".</summary>
+    /// <summary>Action or event type, e.g. "CreateOrder", "VerifyPayment", "PlaceClaim", "Webhook".</summary>
     public required string Action { get; set; }
 
     public string? Gateway { get; set; } = "Razorpay";

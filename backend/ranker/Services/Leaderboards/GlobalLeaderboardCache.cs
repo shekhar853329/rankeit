@@ -6,7 +6,7 @@ namespace Ranker.Services.Leaderboards;
 
 /// <summary>
 /// Cache-aside store for the global leaderboard read model. Not recomputed on every request - only when
-/// invalidated (a BidPlaced event affecting a category's #1) or after the safety-net expiration elapses.
+/// invalidated (a ClaimPlaced event affecting a category's #1) or after the safety-net expiration elapses.
 /// </summary>
 public class GlobalLeaderboardCache(IMemoryCache cache)
 {

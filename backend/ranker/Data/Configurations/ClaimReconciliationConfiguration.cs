@@ -4,11 +4,11 @@ using Ranker.Domain.Entities;
 
 namespace Ranker.Data.Configurations;
 
-public class BidReconciliationConfiguration : IEntityTypeConfiguration<BidReconciliation>
+public class ClaimReconciliationConfiguration : IEntityTypeConfiguration<ClaimReconciliation>
 {
-    public void Configure(EntityTypeBuilder<BidReconciliation> builder)
+    public void Configure(EntityTypeBuilder<ClaimReconciliation> builder)
     {
-        builder.ToTable("BidReconciliations");
+        builder.ToTable("ClaimReconciliations");
 
         builder.HasKey(r => r.Id);
 

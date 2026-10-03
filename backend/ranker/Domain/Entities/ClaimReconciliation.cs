@@ -1,10 +1,10 @@
 namespace Ranker.Domain.Entities;
 
 /// <summary>
-/// Audit trail for bids that were rejected after payment had already been confirmed by the gateway
+/// Audit trail for claims that were rejected after payment had already been confirmed by the gateway
 /// (typically the losing side of a race for a category's #1 spot). Ops reviews these to issue refunds.
 /// </summary>
-public class BidReconciliation
+public class ClaimReconciliation
 {
     public int Id { get; set; }
 

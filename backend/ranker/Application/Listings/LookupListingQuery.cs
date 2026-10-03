@@ -39,7 +39,7 @@ public class LookupListingQueryHandler(RankerDbContext dbContext)
                         l.Url == withHttp ||
                         l.Url == withHttp + "/" ||
                         l.Url.Contains(rawDomain))
-            .OrderByDescending(l => l.CurrentBidAmount)
+            .OrderByDescending(l => l.CurrentClaimAmount)
             .FirstOrDefaultAsync(ct);
 
         if (listing is null)
@@ -49,8 +49,8 @@ public class LookupListingQueryHandler(RankerDbContext dbContext)
 
         var rank = await dbContext.Listings
             .Where(l => l.CategoryId == listing.CategoryId &&
-                        (l.CurrentBidAmount > listing.CurrentBidAmount ||
-                         (l.CurrentBidAmount == listing.CurrentBidAmount && l.FirstBidAt < listing.FirstBidAt)))
+                        (l.CurrentClaimAmount > listing.CurrentClaimAmount ||
+                         (l.CurrentClaimAmount == listing.CurrentClaimAmount && l.FirstClaimAt < listing.FirstClaimAt)))
             .CountAsync(ct) + 1;
 
         var maskedEmail = MaskEmail(listing.OwnerContactEmail);
@@ -60,7 +60,7 @@ public class LookupListingQueryHandler(RankerDbContext dbContext)
             ListingId: listing.Id,
             ListingName: listing.Name,
             ListingUrl: listing.Url,
-            CurrentBidAmount: listing.CurrentBidAmount,
+            CurrentClaimAmount: listing.CurrentClaimAmount,
             CurrentRankInCategory: rank,
             OwnerContactEmailMasked: maskedEmail,
             SiteName: listing.SiteName,

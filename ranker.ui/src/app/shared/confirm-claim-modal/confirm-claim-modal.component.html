@@ -10,7 +10,7 @@
     @if (transactionDetails(); as details) {
     <div class="modal-panel__header">
       <div class="modal-panel__badge-row">
-        <span class="status-pill status-pill--rebid">
+        <span class="status-pill status-pill--reclaim">
           🎉 Payment Confirmed
         </span>
       </div>
@@ -50,8 +50,7 @@
 
       <div class="txn-card__row">
         <span class="txn-card__label">Current Total Placement</span>
-        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newBidAmount ?? 0) | number: '1.2-2'
-          }}</span>
+        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newClaimAmount ?? 0) | number: '1.2-2' }}</span>
       </div>
 
       <div class="txn-card__row">
@@ -182,8 +181,8 @@
     <div class="modal-panel__header">
       <div>
         <div class="modal-panel__badge-row">
-          <span class="status-pill" [class.status-pill--rebid]="isRebid()">
-            {{ isRebid() ? '🔄 Raising Existing Position' : '🚀 Claim Position' }}
+          <span class="status-pill" [class.status-pill--reclaim]="isReclaim()">
+            {{ isReclaim() ? '🔄 Raising Existing Position' : '🚀 Claim Position' }}
           </span>
         </div>
         <h2 class="modal-panel__title" id="claim-modal-title">Confirm & Pay</h2>
@@ -218,8 +217,8 @@
         <span class="readonly-url__value">{{ domainUrl() || '—' }}</span>
       </div>
 
-      <!-- Rebid credit notice -->
-      @if (isRebid()) {
+      <!-- Reclaim credit notice -->
+      @if (isReclaim()) {
       <div class="domain-alert domain-alert--found">
         <div class="domain-alert__icon">
           <span class="material-symbols-outlined icon-md text-success">verified</span>
@@ -232,7 +231,7 @@
             }
           </div>
           <div class="domain-alert__desc">
-            Your previous payment of <strong>₹{{ existingBidAmount() | number: '1.2-2' }}</strong> will be
+            Your previous payment of <strong>₹{{ existingClaimAmount() | number: '1.2-2' }}</strong> will be
             <strong>credited 100%</strong> toward your new placement.
           </div>
         </div>
@@ -244,13 +243,13 @@
     <label>
       <div class="field-title-row">
         <span class="field-title">Owner Contact Email</span>
-        @if (isRebid() && maskedOwnerEmail()) {
+        @if (isReclaim() && maskedOwnerEmail()) {
         <span class="auth-hint-pill">Registered: {{ maskedOwnerEmail() }}</span>
         }
       </div>
       <input type="email" [ngModel]="ownerEmail()" (ngModelChange)="ownerEmail.set($event)"
         placeholder="you@example.com" [disabled]="submitting()" />
-      @if (isRebid()) {
+      @if (isReclaim()) {
       <span class="field-hint">Must match the email on record to authorize your previous payment credit.</span>
       }
     </label>
@@ -276,12 +275,12 @@
         <div class="calc-ledger__row-left">
           <span class="calc-ledger__item-title">
             Previous Payment Credited
-            @if (isRebid()) {
+            @if (isReclaim()) {
             <span class="credit-pill">Credited</span>
             }
           </span>
           <span class="calc-ledger__item-desc">
-            {{ isRebid() ? 'Paid previously on this domain' : 'New listing — no prior credit' }}
+            {{ isReclaim() ? 'Paid previously on this domain' : 'New listing — no prior credit' }}
           </span>
         </div>
         <span class="calc-ledger__item-val font-numeric text-success">
@@ -306,15 +305,14 @@
     @if (isBelowMinimum()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>
-      <span>Target placement must be at least ₹{{ absoluteMinimumBid() | number: '1.2-2' }}.</span>
+      <span>Target placement must be at least ₹{{ absoluteMinimumClaim() | number: '1.2-2' }}.</span>
     </div>
     }
 
     @if (isNotHigherThanExisting()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>
-      <span>Target placement must be higher than your current placement of ₹{{ existingBidAmount() | number: '1.2-2'
-        }}.</span>
+      <span>Target placement must be higher than your current placement of ₹{{ existingClaimAmount() | number: '1.2-2' }}.</span>
     </div>
     }
 

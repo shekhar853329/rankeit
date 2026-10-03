@@ -75,9 +75,9 @@
           <span class="stat-value stat-value--rank">#{{ p.currentRankInCategory }}</span>
           <span class="stat-sub">of {{ p.totalListingsInCategory }} in {{ p.categoryName }}</span>
         </div>
-        <div class="stat-item stat-item--bid">
+        <div class="stat-item stat-item--placement">
           <span class="stat-eyebrow">Active Placement</span>
-          <span class="stat-value stat-value--bid">${{ p.currentBidAmount | number: '1.0-2' }}</span>
+          <span class="stat-value stat-value--claim">₹{{ p.currentClaimAmount | number: '1.0-2' }}</span>
         </div>
       </div>
     </div>
@@ -131,8 +131,8 @@
         <span class="material-symbols-outlined info-icon">event_available</span>
         <span class="info-label">Date Added</span>
       </div>
-      <span class="info-value">{{ p.firstBidAt | date: 'mediumDate' }}</span>
-      <span class="info-sub">{{ timeAgo(p.firstBidAt) }}</span>
+      <span class="info-value">{{ p.firstClaimAt | date: 'mediumDate' }}</span>
+      <span class="info-sub">{{ timeAgo(p.firstClaimAt) }}</span>
     </div>
 
     <div class="info-card card">
@@ -161,7 +161,7 @@
         <span class="material-symbols-outlined info-icon">payments</span>
         <span class="info-label">Total Placements</span>
       </div>
-      <span class="info-value">{{ p.bidCount }}</span>
+      <span class="info-value">{{ p.claimCount }}</span>
       <span class="info-sub">Placement transactions</span>
     </div>
 
@@ -170,8 +170,8 @@
         <span class="material-symbols-outlined info-icon">update</span>
         <span class="info-label">Last Activity</span>
       </div>
-      <span class="info-value">{{ p.lastBidAt | date: 'mediumDate' }}</span>
-      <span class="info-sub">{{ timeAgo(p.lastBidAt) }}</span>
+      <span class="info-value">{{ p.lastClaimAt | date: 'mediumDate' }}</span>
+      <span class="info-sub">{{ timeAgo(p.lastClaimAt) }}</span>
     </div>
 
     @if (p.ownerContactEmailMasked) {
@@ -238,7 +238,7 @@
         <div class="related-stats">
           <span class="related-stat">
             <span class="material-symbols-outlined text-[14px]">payments</span>
-            ${{ related.currentBidAmount | number: '1.0-2' }}
+            ₹{{ related.currentClaimAmount | number: '1.0-2' }}
           </span>
           <span class="related-stat">
             <span class="material-symbols-outlined text-[14px]">visibility</span>

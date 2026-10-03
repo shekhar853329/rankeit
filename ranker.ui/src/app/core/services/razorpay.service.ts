@@ -48,7 +48,7 @@ export class RazorpayService {
    * 1. Creates a backend order for the given amount (in rupees → converted to paise).
    * 2. Opens the Razorpay modal.
    * 3. On success, calls the backend to verify the signature.
-   * 4. Resolves with CheckoutResult so the caller can proceed to place the bid.
+   * 4. Resolves with CheckoutResult so the caller can proceed to place the claim.
    *
    * Rejects on: order creation failure, modal dismiss, payment failure, or signature mismatch.
    */
@@ -70,7 +70,7 @@ export class RazorpayService {
         this.createOrder({
           amountInPaise,
           currency: 'INR',
-          receipt: `bid_${Date.now()}`,
+          receipt: `claim_${Date.now()}`,
         }),
       );
     } catch (err) {
@@ -86,7 +86,7 @@ export class RazorpayService {
         amount: order.amount,
         currency: order.currency,
         email: params.email,
-        description: params.description ?? 'Bid payment',
+        description: params.description ?? 'Claim placement fee',
       });
     } catch (err) {
       // Re-throw as-is — openModal already produces friendly Error messages

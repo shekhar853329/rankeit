@@ -15,7 +15,7 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
         var pageSize = Math.Clamp(request.PageSize, 1, 30);
 
         var allDays = await dbContext.Listings
-            .Select(l => l.FirstBidAt.Date)
+            .Select(l => l.FirstClaimAt.Date)
             .Distinct()
             .OrderByDescending(d => d)
             .ToListAsync(ct);
@@ -27,19 +27,19 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
         {
             var nextDay = day.AddDays(1);
 
-            // Ranked strictly by bid amount within the day (mirrors the per-category leaderboard rule).
+            // Ranked strictly by claim amount within the day (mirrors the per-category leaderboard rule).
             var entries = await dbContext.Listings
                 .AsNoTracking()
-                .Where(l => l.FirstBidAt >= day && l.FirstBidAt < nextDay)
-                .OrderByDescending(l => l.CurrentBidAmount)
-                .ThenBy(l => l.FirstBidAt)
+                .Where(l => l.FirstClaimAt >= day && l.FirstClaimAt < nextDay)
+                .OrderByDescending(l => l.CurrentClaimAmount)
+                .ThenBy(l => l.FirstClaimAt)
                 .Select(l => new
                 {
                     l.Id,
                     l.Name,
                     l.Url,
-                    l.CurrentBidAmount,
-                    l.FirstBidAt,
+                    l.CurrentClaimAmount,
+                    l.FirstClaimAt,
                     l.ClickCount,
                     l.SiteName,
                     l.LogoUrl,
@@ -57,8 +57,8 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
                     e.Url,
                     e.CategoryName,
                     e.CategorySlug,
-                    e.CurrentBidAmount,
-                    e.FirstBidAt,
+                    e.CurrentClaimAmount,
+                    e.FirstClaimAt,
                     e.ClickCount,
                     e.SiteName,
                     e.LogoUrl,

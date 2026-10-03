@@ -27,14 +27,14 @@
           <h1 class="headline-title">
             Top {{ categoryName() }} Rankings: Claim Spot for
           </h1>
-          <div class="bid-stepper">
+          <div class="placement-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
-              id="bid-decrement">−</button>
-            <span class="stepper-display" id="target-bid-display">
-              ${{ effectiveClaimAmount() ?? minStartingBid() | number: '1.0-0' }}
+              id="placement-decrement">−</button>
+            <span class="stepper-display" id="target-placement-display">
+              ₹{{ effectiveClaimAmount() ?? minStartingClaim() | number: '1.0-0' }}
             </span>
             <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase amount"
-              id="bid-increment">+</button>
+              id="placement-increment">+</button>
           </div>
         </div>
 
@@ -87,7 +87,7 @@
                 <span class="amount-currency">₹</span>
                 <input id="category-claim-amount" type="number" class="field-input field-input--amount"
                   aria-label="Placement Amount"
-                  [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingBid())"
+                  [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingClaim())"
                   (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
                 <div class="stepper-actions">
@@ -175,11 +175,11 @@
           @if (timeMode() === 'today') {
           <h3>No claims placed in this arena today</h3>
           <p>Be the first to claim Rank #1 today — starting at just {{ currencySymbol }}{{ claimPrice() ??
-            minStartingBid() }}!</p>
+            minStartingClaim() }}!</p>
           } @else {
           <h3>No listings in this arena yet</h3>
           <p>Be the first pioneer! Claim Rank #1 right now for just {{ currencySymbol }}{{ claimPrice() ??
-            minStartingBid() }}.</p>
+            minStartingClaim() }}.</p>
           }
         </div>
         } @else {
@@ -242,10 +242,10 @@
               <div class="podium-card__right">
                 <div class="price-box">
                   <span class="price-label">Active Placement</span>
-                  <span class="price-val text-primary">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+                  <span class="price-val text-primary">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
-                <button type="button" class="outbid-action-btn outbid-action-btn--primary"
-                  (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), 1); $event.stopPropagation()">
+                <button type="button" class="claim-action-btn claim-action-btn--primary"
+                  (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), 1); $event.stopPropagation()">
                   <span class="material-symbols-outlined icon-sm">workspace_premium</span>
                   <span>Claim This Position</span>
                 </button>
@@ -291,10 +291,10 @@
               <div class="podium-card__right">
                 <div class="price-box">
                   <span class="price-label">Current Placement</span>
-                  <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+                  <span class="price-val">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
-                <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
-                  (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), 2); $event.stopPropagation()">
+                <button type="button" class="claim-action-btn claim-action-btn--secondary"
+                  (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), 2); $event.stopPropagation()">
                   <span class="material-symbols-outlined icon-sm">workspace_premium</span>
                   <span>Claim This Position</span>
                 </button>
@@ -340,10 +340,10 @@
               <div class="podium-card__right">
                 <div class="price-box">
                   <span class="price-label">Current Placement</span>
-                  <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+                  <span class="price-val">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
-                <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
-                  (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), 3); $event.stopPropagation()">
+                <button type="button" class="claim-action-btn claim-action-btn--secondary"
+                  (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), 3); $event.stopPropagation()">
                   <span class="material-symbols-outlined icon-sm">workspace_premium</span>
                   <span>Claim This Position</span>
                 </button>
@@ -374,9 +374,9 @@
             </div>
 
             <div class="compact-entry-right">
-              <span class="compact-bid">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+              <span class="compact-price">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
               <button type="button" class="compact-btn"
-                (click)="moveToClaimRank(entry.currentBidAmount + minBidIncrement(), entry.rank); $event.stopPropagation()">
+                (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), entry.rank); $event.stopPropagation()">
                 Claim This Position
               </button>
             </div>
@@ -422,16 +422,16 @@
             <div class="liquidity-stats-row">
               <div class="liquidity-stat-pill" title="Total category placement volume today">
                 <span class="stat-pill-label">Today's Vol</span>
-                <span class="stat-pill-val">${{ todayTotalVolume() | number: '1.2-2' }}</span>
+                <span class="stat-pill-val">₹{{ todayTotalVolume() | number: '1.2-2' }}</span>
               </div>
               <div class="liquidity-stat-pill" title="Total category payments registered today">
                 <span class="stat-pill-label">Count</span>
-                <span class="stat-pill-val">{{ todayTotalBids() }}</span>
+                <span class="stat-pill-val">{{ todayTotalClaims() }}</span>
               </div>
-              @if (peakBidInfo(); as peak) {
+              @if (peakClaimInfo(); as peak) {
               <div class="liquidity-stat-pill liquidity-stat-pill--highlight" title="Peak category payment today">
                 <span class="stat-pill-label">Peak</span>
-                <span class="stat-pill-val">${{ peak.amount | number: '1.0-2' }}</span>
+                <span class="stat-pill-val">₹{{ peak.amount | number: '1.0-2' }}</span>
               </div>
               }
             </div>
@@ -447,7 +447,7 @@
                 title="Show each payment as its own distinct spike on a continuous timeline">
                 <span class="material-symbols-outlined icon-xs">bolt</span>
                 <span>Live Timeline</span>
-                <span class="tab-chip">{{ (categoryStats()?.recentBidsTimeline?.length ?? 0) }}</span>
+                <span class="tab-chip">{{ (categoryStats()?.recentClaimsTimeline?.length ?? 0) }}</span>
               </button>
               <button type="button" class="chart-tab-btn" role="tab" [attr.aria-selected]="chartViewMode() === 'hourly'"
                 [class.chart-tab-btn--active]="chartViewMode() === 'hourly'" (click)="setChartViewMode('hourly')"
@@ -509,7 +509,7 @@
 
           <!-- Interactive Chart Container (ECharts) -->
           <div class="interactive-chart-wrapper">
-            <div #bidChartContainer class="echarts-surface"></div>
+            <div #claimChartContainer class="echarts-surface"></div>
           </div>
 
           <!-- Chart Footnote & Interactive Hints -->
@@ -559,7 +559,7 @@
             </div>
 
             <button type="button" class="spotlight-claim-btn"
-              (click)="$event.stopPropagation(); moveToClaimRank((reigningChampion()?.currentBidAmount ?? minStartingBid()) + minBidIncrement(), 1)">
+              (click)="$event.stopPropagation(); moveToClaimRank((reigningChampion()?.currentClaimAmount ?? minStartingClaim()) + minClaimIncrement(), 1)">
               <span class="material-symbols-outlined icon-sm">workspace_premium</span>
               <span>Claim This Position</span>
             </button>
@@ -578,7 +578,7 @@
             @if (cat.slug !== categorySlug()) {
             <a [routerLink]="['/leaderboard', cat.slug]" class="trending-row">
               <span class="trending-name">{{ cat.name }}</span>
-              <span class="trending-count">${{ cat.minStartingBid }} floor</span>
+              <span class="trending-count">₹{{ cat.minStartingClaim }} floor</span>
             </a>
             }
             }

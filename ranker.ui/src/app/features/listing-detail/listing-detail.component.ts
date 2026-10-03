@@ -62,7 +62,7 @@ export class ListingDetailComponent implements OnInit {
             title: `${result.listingName} - Rank #${result.currentRankInCategory} in ${result.categoryName}`,
             description:
               result.description ||
-              `${result.listingName} is ranked #${result.currentRankInCategory} in ${result.categoryName} on RankUp with an active placement of $${result.currentBidAmount}.`,
+              `${result.listingName} is ranked #${result.currentRankInCategory} in ${result.categoryName} on RankUp with an active placement of $${result.currentClaimAmount}.`,
             url: `https://rankup.cyou/listings/${result.listingId}`,
             image: result.logoUrl || result.faviconUrl || undefined,
             type: 'product',
@@ -76,7 +76,7 @@ export class ListingDetailComponent implements OnInit {
               category: result.categoryName,
               offers: {
                 '@type': 'Offer',
-                price: result.currentBidAmount,
+                price: result.currentClaimAmount,
                 priceCurrency: 'USD',
                 availability: 'https://schema.org/InStock',
               },
@@ -117,26 +117,26 @@ export class ListingDetailComponent implements OnInit {
     });
   }
 
-  openOutbidModal(): void {
+  openClaimModal(): void {
     const l = this.listing();
     if (!l) return;
 
     this.leaderboardService.getCategoryLeaderboard(l.categorySlug).subscribe({
       next: (catData) => {
-        const minInc = catData.minBidIncrement || 1;
-        const currentTop = catData.leaderboard.items[0]?.currentBidAmount;
-        const minReq = currentTop !== undefined ? currentTop + minInc : catData.minStartingBid;
-        const targetAmount = Math.max(minReq, l.currentBidAmount + minInc);
+        const minInc = catData.minClaimIncrement || 1;
+        const currentTop = catData.leaderboard.items[0]?.currentClaimAmount;
+        const minReq = currentTop !== undefined ? currentTop + minInc : catData.minStartingClaim;
+        const targetAmount = Math.max(minReq, l.currentClaimAmount + minInc);
 
         this.modalService.openClaimModal({
           rank: 1,
           categoryName: l.categoryName,
           amount: targetAmount,
           categoryId: catData.categoryId,
-          minStartingBid: catData.minStartingBid,
-          minBidIncrement: minInc,
-          currentTopBid: currentTop ?? null,
-          currentBidAmount: l.currentBidAmount,
+          minStartingClaim: catData.minStartingClaim,
+          minClaimIncrement: minInc,
+          currentTopClaim: currentTop ?? null,
+          currentClaimAmount: l.currentClaimAmount,
           listingId: l.listingId,
           listingName: l.listingName,
           listingUrl: l.listingUrl,
@@ -152,12 +152,12 @@ export class ListingDetailComponent implements OnInit {
         this.modalService.openClaimModal({
           rank: 1,
           categoryName: l.categoryName,
-          amount: l.currentBidAmount + 1,
+          amount: l.currentClaimAmount + 1,
           categoryId: 0,
-          minStartingBid: 1,
-          minBidIncrement: 1,
-          currentTopBid: null,
-          currentBidAmount: l.currentBidAmount,
+          minStartingClaim: 1,
+          minClaimIncrement: 1,
+          currentTopClaim: null,
+          currentClaimAmount: l.currentClaimAmount,
           listingId: l.listingId,
           listingName: l.listingName,
           listingUrl: l.listingUrl,

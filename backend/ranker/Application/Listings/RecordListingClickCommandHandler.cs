@@ -34,7 +34,7 @@ public class RecordListingClickCommandHandler(RankerDbContext dbContext, IHubCon
         }
 
         // The homepage's global leaderboard is a cached read model (rule C3) and otherwise only
-        // invalidates on bid changes, so without this a refresh would keep serving the stale click count.
+        // invalidates on claim changes, so without this a refresh would keep serving the stale click count.
         cache.Invalidate();
 
         var payload = new ListingClickedPayload(request.ListingId, listing.ClickCount);

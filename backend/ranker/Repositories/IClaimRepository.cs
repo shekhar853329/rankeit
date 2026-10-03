@@ -2,7 +2,7 @@ using Ranker.Domain.Entities;
 
 namespace Ranker.Repositories;
 
-public interface IBidRepository
+public interface IClaimRepository
 {
-    void Add(Bid bid);
+    void Add(Claim claim);
 }

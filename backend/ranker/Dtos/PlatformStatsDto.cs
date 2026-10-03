@@ -6,17 +6,17 @@ public sealed record PlatformStatsDto(
     decimal AverageCpcToday,
     double DirectCtrRate,
     string ProtocolAuditId,
-    IReadOnlyList<HourlyBidPointDto> HourlyBidPressures,
-    IReadOnlyList<BidTimelinePointDto> RecentBidsTimeline,
-    IReadOnlyList<DailyBidPointDto> DailyBidPressures);
+    IReadOnlyList<HourlyClaimPointDto> HourlyClaimPressures,
+    IReadOnlyList<ClaimTimelinePointDto> RecentClaimsTimeline,
+    IReadOnlyList<DailyClaimPointDto> DailyClaimPressures);
 
-public sealed record HourlyBidPointDto(
+public sealed record HourlyClaimPointDto(
     int Hour,
     decimal Volume,
-    int BidCount,
-    decimal AvgBid = 0m);
+    int ClaimCount,
+    decimal AvgClaim = 0m);
 
-public sealed record BidTimelinePointDto(
+public sealed record ClaimTimelinePointDto(
     int Id,
     int ListingId,
     string ListingName,
@@ -24,15 +24,15 @@ public sealed record BidTimelinePointDto(
     decimal Amount,
     DateTime CreatedAt,
     string? PaymentReference,
-    decimal CurrentBidLevel = 0m);
+    decimal CurrentClaimLevel = 0m);
 
-public sealed record DailyBidPointDto(
+public sealed record DailyClaimPointDto(
     string Date,
     decimal Volume,
-    int BidCount);
+    int ClaimCount);
 
-public sealed record LiveBidEventDto(
-    int BidId,
+public sealed record LiveClaimEventDto(
+    int ClaimId,
     int ListingId,
     string ListingName,
     string? SiteName,
@@ -41,7 +41,7 @@ public sealed record LiveBidEventDto(
     string? CategoryIcon,
     decimal Amount,
     DateTime CreatedAt,
-    bool IsTopBid,
+    bool IsTopClaim,
     string ActionText,
     string HighlightText,
     string TimeAgo);
@@ -52,5 +52,5 @@ public sealed record HallOfFameItemDto(
     string Name,
     string? SiteName,
     string Url,
-    decimal Bid,
+    decimal ClaimAmount,
     int ClickCount);

@@ -15,7 +15,7 @@ export default function TermsScreen() {
     {
       title: '1. What the Service Is',
       content:
-        'RankUp is a transparent, real-time product discovery and digital advertising platform (MCC 7311 - Advertising Services). Rankings are determined directly by active sponsored placement amounts chosen by listing creators. RankUp provides promotional visibility and is not an auction house; no consumer goods or commodities are auctioned.',
+        'RankUp is a transparent, real-time product discovery and digital advertising platform (MCC 7311 - Advertising Services). Rankings are determined directly by active sponsored placement amounts chosen by listing creators. RankUp provides promotional visibility and digital discovery placements only; no physical merchandise or speculative commodities are sold or traded on the platform.',
     },
     {
       title: '2. Eligibility & Requirements',

@@ -30,7 +30,7 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
         if (timeMode == "today")
         {
             var todayUtc = DateTime.UtcNow.Date;
-            query = query.Where(l => l.LastBidAt >= todayUtc);
+            query = query.Where(l => l.LastClaimAt >= todayUtc);
         }
 
         if (!string.IsNullOrEmpty(searchQuery))
@@ -43,17 +43,17 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
         }
 
         var results = await query
-            .OrderByDescending(l => l.CurrentBidAmount)
-            .ThenBy(l => l.FirstBidAt)
+            .OrderByDescending(l => l.CurrentClaimAmount)
+            .ThenBy(l => l.FirstClaimAt)
             .Take(topN)
             .Select(l => new
             {
                 l.Id,
                 l.Name,
                 l.Url,
-                l.CurrentBidAmount,
+                l.CurrentClaimAmount,
                 l.ClickCount,
-                BidCount = l.Bids.Count(),
+                ClaimCount = l.Claims.Count(),
                 l.CategoryId,
                 l.SiteName,
                 l.LogoUrl,
@@ -76,10 +76,10 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                 x.Id,
                 x.Name,
                 x.Url,
-                x.CurrentBidAmount,
-                x.CurrentBidAmount,
+                x.CurrentClaimAmount,
+                x.CurrentClaimAmount,
                 x.ClickCount,
-                x.BidCount,
+                x.ClaimCount,
                 x.SiteName,
                 x.LogoUrl,
                 x.Description,

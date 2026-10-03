@@ -5,7 +5,7 @@ export interface RelatedListingDto {
   categoryName: string;
   categorySlug: string;
   rank: number;
-  currentBidAmount: number;
+  currentClaimAmount: number;
   clickCount: number;
   siteName: string | null;
   logoUrl: string | null;
@@ -23,11 +23,11 @@ export interface WebsiteProfileDto {
   categoryIcon: string | null;
   currentRankInCategory: number;
   totalListingsInCategory: number;
-  currentBidAmount: number;
-  firstBidAt: string;
-  lastBidAt: string;
+  currentClaimAmount: number;
+  firstClaimAt: string;
+  lastClaimAt: string;
   clickCount: number;
-  bidCount: number;
+  claimCount: number;
   siteName: string | null;
   logoUrl: string | null;
   description: string | null;

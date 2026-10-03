@@ -82,10 +82,10 @@
     <div class="hero-price-panel">
       <div class="price-header">
         <span class="price-eyebrow">Active Placement</span>
-        <span class="price-display">${{ l.currentBidAmount | number: '1.0-2' }}</span>
+        <span class="price-display">₹{{ l.currentClaimAmount | number: '1.0-2' }}</span>
       </div>
 
-      <button type="button" class="btn-outbid-cta" (click)="claimThisPosition()">
+      <button type="button" class="btn-claim-cta" (click)="claimThisPosition()">
         <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
         <span>Claim This Position</span>
       </button>
@@ -111,17 +111,17 @@
         <span class="material-symbols-outlined bento-icon">event_available</span>
         <span class="bento-label">First Circulated</span>
       </div>
-      <span class="bento-val">{{ l.firstBidAt | date: 'mediumDate' }}</span>
-      <span class="bento-sub">{{ timeAgo(l.firstBidAt) }}</span>
+      <span class="bento-val">{{ l.firstClaimAt | date: 'mediumDate' }}</span>
+      <span class="bento-sub">{{ timeAgo(l.firstClaimAt) }}</span>
     </div>
 
     <div class="bento-card card">
       <div class="bento-header">
         <span class="material-symbols-outlined bento-icon">update</span>
-        <span class="bento-label">Latest Activity</span>
+        <span class="info-label bento-label">Latest Activity</span>
       </div>
-      <span class="bento-val">{{ l.lastBidAt | date: 'mediumDate' }}</span>
-      <span class="bento-sub">{{ timeAgo(l.lastBidAt) }}</span>
+      <span class="bento-val">{{ l.lastClaimAt | date: 'mediumDate' }}</span>
+      <span class="bento-sub">{{ timeAgo(l.lastClaimAt) }}</span>
     </div>
 
     <div class="bento-card card">
@@ -129,7 +129,7 @@
         <span class="material-symbols-outlined bento-icon">payments</span>
         <span class="bento-label">Total Placements</span>
       </div>
-      <span class="bento-val font-mono">{{ l.bids.length }}</span>
+      <span class="bento-val font-mono">{{ l.claims.length }}</span>
       <span class="bento-sub">Placement transactions</span>
     </div>
 
@@ -147,7 +147,7 @@
   </div>
 
   <!-- Promotion Ledger / History -->
-  <section class="bid-ledger card">
+  <section class="claim-ledger transaction-ledger card">
     <header class="ledger-header">
       <div class="ledger-title-wrap">
         <span class="material-symbols-outlined ledger-icon">receipt_long</span>
@@ -158,11 +158,11 @@
       </div>
 
       <span class="ledger-count-pill">
-        {{ l.bids.length }} Transaction{{ l.bids.length === 1 ? '' : 's' }}
+        {{ l.claims.length }} Transaction{{ l.claims.length === 1 ? '' : 's' }}
       </span>
     </header>
 
-    @if (l.bids.length === 0) {
+    @if (l.claims.length === 0) {
     <div class="ledger-empty">
       <p>No historical placement transactions recorded yet.</p>
     </div>
@@ -179,26 +179,26 @@
           </tr>
         </thead>
         <tbody>
-          @for (bid of l.bids; track bid.createdAt; let idx = $index) {
-          <tr [class.latest-bid-row]="idx === 0">
+          @for (claim of l.claims; track claim.createdAt; let idx = $index) {
+          <tr [class.latest-claim-row]="idx === 0">
             <td class="col-date">
-              <span class="date-main">{{ bid.createdAt | date: 'medium' }}</span>
-              <span class="date-rel">{{ timeAgo(bid.createdAt) }}</span>
+              <span class="date-main">{{ claim.createdAt | date: 'medium' }}</span>
+              <span class="date-rel">{{ timeAgo(claim.createdAt) }}</span>
             </td>
             <td class="col-amount">
-              <span class="amount-val">${{ bid.amount | number: '1.0-2' }}</span>
+              <span class="amount-val">₹{{ claim.amount | number: '1.0-2' }}</span>
               @if (idx === 0) {
               <span class="tag-peak">Top Rank</span>
               }
             </td>
             <td class="col-paid">
-              <span class="paid-badge font-mono">+${{ (bid.paymentAmount > 0 ? bid.paymentAmount : bid.amount) | number:
+              <span class="paid-badge font-mono">+₹{{ (claim.paymentAmount > 0 ? claim.paymentAmount : claim.amount) | number:
                 '1.2-2' }}</span>
             </td>
             <td class="col-ref">
               <span class="ref-badge">
                 <span class="material-symbols-outlined text-[13px]">tag</span>
-                <code>{{ bid.paymentReferenceMasked }}</code>
+                <code>{{ claim.paymentReferenceMasked }}</code>
               </span>
             </td>
             <td class="col-status">

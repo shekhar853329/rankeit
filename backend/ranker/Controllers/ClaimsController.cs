@@ -1,24 +1,24 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Ranker.Application.Bids;
+using Ranker.Application.Claims;
 using Ranker.Dtos;
 
 namespace Ranker.Controllers;
 
 [ApiController]
-[Route("api/bids")]
-public class BidsController(ISender sender) : ControllerBase
+[Route("api/claims")]
+public class ClaimsController(ISender sender) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<PlaceBidResultDto>> PlaceBid([FromBody] PlaceBidRequestDto request, CancellationToken ct)
+    public async Task<ActionResult<PlaceClaimResultDto>> PlaceClaim([FromBody] PlaceClaimRequestDto request, CancellationToken ct)
     {
-        var result = await sender.Send(new PlaceBidCommand(
+        var result = await sender.Send(new PlaceClaimCommand(
             request.CategoryId,
             request.ListingId,
             request.ListingName,
             request.ListingUrl,
             request.OwnerContactEmail,
-            request.TargetBidAmount,
+            request.TargetClaimAmount,
             request.PaymentReference,
             request.ConfirmedPaymentAmount,
             request.SiteName,
@@ -30,14 +30,14 @@ public class BidsController(ISender sender) : ControllerBase
     }
 
     [HttpPost("calculate")]
-    public async Task<ActionResult<CalculateBidQuoteResponseDto>> CalculateBid([FromBody] CalculateBidQuoteRequestDto request, CancellationToken ct)
+    public async Task<ActionResult<CalculateClaimQuoteResponseDto>> CalculateClaim([FromBody] CalculateClaimQuoteRequestDto request, CancellationToken ct)
     {
-        var result = await sender.Send(new CalculateBidQuoteQuery(
+        var result = await sender.Send(new CalculateClaimQuoteQuery(
             request.CategoryId,
             request.ListingId,
             request.ListingUrl,
             request.OwnerContactEmail,
-            request.TargetBidAmount), ct);
+            request.TargetClaimAmount), ct);
 
         return result.Success ? Ok(result) : BadRequest(result);
     }

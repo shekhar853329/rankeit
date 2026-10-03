@@ -68,7 +68,7 @@ export default function ContactScreen() {
             Get in Touch &amp; About the Project
           </Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            Whether you have questions about your bids, need help with a listing, want to explore a
+            Whether you have questions about your placements, need help with a listing, want to explore a
             partnership, or want to share feedback—reach out directly to the creator.
           </Text>
         </View>

@@ -5,11 +5,11 @@ export interface LeaderboardEntryDto {
   listingId: number;
   listingName: string;
   listingUrl: string;
-  currentBidAmount: number;
-  firstBidAt: string;
-  lastBidAt: string;
+  currentClaimAmount: number;
+  firstClaimAt: string;
+  lastClaimAt: string;
   clickCount: number;
-  bidCount?: number;
+  claimCount?: number;
   siteName: string | null;
   logoUrl: string | null;
   description: string | null;
@@ -21,8 +21,8 @@ export interface CategoryLeaderboardResponseDto {
   categoryName: string;
   categorySlug: string;
   categoryIcon?: string | null;
-  minBidIncrement: number;
-  minStartingBid: number;
+  minClaimIncrement: number;
+  minStartingClaim: number;
   leaderboard: PagedResult<LeaderboardEntryDto>;
 }
 
@@ -35,24 +35,24 @@ export interface GlobalLeaderboardEntryDto {
   listingId: number;
   listingName: string;
   listingUrl: string;
-  currentBidAmount: number;
+  currentClaimAmount: number;
   normalizedScore: number;
   clickCount: number;
-  bidCount?: number;
+  claimCount?: number;
   siteName: string | null;
   logoUrl: string | null;
   description: string | null;
   faviconUrl: string | null;
 }
 
-export interface HourlyBidPointDto {
+export interface HourlyClaimPointDto {
   hour: number;
   volume: number;
-  bidCount: number;
-  avgBid?: number;
+  claimCount: number;
+  avgClaim?: number;
 }
 
-export interface BidTimelinePointDto {
+export interface ClaimTimelinePointDto {
   id: number;
   listingId: number;
   listingName: string;
@@ -60,13 +60,13 @@ export interface BidTimelinePointDto {
   amount: number;
   createdAt: string;
   paymentReference: string | null;
-  currentBidLevel?: number;
+  currentClaimLevel?: number;
 }
 
-export interface DailyBidPointDto {
+export interface DailyClaimPointDto {
   date: string;
   volume: number;
-  bidCount: number;
+  claimCount: number;
 }
 
 export interface PlatformStatsDto {
@@ -75,13 +75,13 @@ export interface PlatformStatsDto {
   averageCpcToday: number;
   directCtrRate: number;
   protocolAuditId: string;
-  hourlyBidPressures: HourlyBidPointDto[];
-  recentBidsTimeline?: BidTimelinePointDto[];
-  dailyBidPressures?: DailyBidPointDto[];
+  hourlyClaimPressures: HourlyClaimPointDto[];
+  recentClaimsTimeline?: ClaimTimelinePointDto[];
+  dailyClaimPressures?: DailyClaimPointDto[];
 }
 
-export interface LiveBidEventDto {
-  bidId: number;
+export interface LiveClaimEventDto {
+  claimId: number;
   listingId: number;
   listingName: string;
   siteName: string | null;
@@ -90,7 +90,7 @@ export interface LiveBidEventDto {
   categoryIcon: string | null;
   amount: number;
   createdAt: string;
-  isTopBid: boolean;
+  isTopClaim: boolean;
   actionText: string;
   highlightText: string;
   timeAgo: string;
@@ -102,7 +102,7 @@ export interface HallOfFameItemDto {
   name: string;
   siteName: string | null;
   url: string;
-  bid: number;
+  claimAmount: number;
   clickCount: number;
 }
 
@@ -117,7 +117,7 @@ export interface RankUpdatedPayload {
   categorySlug: string;
   listingId: number;
   listingName: string;
-  newBidAmount: number;
+  newClaimAmount: number;
   becameCategoryTop: boolean;
   occurredAt: string;
 }

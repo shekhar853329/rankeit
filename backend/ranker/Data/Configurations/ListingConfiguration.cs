@@ -21,11 +21,11 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
         builder.Property(l => l.Description).HasMaxLength(1000);
         builder.Property(l => l.FaviconUrl).HasMaxLength(2048);
 
-        builder.Property(l => l.CurrentBidAmount).HasColumnType("numeric(18,2)");
+        builder.Property(l => l.CurrentClaimAmount).HasColumnType("numeric(18,2)");
 
         builder.Property(l => l.ClickCount).HasDefaultValue(0);
 
-        // PostgreSQL optimistic concurrency: maps to the built-in xmin system column (no migration needed)
+        // PostgreSQL optimistic concurrency: maps to the built-in xmin system column
         builder.Property(l => l.Xmin).IsRowVersion();
 
         builder.HasOne(l => l.Category)
@@ -33,8 +33,8 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
             .HasForeignKey(l => l.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Backs the ROW_NUMBER() OVER (PARTITION BY CategoryId ORDER BY CurrentBidAmount DESC, FirstBidAt ASC)
+        // Backs the ROW_NUMBER() OVER (PARTITION BY CategoryId ORDER BY CurrentClaimAmount DESC, FirstClaimAt ASC)
         // leaderboard query.
-        builder.HasIndex(l => new { l.CategoryId, l.CurrentBidAmount, l.FirstBidAt });
+        builder.HasIndex(l => new { l.CategoryId, l.CurrentClaimAmount, l.FirstClaimAt });
     }
 }

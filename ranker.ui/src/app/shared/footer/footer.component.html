@@ -36,6 +36,8 @@
           <a routerLink="/rules" class="footer-link">Rules &amp; Governance</a>
           <a routerLink="/terms" class="footer-link">Terms of Service</a>
           <a routerLink="/privacy" class="footer-link">Privacy Policy</a>
+          <a routerLink="/terms" [fragment]="'no-refunds'" class="footer-link">Refund &amp; Cancellation</a>
+          <a routerLink="/terms" [fragment]="'delivery'" class="footer-link">Delivery &amp; Fulfillment</a>
           <a routerLink="/contact" class="footer-link">Contact</a>
         </nav>
       </div>
@@ -46,15 +48,6 @@
       <span class="sub-disclaimer">
         Transparent sponsored ranking placements reset daily at 00:00 UTC.
       </span>
-
-      <div class="footer-socials">
-        <a routerLink="/contact" class="social-icon" title="Community & Support" aria-label="Community & Support">
-          <span class="material-symbols-outlined text-[18px]">forum</span>
-        </a>
-        <a routerLink="/daily" class="social-icon" title="Public Broadcasts" aria-label="Public Broadcasts">
-          <span class="material-symbols-outlined text-[18px]">public</span>
-        </a>
-      </div>
     </div>
   </div>
 </footer>

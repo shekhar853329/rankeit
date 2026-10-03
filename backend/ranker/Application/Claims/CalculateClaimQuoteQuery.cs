@@ -5,21 +5,21 @@ using Ranker.Domain.Entities;
 using Ranker.Dtos;
 using Ranker.Repositories;
 
-namespace Ranker.Application.Bids;
+namespace Ranker.Application.Claims;
 
-public sealed record CalculateBidQuoteQuery(
+public sealed record CalculateClaimQuoteQuery(
     int CategoryId,
     int? ListingId,
     string? ListingUrl,
     string? OwnerContactEmail,
-    decimal TargetBidAmount) : IRequest<CalculateBidQuoteResponseDto>;
+    decimal TargetClaimAmount) : IRequest<CalculateClaimQuoteResponseDto>;
 
-public class CalculateBidQuoteQueryHandler(
+public class CalculateClaimQuoteQueryHandler(
     RankerDbContext dbContext,
     ICategoryRepository categoryRepository)
-    : IRequestHandler<CalculateBidQuoteQuery, CalculateBidQuoteResponseDto>
+    : IRequestHandler<CalculateClaimQuoteQuery, CalculateClaimQuoteResponseDto>
 {
-    public async Task<CalculateBidQuoteResponseDto> Handle(CalculateBidQuoteQuery request, CancellationToken ct)
+    public async Task<CalculateClaimQuoteResponseDto> Handle(CalculateClaimQuoteQuery request, CancellationToken ct)
     {
         var category = await categoryRepository.GetByIdAsync(request.CategoryId, ct);
         if (category is null)
@@ -37,12 +37,12 @@ public class CalculateBidQuoteQueryHandler(
 
             if (existingListing is null)
             {
-                return Failure(category.Id, "ListingNotFound", "Listing not found.", category.Name, category.MinStartingBid, category.MinBidIncrement);
+                return Failure(category.Id, "ListingNotFound", "Listing not found.", category.Name, category.MinStartingClaim, category.MinClaimIncrement);
             }
 
             if (existingListing.CategoryId != request.CategoryId)
             {
-                return Failure(category.Id, "ListingCategoryMismatch", "Listing does not belong to this category.", category.Name, category.MinStartingBid, category.MinBidIncrement);
+                return Failure(category.Id, "ListingCategoryMismatch", "Listing does not belong to this category.", category.Name, category.MinStartingClaim, category.MinClaimIncrement);
             }
         }
         else if (!string.IsNullOrWhiteSpace(request.ListingUrl))
@@ -59,8 +59,8 @@ public class CalculateBidQuoteQueryHandler(
             if (!string.Equals(existingListing.OwnerContactEmail.Trim(), request.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 return Failure(category.Id, "OwnerEmailMismatch", "Owner contact email does not match the listing on record.",
-                    category.Name, category.MinStartingBid, category.MinBidIncrement,
-                    existingListing.Id, existingListing.Name, existingListing.CurrentBidAmount);
+                    category.Name, category.MinStartingClaim, category.MinClaimIncrement,
+                    existingListing.Id, existingListing.Name, existingListing.CurrentClaimAmount);
             }
         }
 
@@ -68,113 +68,113 @@ public class CalculateBidQuoteQueryHandler(
         var topListing = await dbContext.Listings
             .AsNoTracking()
             .Where(l => l.CategoryId == request.CategoryId)
-            .OrderByDescending(l => l.CurrentBidAmount)
-            .ThenBy(l => l.FirstBidAt)
-            .Select(l => new { l.Id, l.Name, l.CurrentBidAmount })
+            .OrderByDescending(l => l.CurrentClaimAmount)
+            .ThenBy(l => l.FirstClaimAt)
+            .Select(l => new { l.Id, l.Name, l.CurrentClaimAmount })
             .FirstOrDefaultAsync(ct);
 
-        var existingListingCurrentBid = existingListing?.CurrentBidAmount ?? 0m;
+        var existingListingCurrentClaim = existingListing?.CurrentClaimAmount ?? 0m;
 
         var rank1Minimum = topListing != null
-            ? topListing.CurrentBidAmount + category.MinBidIncrement
-            : category.MinStartingBid;
+            ? topListing.CurrentClaimAmount + category.MinClaimIncrement
+            : category.MinStartingClaim;
 
-        var expectedCharge = Math.Max(0m, request.TargetBidAmount - existingListingCurrentBid);
+        var expectedCharge = Math.Max(0m, request.TargetClaimAmount - existingListingCurrentClaim);
 
         var becameTop = topListing is null ||
-                        request.TargetBidAmount > topListing.CurrentBidAmount ||
+                        request.TargetClaimAmount > topListing.CurrentClaimAmount ||
                         (existingListing != null && existingListing.Id == topListing.Id);
 
-        if (request.TargetBidAmount < 1m)
+        if (request.TargetClaimAmount < 1m)
         {
-            return new CalculateBidQuoteResponseDto(
+            return new CalculateClaimQuoteResponseDto(
                 Success: false,
-                ErrorCode: "BidTooLow",
-                ErrorMessage: "Target bid must be at least ₹1.00.",
+                ErrorCode: "ClaimTooLow",
+                ErrorMessage: "Target claim must be at least ₹1.00.",
                 CategoryId: category.Id,
                 CategoryName: category.Name,
-                CategoryMinStartingBid: category.MinStartingBid,
-                CategoryMinBidIncrement: category.MinBidIncrement,
-                CurrentTopBidInCategory: topListing?.CurrentBidAmount,
+                CategoryMinStartingClaim: category.MinStartingClaim,
+                CategoryMinClaimIncrement: category.MinClaimIncrement,
+                CurrentTopClaimInCategory: topListing?.CurrentClaimAmount,
                 CurrentTopListingId: topListing?.Id,
                 CurrentTopListingName: topListing?.Name,
                 ListingId: existingListing?.Id,
                 ListingName: existingListing?.Name,
-                ExistingListingCurrentBid: existingListingCurrentBid,
-                TargetBidAmount: request.TargetBidAmount,
-                RequiredMinimumBid: 1m,
+                ExistingListingCurrentClaim: existingListingCurrentClaim,
+                TargetClaimAmount: request.TargetClaimAmount,
+                RequiredMinimumClaim: 1m,
                 ExpectedChargeAmount: expectedCharge,
                 BecameCategoryTop: becameTop);
         }
 
-        if (existingListing != null && request.TargetBidAmount <= existingListingCurrentBid)
+        if (existingListing != null && request.TargetClaimAmount <= existingListingCurrentClaim)
         {
-            return new CalculateBidQuoteResponseDto(
+            return new CalculateClaimQuoteResponseDto(
                 Success: false,
-                ErrorCode: "BidNotHigher",
-                ErrorMessage: $"Target bid must be greater than your existing bid of ₹{existingListingCurrentBid:0.00}.",
+                ErrorCode: "ClaimNotHigher",
+                ErrorMessage: $"Target claim must be greater than your existing claim of ₹{existingListingCurrentClaim:0.00}.",
                 CategoryId: category.Id,
                 CategoryName: category.Name,
-                CategoryMinStartingBid: category.MinStartingBid,
-                CategoryMinBidIncrement: category.MinBidIncrement,
-                CurrentTopBidInCategory: topListing?.CurrentBidAmount,
+                CategoryMinStartingClaim: category.MinStartingClaim,
+                CategoryMinClaimIncrement: category.MinClaimIncrement,
+                CurrentTopClaimInCategory: topListing?.CurrentClaimAmount,
                 CurrentTopListingId: topListing?.Id,
                 CurrentTopListingName: topListing?.Name,
                 ListingId: existingListing.Id,
                 ListingName: existingListing.Name,
-                ExistingListingCurrentBid: existingListingCurrentBid,
-                TargetBidAmount: request.TargetBidAmount,
-                RequiredMinimumBid: rank1Minimum,
+                ExistingListingCurrentClaim: existingListingCurrentClaim,
+                TargetClaimAmount: request.TargetClaimAmount,
+                RequiredMinimumClaim: rank1Minimum,
                 ExpectedChargeAmount: expectedCharge,
                 BecameCategoryTop: becameTop);
         }
 
-        return new CalculateBidQuoteResponseDto(
+        return new CalculateClaimQuoteResponseDto(
             Success: true,
             ErrorCode: null,
             ErrorMessage: null,
             CategoryId: category.Id,
             CategoryName: category.Name,
-            CategoryMinStartingBid: category.MinStartingBid,
-            CategoryMinBidIncrement: category.MinBidIncrement,
-            CurrentTopBidInCategory: topListing?.CurrentBidAmount,
+            CategoryMinStartingClaim: category.MinStartingClaim,
+            CategoryMinClaimIncrement: category.MinClaimIncrement,
+            CurrentTopClaimInCategory: topListing?.CurrentClaimAmount,
             CurrentTopListingId: topListing?.Id,
             CurrentTopListingName: topListing?.Name,
             ListingId: existingListing?.Id,
             ListingName: existingListing?.Name,
-            ExistingListingCurrentBid: existingListingCurrentBid,
-            TargetBidAmount: request.TargetBidAmount,
-            RequiredMinimumBid: rank1Minimum,
+            ExistingListingCurrentClaim: existingListingCurrentClaim,
+            TargetClaimAmount: request.TargetClaimAmount,
+            RequiredMinimumClaim: rank1Minimum,
             ExpectedChargeAmount: expectedCharge,
             BecameCategoryTop: becameTop);
     }
 
-    private static CalculateBidQuoteResponseDto Failure(
+    private static CalculateClaimQuoteResponseDto Failure(
         int categoryId,
         string errorCode,
         string errorMessage,
         string categoryName = "",
-        decimal minStartingBid = 0m,
-        decimal minBidIncrement = 0m,
+        decimal minStartingClaim = 0m,
+        decimal minClaimIncrement = 0m,
         int? listingId = null,
         string? listingName = null,
-        decimal existingBid = 0m) =>
+        decimal existingClaim = 0m) =>
         new(
             Success: false,
             ErrorCode: errorCode,
             ErrorMessage: errorMessage,
             CategoryId: categoryId,
             CategoryName: categoryName,
-            CategoryMinStartingBid: minStartingBid,
-            CategoryMinBidIncrement: minBidIncrement,
-            CurrentTopBidInCategory: null,
+            CategoryMinStartingClaim: minStartingClaim,
+            CategoryMinClaimIncrement: minClaimIncrement,
+            CurrentTopClaimInCategory: null,
             CurrentTopListingId: null,
             CurrentTopListingName: null,
             ListingId: listingId,
             ListingName: listingName,
-            ExistingListingCurrentBid: existingBid,
-            TargetBidAmount: 0m,
-            RequiredMinimumBid: 0m,
+            ExistingListingCurrentClaim: existingClaim,
+            TargetClaimAmount: 0m,
+            RequiredMinimumClaim: 0m,
             ExpectedChargeAmount: 0m,
             BecameCategoryTop: false);
 }

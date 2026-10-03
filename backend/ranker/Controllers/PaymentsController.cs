@@ -35,7 +35,7 @@ public class PaymentsController(ISender sender) : ControllerBase
 
     /// <summary>
     /// Verifies the Razorpay payment signature (HMAC-SHA256).
-    /// Returns 400 on mismatch — do NOT mark a bid as paid on a 400.
+    /// Returns 400 on mismatch — do NOT mark a claim as paid on a 400.
     /// </summary>
     [HttpPost("verify-payment")]
     public async Task<ActionResult<VerifyRazorpayPaymentResponseDto>> VerifyPayment(

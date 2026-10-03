@@ -18,9 +18,9 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
                 l.Name,
                 l.Url,
                 l.CategoryId,
-                l.CurrentBidAmount,
-                l.FirstBidAt,
-                l.LastBidAt,
+                l.CurrentClaimAmount,
+                l.FirstClaimAt,
+                l.LastClaimAt,
                 l.ClickCount,
                 l.SiteName,
                 l.LogoUrl,
@@ -37,23 +37,23 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
         }
 
         // Calculate the rank of this listing within its category. Rank is determined by
-        // CurrentBidAmount DESC, FirstBidAt ASC (same ordering used in leaderboards).
+        // CurrentClaimAmount DESC, FirstClaimAt ASC (same ordering used in leaderboards).
         var rank = await dbContext.Listings
             .AsNoTracking()
             .Where(l => l.CategoryId == listing.CategoryId)
-            .Where(l => l.CurrentBidAmount > listing.CurrentBidAmount
-                || (l.CurrentBidAmount == listing.CurrentBidAmount && l.FirstBidAt < listing.FirstBidAt))
+            .Where(l => l.CurrentClaimAmount > listing.CurrentClaimAmount
+                || (l.CurrentClaimAmount == listing.CurrentClaimAmount && l.FirstClaimAt < listing.FirstClaimAt))
             .CountAsync(ct) + 1;
 
-        var bids = await dbContext.Bids
+        var claims = await dbContext.Claims
             .AsNoTracking()
-            .Where(b => b.ListingId == request.ListingId)
-            .OrderByDescending(b => b.CreatedAt)
-            .Select(b => new { b.Amount, b.PaymentAmount, b.CreatedAt, b.PaymentReference })
+            .Where(c => c.ListingId == request.ListingId)
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new { c.Amount, c.PaymentAmount, c.CreatedAt, c.PaymentReference })
             .ToListAsync(ct);
 
-        var bidHistory = bids
-            .Select(b => new BidHistoryEntryDto(b.Amount, b.PaymentAmount, b.CreatedAt, MaskPaymentReference(b.PaymentReference)))
+        var claimHistory = claims
+            .Select(c => new ClaimHistoryEntryDto(c.Amount, c.PaymentAmount, c.CreatedAt, MaskPaymentReference(c.PaymentReference)))
             .ToList();
 
         return new ListingDetailDto(
@@ -63,15 +63,15 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
             listing.CategoryName,
             listing.CategorySlug,
             rank,
-            listing.CurrentBidAmount,
-            listing.FirstBidAt,
-            listing.LastBidAt,
+            listing.CurrentClaimAmount,
+            listing.FirstClaimAt,
+            listing.LastClaimAt,
             listing.ClickCount,
             listing.SiteName,
             listing.LogoUrl,
             listing.Description,
             listing.FaviconUrl,
-            bidHistory);
+            claimHistory);
     }
 
     // Never expose the full payment gateway transaction ID to the client - only enough to disambiguate rows.

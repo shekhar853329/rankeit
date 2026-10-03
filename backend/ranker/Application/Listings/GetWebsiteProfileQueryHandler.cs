@@ -20,16 +20,16 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
         var allListings = await dbContext.Listings
             .AsNoTracking()
             .Include(l => l.Category)
-            .Where(l => l.CurrentBidAmount > 0)
+            .Where(l => l.CurrentClaimAmount > 0)
             .Select(l => new
             {
                 l.Id,
                 l.Name,
                 l.Url,
                 l.CategoryId,
-                l.CurrentBidAmount,
-                l.FirstBidAt,
-                l.LastBidAt,
+                l.CurrentClaimAmount,
+                l.FirstClaimAt,
+                l.LastClaimAt,
                 l.ClickCount,
                 l.SiteName,
                 l.LogoUrl,
@@ -39,7 +39,7 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
                 CategoryName = l.Category!.Name,
                 CategorySlug = l.Category!.Slug,
                 CategoryIcon = l.Category!.Icon,
-                BidCount = l.Bids.Count
+                ClaimCount = l.Claims.Count
             })
             .ToListAsync(ct);
 
@@ -54,23 +54,23 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
         // Calculate rank
         var rank = allListings
             .Where(l => l.CategoryId == listing.CategoryId)
-            .Count(l => l.CurrentBidAmount > listing.CurrentBidAmount
-                || (l.CurrentBidAmount == listing.CurrentBidAmount && l.FirstBidAt < listing.FirstBidAt)) + 1;
+            .Count(l => l.CurrentClaimAmount > listing.CurrentClaimAmount
+                || (l.CurrentClaimAmount == listing.CurrentClaimAmount && l.FirstClaimAt < listing.FirstClaimAt)) + 1;
 
         var totalInCategory = allListings.Count(l => l.CategoryId == listing.CategoryId);
 
-        // Get other listings in the same category (excluding self), top 6 by bid
+        // Get other listings in the same category (excluding self), top 6 by claim
         var sameCategoryListings = allListings
             .Where(l => l.CategoryId == listing.CategoryId && l.Id != listing.Id)
-            .OrderByDescending(l => l.CurrentBidAmount)
-            .ThenBy(l => l.FirstBidAt)
+            .OrderByDescending(l => l.CurrentClaimAmount)
+            .ThenBy(l => l.FirstClaimAt)
             .Take(6)
             .Select((l, idx) =>
             {
                 var lRank = allListings
                     .Where(x => x.CategoryId == l.CategoryId)
-                    .Count(x => x.CurrentBidAmount > l.CurrentBidAmount
-                        || (x.CurrentBidAmount == l.CurrentBidAmount && x.FirstBidAt < l.FirstBidAt)) + 1;
+                    .Count(x => x.CurrentClaimAmount > l.CurrentClaimAmount
+                        || (x.CurrentClaimAmount == l.CurrentClaimAmount && x.FirstClaimAt < l.FirstClaimAt)) + 1;
 
                 return new RelatedListingDto(
                     l.Id,
@@ -79,7 +79,7 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
                     l.CategoryName,
                     l.CategorySlug,
                     lRank,
-                    l.CurrentBidAmount,
+                    l.CurrentClaimAmount,
                     l.ClickCount,
                     l.SiteName,
                     l.LogoUrl,
@@ -98,11 +98,11 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
             listing.CategoryIcon,
             rank,
             totalInCategory,
-            listing.CurrentBidAmount,
-            listing.FirstBidAt,
-            listing.LastBidAt,
+            listing.CurrentClaimAmount,
+            listing.FirstClaimAt,
+            listing.LastClaimAt,
             listing.ClickCount,
-            listing.BidCount,
+            listing.ClaimCount,
             listing.SiteName,
             listing.LogoUrl,
             listing.Description,

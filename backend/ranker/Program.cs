@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
-using Ranker.Application.Bids;
+using Ranker.Application.Claims;
 using Ranker.Data;
 using Ranker.Hubs;
 using Ranker.Repositories;
@@ -30,11 +30,11 @@ builder.Services.AddDbContext<RankerDbContext>(options =>
         )
     ));
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<PlaceBidCommand>());
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<PlaceClaimCommand>());
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
-builder.Services.AddScoped<IBidRepository, BidRepository>();
+builder.Services.AddScoped<IClaimRepository, ClaimRepository>();
 builder.Services.AddSingleton<GlobalLeaderboardCache>();
 builder.Services.AddSingleton<OnlineUsersTracker>();
 builder.Services.AddScoped<IGoogleAnalyticsService, GoogleAnalyticsService>();
@@ -51,8 +51,6 @@ builder.Services.AddHttpClient("UrlMetadataDirect", client =>
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
     
     // Accept headers to look like a real browser
-    client.DefaultRequestHeaders.Accept.ParseAdd(
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
     client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
     client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
 })
@@ -145,7 +143,7 @@ using (var scope = app.Services.CreateScope())
             if (app.Environment.IsDevelopment())
             {
                 await DbSeeder.SeedAsync(dbContext);
-                logger.LogInformation("Development seed (listings + bids) completed successfully.");
+                logger.LogInformation("Development seed (listings + claims) completed successfully.");
             }
             logger.LogInformation("Database migration completed successfully.");
         }

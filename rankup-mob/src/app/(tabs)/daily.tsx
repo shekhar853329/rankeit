@@ -208,8 +208,8 @@ export default function DailyListingsScreen() {
                             </View>
 
                             <View style={styles.entryRight}>
-                              <Text style={[styles.entryBid, { color: colors.primary }]}>
-                                ₹{item.currentBidAmount.toFixed(0)}
+                              <Text style={[styles.entryClaim, { color: colors.primary }]}>
+                                ₹{item.currentClaimAmount.toFixed(0)}
                               </Text>
                               <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
                             </View>
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  entryBid: {
+  entryClaim: {
     fontSize: 14,
     fontWeight: '800',
   },

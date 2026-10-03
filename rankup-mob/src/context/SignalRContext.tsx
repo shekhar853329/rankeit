@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { recordSiteVisit } from '../services/api';
 import { signalRService } from '../services/signalr.service';
-import { ListingClickedPayload, LiveBidEventDto, RankUpdatedPayload } from '../models';
+import { ListingClickedPayload, LiveClaimEventDto, RankUpdatedPayload } from '../models';
 
 interface SignalRContextType {
   onlineUsers: number;
   visitsToday: number;
-  lastLiveBid: LiveBidEventDto | null;
+  lastLiveClaim: LiveClaimEventDto | null;
   lastRankUpdate: RankUpdatedPayload | null;
   clickCounts: Record<number, number>;
   refreshSignalR: () => void;
@@ -15,7 +15,7 @@ interface SignalRContextType {
 const SignalRContext = createContext<SignalRContextType>({
   onlineUsers: 1,
   visitsToday: 1,
-  lastLiveBid: null,
+  lastLiveClaim: null,
   lastRankUpdate: null,
   clickCounts: {},
   refreshSignalR: () => {},
@@ -24,7 +24,7 @@ const SignalRContext = createContext<SignalRContextType>({
 export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [onlineUsers, setOnlineUsers] = useState<number>(1);
   const [visitsToday, setVisitsToday] = useState<number>(1);
-  const [lastLiveBid, setLastLiveBid] = useState<LiveBidEventDto | null>(null);
+  const [lastLiveClaim, setLastLiveClaim] = useState<LiveClaimEventDto | null>(null);
   const [lastRankUpdate, setLastRankUpdate] = useState<RankUpdatedPayload | null>(null);
   const [clickCounts, setClickCounts] = useState<Record<number, number>>({});
 
@@ -48,8 +48,8 @@ export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setClickCounts((prev) => ({ ...prev, [payload.listingId]: payload.clickCount }));
     });
 
-    const unsubBids = signalRService.onLiveBid((event: LiveBidEventDto) => {
-      setLastLiveBid(event);
+    const unsubClaims = signalRService.onLiveClaim((event: LiveClaimEventDto) => {
+      setLastLiveClaim(event);
     });
 
     const unsubRanks = signalRService.onRankUpdated((payload: RankUpdatedPayload) => {
@@ -59,7 +59,7 @@ export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       unsubUsers();
       unsubClicks();
-      unsubBids();
+      unsubClaims();
       unsubRanks();
       signalRService.leaveGlobalGroup();
       signalRService.stop();
@@ -75,7 +75,7 @@ export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({ child
       value={{
         onlineUsers,
         visitsToday,
-        lastLiveBid,
+        lastLiveClaim,
         lastRankUpdate,
         clickCounts,
         refreshSignalR,

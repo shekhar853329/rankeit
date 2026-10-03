@@ -7,15 +7,15 @@ using Ranker.Data;
 using Ranker.Domain.Events;
 using Ranker.Services.Seo;
 
-namespace Ranker.Application.Bids;
+namespace Ranker.Application.Claims;
 
-public class BidPlacedSeoIndexingHandler(
+public class ClaimPlacedSeoIndexingHandler(
     RankerDbContext dbContext,
     IMemoryCache cache,
     IIndexNowService indexNowService,
-    ILogger<BidPlacedSeoIndexingHandler> logger) : INotificationHandler<BidPlacedEvent>
+    ILogger<ClaimPlacedSeoIndexingHandler> logger) : INotificationHandler<ClaimPlacedEvent>
 {
-    public async Task Handle(BidPlacedEvent notification, CancellationToken ct)
+    public async Task Handle(ClaimPlacedEvent notification, CancellationToken ct)
     {
         try
         {

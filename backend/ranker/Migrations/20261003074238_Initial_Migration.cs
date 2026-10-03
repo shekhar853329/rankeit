@@ -7,13 +7,37 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ranker.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialPostgresMigration : Migration
+    public partial class Initial_Migration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "BidReconciliations",
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Icon = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ParentCategoryId = table.Column<int>(type: "integer", nullable: true),
+                    MinClaimIncrement = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    MinStartingClaim = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Categories_Categories_ParentCategoryId",
+                        column: x => x.ParentCategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ClaimReconciliations",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -30,31 +54,7 @@ namespace ranker.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BidReconciliations", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Categories",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Slug = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Icon = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ParentCategoryId = table.Column<int>(type: "integer", nullable: true),
-                    MinBidIncrement = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    MinStartingBid = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Categories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Categories_Categories_ParentCategoryId",
-                        column: x => x.ParentCategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                    table.PrimaryKey("PK_ClaimReconciliations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -107,9 +107,9 @@ namespace ranker.Migrations
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
                     Url = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
-                    CurrentBidAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    FirstBidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastBidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CurrentClaimAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    FirstClaimAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastClaimAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ClickCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     OwnerContactEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
                     SiteName = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
@@ -130,7 +130,7 @@ namespace ranker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Bids",
+                name: "Claims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -143,19 +143,14 @@ namespace ranker.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Bids", x => x.Id);
+                    table.PrimaryKey("PK_Claims", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Bids_Listings_ListingId",
+                        name: "FK_Claims_Listings_ListingId",
                         column: x => x.ListingId,
                         principalTable: "Listings",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Bids_ListingId_CreatedAt",
-                table: "Bids",
-                columns: new[] { "ListingId", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_ParentCategoryId",
@@ -169,15 +164,20 @@ namespace ranker.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Claims_ListingId_CreatedAt",
+                table: "Claims",
+                columns: new[] { "ListingId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DailyVisitCounts_VisitDate",
                 table: "DailyVisitCounts",
                 column: "VisitDate",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Listings_CategoryId_CurrentBidAmount_FirstBidAt",
+                name: "IX_Listings_CategoryId_CurrentClaimAmount_FirstClaimAt",
                 table: "Listings",
-                columns: new[] { "CategoryId", "CurrentBidAmount", "FirstBidAt" });
+                columns: new[] { "CategoryId", "CurrentClaimAmount", "FirstClaimAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_PaymentAuditLogs_CreatedAt",
@@ -199,10 +199,10 @@ namespace ranker.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BidReconciliations");
+                name: "ClaimReconciliations");
 
             migrationBuilder.DropTable(
-                name: "Bids");
+                name: "Claims");
 
             migrationBuilder.DropTable(
                 name: "DailyVisitCounts");

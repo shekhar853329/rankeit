@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api-config';
-import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, HallOfFameItemDto, LiveBidEventDto, PlatformStatsDto } from '../models/leaderboard.model';
+import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, HallOfFameItemDto, LiveClaimEventDto, PlatformStatsDto } from '../models/leaderboard.model';
 import { DailyListingsResponseDto } from '../models/daily-listing.model';
 
 @Injectable({ providedIn: 'root' })
@@ -47,8 +47,8 @@ export class LeaderboardService {
     return this.http.get<PlatformStatsDto>(`${API_BASE_URL}/api/leaderboard/stats`);
   }
 
-  getLiveStream(limit = 10): Observable<LiveBidEventDto[]> {
-    return this.http.get<LiveBidEventDto[]>(`${API_BASE_URL}/api/leaderboard/live-stream`, {
+  getLiveStream(limit = 10): Observable<LiveClaimEventDto[]> {
+    return this.http.get<LiveClaimEventDto[]>(`${API_BASE_URL}/api/leaderboard/live-stream`, {
       params: { limit: String(limit) },
     });
   }

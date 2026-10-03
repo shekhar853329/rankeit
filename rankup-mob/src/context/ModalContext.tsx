@@ -6,8 +6,8 @@ export interface ClaimModalPayload {
   categorySlug?: string;
   categoryId?: number;
   amount?: number;
-  minStartingBid?: number;
-  minBidIncrement?: number;
+  minStartingClaim?: number;
+  minClaimIncrement?: number;
   listingId?: number | null;
   listingName?: string;
   listingUrl?: string;
@@ -15,8 +15,8 @@ export interface ClaimModalPayload {
   logoUrl?: string | null;
   description?: string | null;
   faviconUrl?: string | null;
-  currentBidAmount?: number;
-  currentTopBid?: number | null;
+  currentClaimAmount?: number;
+  currentTopClaim?: number | null;
   onSuccess?: () => void;
 }
 

@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Ranker.Application.Bids;
+using Ranker.Application.Claims;
 using Ranker.Application.Leaderboards;
 using Ranker.Common;
 using Ranker.Dtos;
@@ -52,10 +52,10 @@ public class LeaderboardController(ISender sender) : ControllerBase
         Ok(await sender.Send(new GetPlatformStatsQuery(categorySlug), ct));
 
     [HttpGet("live-stream")]
-    public async Task<ActionResult<IReadOnlyList<LiveBidEventDto>>> GetLiveStream(
+    public async Task<ActionResult<IReadOnlyList<LiveClaimEventDto>>> GetLiveStream(
         [FromQuery] int limit = 10,
         CancellationToken ct = default) =>
-        Ok(await sender.Send(new GetRecentBidsQuery(limit), ct));
+        Ok(await sender.Send(new GetRecentClaimsQuery(limit), ct));
 
     [HttpGet("hall-of-fame")]
     public async Task<ActionResult<IReadOnlyList<HallOfFameItemDto>>> GetHallOfFame(

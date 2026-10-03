@@ -1,10 +1,10 @@
-export interface PlaceBidRequestDto {
+export interface PlaceClaimRequestDto {
   categoryId: number;
   listingId: number | null;
   listingName: string | null;
   listingUrl: string | null;
   ownerContactEmail: string;
-  targetBidAmount: number;
+  targetClaimAmount: number;
   paymentReference: string;
   confirmedPaymentAmount: number;
   siteName: string | null;
@@ -13,39 +13,39 @@ export interface PlaceBidRequestDto {
   faviconUrl: string | null;
 }
 
-export interface PlaceBidResultDto {
+export interface PlaceClaimResultDto {
   success: boolean;
   errorCode: string | null;
   errorMessage: string | null;
   listingId: number | null;
-  newCurrentBidAmount: number | null;
+  newCurrentClaimAmount: number | null;
   amountCharged: number | null;
 }
 
-export interface CalculateBidQuoteRequestDto {
+export interface CalculateClaimQuoteRequestDto {
   categoryId: number;
   listingId?: number | null;
   listingUrl?: string | null;
   ownerContactEmail?: string | null;
-  targetBidAmount: number;
+  targetClaimAmount: number;
 }
 
-export interface CalculateBidQuoteResponseDto {
+export interface CalculateClaimQuoteResponseDto {
   success: boolean;
   errorCode: string | null;
   errorMessage: string | null;
   categoryId: number;
   categoryName: string;
-  categoryMinStartingBid: number;
-  categoryMinBidIncrement: number;
-  currentTopBidInCategory: number | null;
+  categoryMinStartingClaim: number;
+  categoryMinClaimIncrement: number;
+  currentTopClaimInCategory: number | null;
   currentTopListingId: number | null;
   currentTopListingName: string | null;
   listingId: number | null;
   listingName: string | null;
-  existingListingCurrentBid: number;
-  targetBidAmount: number;
-  requiredMinimumBid: number;
+  existingListingCurrentClaim: number;
+  targetClaimAmount: number;
+  requiredMinimumClaim: number;
   expectedChargeAmount: number;
   becameCategoryTop: boolean;
 }

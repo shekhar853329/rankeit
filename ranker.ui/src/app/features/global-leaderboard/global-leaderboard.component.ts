@@ -36,12 +36,12 @@ export interface FeedRow {
   listingId: number;
   listingName: string;
   listingUrl: string;
-  currentBidAmount: number;
+  currentClaimAmount: number;
   categoryName: string;
   categorySlug: string;
   categoryIcon?: string | null;
   clickCount: number;
-  bidCount: number;
+  claimCount: number;
   siteName: string | null;
   logoUrl: string | null;
   description: string | null;
@@ -63,7 +63,7 @@ export interface HallOfFameItem {
   name: string;
   siteName: string | null;
   url: string;
-  bid: number;
+  claimAmount: number;
   clickCount: number;
 }
 
@@ -89,13 +89,13 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   private readonly elementRef = inject(ElementRef);
   private readonly seo = inject(SeoService);
 
-  @ViewChild('bidChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('claimChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
   private echartsModule: typeof import('echarts') | null = null;
   private echartsInstance: echarts.ECharts | null = null;
   private chartResizeObserver: ResizeObserver | null = null;
   private chartIntersectionObserver: IntersectionObserver | null = null;
 
-  /* ── Interactive Bid Pressure Chart Controls ── */
+  /* ── Interactive Claim Pressure Chart Controls ── */
   readonly chartViewMode = signal<'timeline' | 'hourly' | 'weekly'>('timeline');
   readonly chartMetric = signal<'both' | 'volume' | 'count'>('both');
   readonly chartTimePreset = signal<'1h' | '6h' | 'today' | 'all'>('today');
@@ -103,25 +103,25 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   readonly todayTotalVolume = computed(() => {
     const stats = this.platformStats();
     if (!stats) return 0;
-    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
-      return stats.recentBidsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
+    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
+      return stats.recentClaimsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
     }
-    return stats.hourlyBidPressures.reduce((acc, h) => acc + Number(h.volume || 0), 0);
+    return stats.hourlyClaimPressures.reduce((acc, h) => acc + Number(h.volume || 0), 0);
   });
 
-  readonly todayTotalBids = computed(() => {
+  readonly todayTotalClaims = computed(() => {
     const stats = this.platformStats();
     if (!stats) return 0;
-    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
-      return stats.recentBidsTimeline.length;
+    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
+      return stats.recentClaimsTimeline.length;
     }
-    return stats.hourlyBidPressures.reduce((acc, h) => acc + h.bidCount, 0);
+    return stats.hourlyClaimPressures.reduce((acc, h) => acc + h.claimCount, 0);
   });
 
-  readonly peakBidInfo = computed(() => {
+  readonly peakClaimInfo = computed(() => {
     const stats = this.platformStats();
     if (!stats) return null;
-    const timeline = stats.recentBidsTimeline ?? [];
+    const timeline = stats.recentClaimsTimeline ?? [];
     if (timeline.length > 0) {
       const highest = [...timeline].sort((a, b) => Number(b.amount) - Number(a.amount))[0];
       return {
@@ -132,7 +132,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         time: highest.createdAt,
       };
     }
-    const hourly = stats.hourlyBidPressures;
+    const hourly = stats.hourlyClaimPressures;
     const peakHour = [...hourly].sort((a, b) => Number(b.volume) - Number(a.volume))[0];
     if (peakHour && peakHour.volume > 0) {
       return {
@@ -146,8 +146,8 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     return null;
   });
 
-  readonly avgBidAmount = computed(() => {
-    const count = this.todayTotalBids();
+  readonly avgClaimAmount = computed(() => {
+    const count = this.todayTotalClaims();
     const vol = this.todayTotalVolume();
     return count > 0 ? vol / count : 0;
   });
@@ -199,7 +199,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     return list.reduce((sum, c) => sum + (c.listingCount || 0), 0);
   });
 
-  categoryBidCount(cat: CategoryDto): number {
+  categoryClaimCount(cat: CategoryDto): number {
     return this.timeMode() === 'today' ? (cat.todayListingCount ?? 0) : cat.listingCount;
   }
 
@@ -242,7 +242,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   readonly loading = signal(true);
   readonly globalEntries = signal<GlobalLeaderboardEntryDto[]>([]);
   readonly categoryData = signal<CategoryLeaderboardResponseDto | null>(null);
-  readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
+  readonly top3Sponsors = signal<DailyListingEntryDto[]>([]);
   readonly clickCounts = signal<Record<number, number>>({});
 
   /* ── Claim Target State ── */
@@ -289,7 +289,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   /* ── Dynamic Hourly Chart Computed Signals (Generated from DB Hourly Pressures) ── */
   readonly hourlyChartPoints = computed(() => {
     const stats = this.platformStats();
-    const pressures = stats?.hourlyBidPressures ?? [];
+    const pressures = stats?.hourlyClaimPressures ?? [];
     if (pressures.length === 0) {
       return Array.from({ length: 24 }, (_, i) => ({
         x: Math.round((i / 23) * 600),
@@ -346,12 +346,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         listingId: e.listingId,
         listingName: e.listingName,
         listingUrl: e.listingUrl,
-        currentBidAmount: e.currentBidAmount,
+        currentClaimAmount: e.currentClaimAmount,
         categoryName: e.categoryName,
         categorySlug: e.categorySlug,
         categoryIcon: e.categoryIcon ?? this.categoryIcon(e.categorySlug),
         clickCount: clickOverrides[e.listingId] ?? e.clickCount,
-        bidCount: e.bidCount ?? 1,
+        claimCount: e.claimCount ?? 1,
         siteName: e.siteName,
         logoUrl: e.logoUrl,
         description: e.description,
@@ -366,12 +366,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       listingId: e.listingId,
       listingName: e.listingName,
       listingUrl: e.listingUrl,
-      currentBidAmount: e.currentBidAmount,
+      currentClaimAmount: e.currentClaimAmount,
       categoryName: data.categoryName,
       categorySlug: data.categorySlug,
       categoryIcon: data.categoryIcon ?? this.categoryIcon(data.categorySlug),
       clickCount: clickOverrides[e.listingId] ?? e.clickCount,
-      bidCount: e.bidCount ?? 1,
+      claimCount: e.claimCount ?? 1,
       siteName: e.siteName,
       logoUrl: e.logoUrl,
       description: e.description,
@@ -388,7 +388,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   });
 
   readonly nextChunkCount = computed(() => (this.hasMoreProducts() ? 10 : 0));
-  readonly hasMoreBidders = computed(() => this.hasMoreProducts());
+  readonly hasMoreClaimants = computed(() => this.hasMoreProducts());
   readonly showAllRows = computed(() => !this.hasMoreProducts());
 
   private readonly leadChampion = signal<FeedRow | null>(null);
@@ -408,14 +408,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
     const data = this.claimCategoryData();
     if (data && data.categorySlug === slug) {
-      const currentTop = data.leaderboard.items[0]?.currentBidAmount;
-      return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
+      const currentTop = data.leaderboard.items[0]?.currentClaimAmount;
+      return currentTop !== undefined ? currentTop + data.minClaimIncrement : data.minStartingClaim;
     }
 
     const cat =
       this.allCategories().find((c) => c.slug === slug) ??
       this.tabs().find((c) => c.slug === slug);
-    return cat ? cat.minStartingBid : null;
+    return cat ? cat.minStartingClaim : null;
   });
 
   readonly globalDefaultPrice = computed<number | null>(() => {
@@ -424,27 +424,27 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     const category =
       this.allCategories().find((c) => c.slug === top.categorySlug) ??
       this.tabs().find((c) => c.slug === top.categorySlug);
-    const increment = category?.minBidIncrement ?? 1;
-    return top.currentBidAmount + increment;
+    const increment = category?.minClaimIncrement ?? 1;
+    return top.currentClaimAmount + increment;
   });
 
   readonly effectiveClaimAmount = computed<number | null>(() =>
     this.claimAmount() ?? this.claimPrice() ?? this.globalDefaultPrice()
   );
 
-  /** Minimum price to show in empty-state CTAs — uses the selected category's minStartingBid,
+  /** Minimum price to show in empty-state CTAs — uses the selected category's minStartingClaim,
    *  or the first available category's, so the number is always real and never hardcoded. */
   readonly emptyStateClaimPrice = computed<number>(() => {
     const slug = this.selectedSlug();
     if (slug) {
       const data = this.categoryData();
-      if (data?.minStartingBid) return data.minStartingBid;
+      if (data?.minStartingClaim) return data.minStartingClaim;
       const cat = this.allCategories().find((c) => c.slug === slug) ?? this.tabs().find((c) => c.slug === slug);
-      if (cat?.minStartingBid) return cat.minStartingBid;
+      if (cat?.minStartingClaim) return cat.minStartingClaim;
     }
-    // No category selected — use first available category's starting bid
+    // No category selected — use first available category's starting claim
     const first = this.allCategories()[0] ?? this.tabs()[0];
-    return first?.minStartingBid ?? 1;
+    return first?.minStartingClaim ?? 1;
   });
 
   readonly isHeroUrlValid = computed(() => {
@@ -515,7 +515,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       error: () => {},
     });
 
-    this.loadTop3Bidders();
+    this.loadTop3Sponsors();
     this.loadSelection();
 
     // Stagger non-critical / secondary network calls & SignalR to eliminate startup connection contention
@@ -591,7 +591,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       if (this.toastTimerId) clearTimeout(this.toastTimerId);
     });
 
-    // Real-time rank and bid updates via SignalR
+    // Real-time rank and claim updates via SignalR
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {
       const slug = this.selectedSlug();
       const currentCount = this.visibleCount();
@@ -601,7 +601,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       } else if (slug !== null && payload.categorySlug === slug) {
         this.loadCategory(slug, currentCount, query);
       }
-      this.loadTop3Bidders();
+      this.loadTop3Sponsors();
       this.loadTodayShowcaseTop();
       this.loadAllTimeHallOfFame();
       this.loadPlatformStats();
@@ -613,8 +613,8 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           iconClass: payload.becameCategoryTop ? 'stream-icon--primary' : 'stream-icon--secondary',
           user: payload.listingName.startsWith('@') ? payload.listingName : '@' + payload.listingName,
           action: payload.becameCategoryTop
-            ? `recaptured #1 for ${this.currencySymbol()}${payload.newBidAmount}`
-            : `bumped placement to ${this.currencySymbol()}${payload.newBidAmount}`,
+            ? `recaptured #1 for ${this.currencySymbol()}${payload.newClaimAmount}`
+            : `bumped placement to ${this.currencySymbol()}${payload.newClaimAmount}`,
           timeAgo: 'Just now',
           highlight: payload.becameCategoryTop ? 'Took Top Spot' : 'Active Placement',
         },
@@ -688,7 +688,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.loadSelection(10);
   }
 
-  loadNextBidders(): void {
+  loadNextClaimants(): void {
     if (this.loadingMore() || !this.hasMoreProducts()) return;
     this.loadingMore.set(true);
     const nextCount = this.visibleCount() + 10;
@@ -704,7 +704,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   toggleShowAll(): void {
     if (this.hasMoreProducts()) {
-      this.loadNextBidders();
+      this.loadNextClaimants();
     } else {
       this.collapseToTop10();
     }
@@ -773,13 +773,13 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     // If we have cached category data for this slug, use its Rank #1 price immediately
     const cached = this.claimCategoryData();
     if (cached && cached.categorySlug === slug) {
-      const minInc = cached.minBidIncrement || 1;
-      const currentTop = cached.leaderboard.items[0]?.currentBidAmount ?? null;
-      const rank1Amount = currentTop !== null ? currentTop + minInc : cached.minStartingBid;
+      const minInc = cached.minClaimIncrement || 1;
+      const currentTop = cached.leaderboard.items[0]?.currentClaimAmount ?? null;
+      const rank1Amount = currentTop !== null ? currentTop + minInc : cached.minStartingClaim;
       this.claimAmount.set(rank1Amount);
     } else if (cat) {
-      // Immediately show category minStartingBid while fetching alltime champion
-      this.claimAmount.set(cat.minStartingBid);
+      // Immediately show category minStartingClaim while fetching alltime champion
+      this.claimAmount.set(cat.minStartingClaim);
     }
 
     // Always fetch alltime to get true reigning Rank 1 champion regardless of today filter
@@ -787,11 +787,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       next: (data) => {
         this.claimCategoryData.set(data);
 
-        const minInc = data.minBidIncrement || 1;
-        const currentTop = data.leaderboard.items[0]?.currentBidAmount ?? null;
-        const rank1Amount = currentTop !== null ? currentTop + minInc : data.minStartingBid;
+        const minInc = data.minClaimIncrement || 1;
+        const currentTop = data.leaderboard.items[0]?.currentClaimAmount ?? null;
+        const rank1Amount = currentTop !== null ? currentTop + minInc : data.minStartingClaim;
 
-        // Default the bid amount to what is required to get Rank 1
+        // Default the claim amount to what is required to get Rank 1
         this.claimAmount.set(rank1Amount);
 
         this.showToastNotification(
@@ -800,7 +800,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       },
       error: () => {
         if (cat) {
-          this.claimAmount.set(cat.minStartingBid);
+          this.claimAmount.set(cat.minStartingClaim);
         }
       },
     });
@@ -929,7 +929,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     );
   }
 
-  prepareOutbid(productName: string, minAmount: number, categorySlug?: string, rank?: number): void {
+  prepareClaim(productName: string, minAmount: number, categorySlug?: string, rank?: number): void {
     this.claimThisPosition(minAmount, rank);
   }
 
@@ -949,14 +949,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     }
 
     const launchModal = (data: CategoryLeaderboardResponseDto) => {
-      const minInc = data.minBidIncrement || 1;
-      const currentTop = data.leaderboard.items[0]?.currentBidAmount ?? null;
-      const rank1Req = currentTop !== null ? currentTop + minInc : data.minStartingBid;
+      const minInc = data.minClaimIncrement || 1;
+      const currentTop = data.leaderboard.items[0]?.currentClaimAmount ?? null;
+      const rank1Req = currentTop !== null ? currentTop + minInc : data.minStartingClaim;
       const amount = Math.max(this.effectiveClaimAmount() ?? rank1Req, 1);
 
       let rank = 1;
       if (currentTop !== null && amount <= currentTop) {
-        const higherCount = data.leaderboard.items.filter((item) => item.currentBidAmount >= amount).length;
+        const higherCount = data.leaderboard.items.filter((item) => item.currentClaimAmount >= amount).length;
         rank = higherCount + 1;
       }
 
@@ -976,10 +976,10 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         categoryName: data.categoryName,
         amount,
         categoryId: data.categoryId,
-        minStartingBid: data.minStartingBid,
-        minBidIncrement: minInc,
-        currentTopBid: currentTop,
-        currentBidAmount: existing?.currentBidAmount ?? 0,
+        minStartingClaim: data.minStartingClaim,
+        minClaimIncrement: minInc,
+        currentTopClaim: currentTop,
+        currentClaimAmount: existing?.currentClaimAmount ?? 0,
         listingId: existing?.listingId ?? null,
         listingName: existing?.listingName || title,
         listingUrl: url,
@@ -1049,12 +1049,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     if (!slug) return 1;
     if (this.claimSlug() === slug) {
       const data = this.claimCategoryData();
-      if (data) return data.minBidIncrement;
+      if (data) return data.minClaimIncrement;
     }
     const cat =
       this.allCategories().find((c) => c.slug === slug) ??
       this.tabs().find((c) => c.slug === slug);
-    return cat?.minBidIncrement ?? 1;
+    return cat?.minClaimIncrement ?? 1;
   }
 
   private loadSelection(count = this.visibleCount()): void {
@@ -1067,11 +1067,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private loadTop3Bidders(): void {
+  private loadTop3Sponsors(): void {
     this.leaderboardService.getDailyListings(1, 3).subscribe({
       next: (result) => {
         const today = result.items[0];
-        if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+        if (today) this.top3Sponsors.set(today.entries.slice(0, 3));
       },
       error: () => {},
     });
@@ -1095,12 +1095,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             listingId: first.listingId,
             listingName: first.listingName,
             listingUrl: first.listingUrl,
-            currentBidAmount: first.currentBidAmount,
+            currentClaimAmount: first.currentClaimAmount,
             categoryName: first.categoryName,
             categorySlug: first.categorySlug,
             categoryIcon: first.categoryIcon ?? this.categoryIcon(first.categorySlug),
             clickCount: first.clickCount,
-            bidCount: first.bidCount ?? 1,
+            claimCount: first.claimCount ?? 1,
             siteName: first.siteName,
             logoUrl: first.logoUrl,
             description: first.description,
@@ -1115,7 +1115,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             name: e.listingName,
             siteName: e.siteName,
             url: e.listingUrl,
-            bid: e.currentBidAmount,
+            claimAmount: e.currentClaimAmount,
             clickCount: e.clickCount,
           }));
 
@@ -1160,8 +1160,8 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         if (events && events.length > 0) {
           this.liveEvents.set(
             events.map((e) => ({
-              icon: e.isTopBid ? 'local_fire_department' : 'arrow_upward',
-              iconClass: e.isTopBid ? 'stream-icon--primary' : 'stream-icon--secondary',
+              icon: e.isTopClaim ? 'local_fire_department' : 'arrow_upward',
+              iconClass: e.isTopClaim ? 'stream-icon--primary' : 'stream-icon--secondary',
               user: e.siteName || (e.listingName.startsWith('@') ? e.listingName : '@' + e.listingName),
               action: e.actionText,
               timeAgo: e.timeAgo,
@@ -1192,7 +1192,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
                     name: e.listingName,
                     siteName: e.siteName,
                     url: e.listingUrl,
-                    bid: e.currentBidAmount,
+                    claimAmount: e.currentClaimAmount,
                     clickCount: e.clickCount,
                   }))
                 );
@@ -1214,7 +1214,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
                   name: e.listingName,
                   siteName: e.siteName,
                   url: e.listingUrl,
-                  bid: e.currentBidAmount,
+                  claimAmount: e.currentClaimAmount,
                   clickCount: e.clickCount,
                 }))
               );
@@ -1239,7 +1239,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
               name: e.listingName,
               siteName: e.siteName,
               url: e.listingUrl,
-              bid: e.currentBidAmount,
+              claimAmount: e.currentClaimAmount,
               clickCount: e.clickCount,
             }))
           );
@@ -1267,12 +1267,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             listingId: first.listingId,
             listingName: first.listingName,
             listingUrl: first.listingUrl,
-            currentBidAmount: first.currentBidAmount,
+            currentClaimAmount: first.currentClaimAmount,
             categoryName: data.categoryName,
             categorySlug: data.categorySlug,
             categoryIcon: data.categoryIcon ?? this.categoryIcon(data.categorySlug),
             clickCount: first.clickCount,
-            bidCount: first.bidCount ?? 1,
+            claimCount: first.claimCount ?? 1,
             siteName: first.siteName,
             logoUrl: first.logoUrl,
             description: first.description,
@@ -1290,7 +1290,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   /* ══════════════════════════════════════════════════════════════
-     APACHE ECHARTS: INTERACTIVE BID PRESSURE & VELOCITY VISUALIZER
+     APACHE ECHARTS: INTERACTIVE CLAIM PRESSURE & VELOCITY VISUALIZER
      ══════════════════════════════════════════════════════════════ */
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId) && this.chartContainerRef?.nativeElement) {
@@ -1382,31 +1382,31 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     let option: echarts.EChartsOption;
 
     if (mode === 'timeline') {
-      let bids = stats.recentBidsTimeline ?? [];
+      let claims = stats.recentClaimsTimeline ?? [];
       const preset = this.chartTimePreset();
       const now = Date.now();
 
       if (preset === '1h') {
         const oneHourAgo = now - 60 * 60 * 1000;
-        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= oneHourAgo);
-        if (filtered.length > 0) bids = filtered;
+        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= oneHourAgo);
+        if (filtered.length > 0) claims = filtered;
       } else if (preset === '6h') {
         const sixHoursAgo = now - 6 * 60 * 60 * 1000;
-        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= sixHoursAgo);
-        if (filtered.length > 0) bids = filtered;
+        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= sixHoursAgo);
+        if (filtered.length > 0) claims = filtered;
       } else if (preset === 'today') {
         const startOfTodayUtc = new Date();
         startOfTodayUtc.setUTCHours(0, 0, 0, 0);
-        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
-        if (filtered.length > 0) bids = filtered;
+        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
+        if (filtered.length > 0) claims = filtered;
       }
 
-      // Sort bids chronologically
-      const sortedBids = [...bids].sort(
+      // Sort claims chronologically
+      const sortedClaims = [...claims].sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
 
-      const seriesData = sortedBids.map((b) => {
+      const seriesData = sortedClaims.map((b) => {
         const t = new Date(b.createdAt).getTime();
         return {
           name: b.listingName,
@@ -1445,11 +1445,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             const utcTimeStr = `${String(date.getUTCHours()).padStart(2, '0')}:${String(
               date.getUTCMinutes()
             ).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')} UTC`;
-            const currentBidDisplay = raw.currentBidLevel ? `
+            const currentClaimDisplay = raw.currentClaimLevel ? `
                   <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px;">
-                    <span style="font-size: 11px; color: ${textColor};">Standing Rank Bid:</span>
+                    <span style="font-size: 11px; color: ${textColor};">Standing Rank Claim:</span>
                     <span style="font-size: 14px; font-weight: 700; font-family: 'Space Grotesk', monospace; color: ${headingColor};">
-                      ${currency}${Number(raw.currentBidLevel).toFixed(2)}
+                      ${currency}${Number(raw.currentClaimLevel).toFixed(2)}
                     </span>
                   </div>` : '';
             return `
@@ -1464,7 +1464,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
                     ${currency}${Number(raw.amount).toFixed(2)}
                   </span>
                 </div>
-                ${currentBidDisplay}
+                ${currentClaimDisplay}
                 <div style="font-size: 11px; color: ${textColor}; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid ${gridLineColor}; padding-top: 6px;">
                   <div>🕒 <b>Local:</b> ${timeStr} <span style="opacity: 0.65">(${utcTimeStr})</span></div>
                   ${raw.paymentReference ? `<div>💳 <b>Payment ID:</b> <code style="font-family: monospace; background: rgba(249,87,56,0.08); color: #f95738; padding: 1px 4px; border-radius: 3px;">${raw.paymentReference}</code></div>` : ''}
@@ -1522,7 +1522,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         ],
         series: [
           {
-            name: 'Bid Volume',
+            name: 'Placement Volume',
             type: 'line',
             smooth: 0.25,
             symbol: 'circle',
@@ -1543,7 +1543,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
               ]),
             },
             markPoint: {
-              data: [{ type: 'max', name: 'Peak Bid' }],
+              data: [{ type: 'max', name: 'Peak Placement' }],
               symbolSize: 40,
               symbolOffset: [0, '-5%'],
               label: {
@@ -1570,10 +1570,10 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         ],
       };
     } else if (mode === 'hourly') {
-      const hours = stats.hourlyBidPressures;
+      const hours = stats.hourlyClaimPressures;
       const categories = hours.map((h) => `${String(h.hour).padStart(2, '0')}:00`);
       const volumes = hours.map((h) => Number(h.volume));
-      const counts = hours.map((h) => h.bidCount);
+      const counts = hours.map((h) => h.claimCount);
 
       const series: any[] = [];
       const yAxes: any[] = [
@@ -1593,7 +1593,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       if (metric === 'both' || metric === 'count') {
         yAxes.push({
           type: 'value',
-          name: 'Bids (#)',
+          name: 'Placements (#)',
           nameTextStyle: { color: textColor, fontSize: 10 },
           minInterval: 1,
           axisLabel: { color: textColor, fontSize: 10 },
@@ -1629,7 +1629,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
       if (metric === 'both' || metric === 'count') {
         series.push({
-          name: 'Bid Count',
+          name: 'Placement Count',
           type: 'bar',
           yAxisIndex: metric === 'both' ? 1 : 0,
           barMaxWidth: 14,
@@ -1664,7 +1664,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             const idx = params[0].dataIndex;
             const hourPoint = hours[idx];
             const avg =
-              hourPoint.avgBid ?? (hourPoint.bidCount > 0 ? hourPoint.volume / hourPoint.bidCount : 0);
+              hourPoint.avgClaim ?? (hourPoint.claimCount > 0 ? hourPoint.volume / hourPoint.claimCount : 0);
             return `
               <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; min-width: 170px;">
                 <div style="font-weight: 700; font-size: 13px; color: ${headingColor}; margin-bottom: 6px;">
@@ -1674,10 +1674,10 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
                   Volume: ${currency}${Number(hourPoint.volume).toFixed(2)}
                 </div>
                 <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-bottom: 4px;">
-                  Bids: ${hourPoint.bidCount} transaction${hourPoint.bidCount === 1 ? '' : 's'}
+                  Placements: ${hourPoint.claimCount} transaction${hourPoint.claimCount === 1 ? '' : 's'}
                 </div>
                 <div style="font-size: 11px; color: ${textColor}; border-top: 1px solid ${gridLineColor}; padding-top: 4px;">
-                  Avg Bid: ${currency}${Number(avg).toFixed(2)}
+                  Avg Placement: ${currency}${Number(avg).toFixed(2)}
                 </div>
               </div>
             `;
@@ -1697,7 +1697,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         series,
       };
     } else {
-      const days = stats.dailyBidPressures ?? [];
+      const days = stats.dailyClaimPressures ?? [];
       const categories = days.map((d) => d.date);
       const volumes = days.map((d) => Number(d.volume));
 
@@ -1727,7 +1727,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
                   📅 ${day.date}
                 </div>
                 <div style="color: #f95738; font-weight: 700;">Volume: ${currency}${Number(day.volume).toFixed(2)}</div>
-                <div style="color: #10b981; font-weight: 600;">Bids: ${day.bidCount} transactions</div>
+                <div style="color: #10b981; font-weight: 600;">Placements: ${day.claimCount} transactions</div>
               </div>
             `;
           },

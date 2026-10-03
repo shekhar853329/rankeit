@@ -4,7 +4,7 @@ namespace Ranker.Hubs;
 
 /// <summary>
 /// Group-based real-time hub (rule D). Clients join a per-category group to get live re-orders of that
-/// vertical's leaderboard, and/or the global group to get live updates to the homepage top-bidders strip.
+/// vertical's leaderboard, and/or the global group to get live updates to the homepage top-claimants strip.
 /// Also broadcasts the live online-user count to every connected client.
 /// </summary>
 public class LeaderboardHub(OnlineUsersTracker onlineUsersTracker) : Hub

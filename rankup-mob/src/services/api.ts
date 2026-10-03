@@ -3,8 +3,8 @@ import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import {
-  CalculateBidQuoteRequestDto,
-  CalculateBidQuoteResponseDto,
+  CalculateClaimQuoteRequestDto,
+  CalculateClaimQuoteResponseDto,
   CategoryDto,
   CategoryLeaderboardResponseDto,
   CategorySortBy,
@@ -17,10 +17,10 @@ import {
   HallOfFameItemDto,
   ListingDetailDto,
   ListingLookupResultDto,
-  LiveBidEventDto,
+  LiveClaimEventDto,
   PagedResult,
-  PlaceBidRequestDto,
-  PlaceBidResultDto,
+  PlaceClaimRequestDto,
+  PlaceClaimResultDto,
   PlatformStatsDto,
   UrlMetadataDto,
 } from '../models';
@@ -233,8 +233,8 @@ export async function getDailyListings(page = 1, pageSize = 5): Promise<DailyLis
   );
 }
 
-export async function getLiveStream(limit = 10): Promise<LiveBidEventDto[]> {
-  return request<LiveBidEventDto[]>(`/api/leaderboard/live-stream?limit=${limit}`);
+export async function getLiveStream(limit = 10): Promise<LiveClaimEventDto[]> {
+  return request<LiveClaimEventDto[]>(`/api/leaderboard/live-stream?limit=${limit}`);
 }
 
 export async function getHallOfFame(topN = 5): Promise<HallOfFameItemDto[]> {
@@ -284,19 +284,19 @@ export async function lookupListing(categoryId: number, url: string): Promise<Li
   return request<ListingLookupResultDto>(`/api/listings/lookup?${params.toString()}`);
 }
 
-// ── BID & QUOTE APIS ──────────────────────────────────────────
+// ── CLAIM & QUOTE APIS ────────────────────────────────────────
 
-export async function placeBid(payload: PlaceBidRequestDto): Promise<PlaceBidResultDto> {
-  return request<PlaceBidResultDto>('/api/bids', {
+export async function placeClaim(payload: PlaceClaimRequestDto): Promise<PlaceClaimResultDto> {
+  return request<PlaceClaimResultDto>('/api/claims', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
-export async function calculateBidQuote(
-  payload: CalculateBidQuoteRequestDto,
-): Promise<CalculateBidQuoteResponseDto> {
-  return request<CalculateBidQuoteResponseDto>('/api/bids/calculate', {
+export async function calculateClaimQuote(
+  payload: CalculateClaimQuoteRequestDto,
+): Promise<CalculateClaimQuoteResponseDto> {
+  return request<CalculateClaimQuoteResponseDto>('/api/claims/calculate', {
     method: 'POST',
     body: JSON.stringify(payload),
   });

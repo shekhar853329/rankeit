@@ -12,8 +12,8 @@ using Ranker.Data;
 namespace ranker.Migrations
 {
     [DbContext(typeof(RankerDbContext))]
-    [Migration("20260927180426_InitialPostgresMigration")]
-    partial class InitialPostgresMigration
+    [Migration("20261003074238_Initial_Migration")]
+    partial class Initial_Migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,48 @@ namespace ranker.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Ranker.Domain.Entities.Bid", b =>
+            modelBuilder.Entity("Ranker.Domain.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("MinClaimIncrement")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("MinStartingClaim")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("ParentCategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Categories", (string)null);
+                });
+
+            modelBuilder.Entity("Ranker.Domain.Entities.Claim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -56,10 +97,10 @@ namespace ranker.Migrations
 
                     b.HasIndex("ListingId", "CreatedAt");
 
-                    b.ToTable("Bids", (string)null);
+                    b.ToTable("Claims", (string)null);
                 });
 
-            modelBuilder.Entity("Ranker.Domain.Entities.BidReconciliation", b =>
+            modelBuilder.Entity("Ranker.Domain.Entities.ClaimReconciliation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -100,48 +141,7 @@ namespace ranker.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BidReconciliations", (string)null);
-                });
-
-            modelBuilder.Entity("Ranker.Domain.Entities.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Icon")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<decimal>("MinBidIncrement")
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal>("MinStartingBid")
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int?>("ParentCategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParentCategoryId");
-
-                    b.HasIndex("Slug")
-                        .IsUnique();
-
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("ClaimReconciliations", (string)null);
                 });
 
             modelBuilder.Entity("Ranker.Domain.Entities.DailyVisitCount", b =>
@@ -182,7 +182,7 @@ namespace ranker.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<decimal>("CurrentBidAmount")
+                    b.Property<decimal>("CurrentClaimAmount")
                         .HasColumnType("numeric(18,2)");
 
                     b.Property<string>("Description")
@@ -193,10 +193,10 @@ namespace ranker.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
 
-                    b.Property<DateTime>("FirstBidAt")
+                    b.Property<DateTime>("FirstClaimAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("LastBidAt")
+                    b.Property<DateTime>("LastClaimAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LogoUrl")
@@ -230,7 +230,7 @@ namespace ranker.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId", "CurrentBidAmount", "FirstBidAt");
+                    b.HasIndex("CategoryId", "CurrentClaimAmount", "FirstClaimAt");
 
                     b.ToTable("Listings", (string)null);
                 });
@@ -308,17 +308,6 @@ namespace ranker.Migrations
                     b.ToTable("PaymentAuditLogs", (string)null);
                 });
 
-            modelBuilder.Entity("Ranker.Domain.Entities.Bid", b =>
-                {
-                    b.HasOne("Ranker.Domain.Entities.Listing", "Listing")
-                        .WithMany("Bids")
-                        .HasForeignKey("ListingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Listing");
-                });
-
             modelBuilder.Entity("Ranker.Domain.Entities.Category", b =>
                 {
                     b.HasOne("Ranker.Domain.Entities.Category", "ParentCategory")
@@ -327,6 +316,17 @@ namespace ranker.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentCategory");
+                });
+
+            modelBuilder.Entity("Ranker.Domain.Entities.Claim", b =>
+                {
+                    b.HasOne("Ranker.Domain.Entities.Listing", "Listing")
+                        .WithMany("Claims")
+                        .HasForeignKey("ListingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Listing");
                 });
 
             modelBuilder.Entity("Ranker.Domain.Entities.Listing", b =>
@@ -349,7 +349,7 @@ namespace ranker.Migrations
 
             modelBuilder.Entity("Ranker.Domain.Entities.Listing", b =>
                 {
-                    b.Navigation("Bids");
+                    b.Navigation("Claims");
                 });
 #pragma warning restore 612, 618
         }

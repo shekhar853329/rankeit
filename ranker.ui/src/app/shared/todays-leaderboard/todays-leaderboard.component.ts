@@ -11,8 +11,8 @@ import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TodaysLeaderboardComponent {
-  /** Top bidders to display — typically sliced to 3. */
-  readonly bidders = input.required<DailyListingEntryDto[]>();
+  /** Top listings to display — typically sliced to 3. */
+  readonly leaders = input.required<DailyListingEntryDto[]>();
 
   /**
    * Whether list items are clickable (navigates to the listing URL).
@@ -24,9 +24,9 @@ export class TodaysLeaderboardComponent {
   /** Emits the clicked entry when clickable is true. */
   readonly itemClick = output<DailyListingEntryDto>();
 
-  onItemClick(bidder: DailyListingEntryDto): void {
+  onItemClick(leader: DailyListingEntryDto): void {
     if (this.clickable()) {
-      this.itemClick.emit(bidder);
+      this.itemClick.emit(leader);
     }
   }
 }

@@ -7,8 +7,8 @@ export interface DailyListingEntryDto {
   listingUrl: string;
   categoryName: string;
   categorySlug: string;
-  currentBidAmount: number;
-  firstBidAt: string;
+  currentClaimAmount: number;
+  firstClaimAt: string;
   clickCount: number;
 }
 

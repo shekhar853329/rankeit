@@ -1,5 +1,5 @@
 /* ============================================================
-   RankUp – Global Leaderboard (Apex Dynamic Bid Matrix)
+   RankUp – Global Leaderboard (Apex Dynamic Claim Matrix)
    ============================================================ */
 
 :host {
@@ -256,7 +256,7 @@
   }
 }
 
-.bid-stepper {
+.placement-stepper {
   display: inline-flex;
   align-items: center;
   background: var(--color-surface-container-low);
@@ -1489,7 +1489,7 @@
   }
 }
 
-.outbid-btn {
+.claim-btn {
   border: none;
   border-radius: 0.75rem;
   padding: 0.5rem 1rem;
@@ -1645,7 +1645,7 @@
   color: var(--color-on-surface);
 }
 
-.compact-outbid-btn {
+.compact-claim-btn {
   border: none;
   border-radius: 0.5rem;
   padding: 0.35rem 0.75rem;
@@ -1697,7 +1697,7 @@
   transform: rotate(180deg);
 }
 
-/* ── Interactive Bid Pressure & Velocity Visualizer Card ── */
+/* ── Interactive Claim Pressure & Velocity Visualizer Card ── */
 .liquidity-chart-card {
   background: var(--color-surface-container-lowest);
   border: 1px solid var(--border);
@@ -2399,7 +2399,7 @@
   }
 }
 
-.hof-bid {
+.hof-claim {
   font-family: var(--font-numeric);
   font-size: 0.95rem;
   font-weight: 700;

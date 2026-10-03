@@ -13,8 +13,8 @@ export class TopRankerSpotlightComponent {
   /** Name / title of the top-ranked listing. */
   readonly listingName = input.required<string>();
 
-  /** Current bid amount for the top-ranked listing. */
-  readonly currentBidAmount = input.required<number>();
+  /** Current claim amount for the top-ranked listing. */
+  readonly currentClaimAmount = input.required<number>();
 
   /**
    * Optional category context shown below the name.

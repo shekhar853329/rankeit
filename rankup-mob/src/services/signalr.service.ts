@@ -1,6 +1,6 @@
 import * as signalR from '@microsoft/signalr';
 import { getHubUrl } from './api';
-import { ListingClickedPayload, LiveBidEventDto, RankUpdatedPayload } from '../models';
+import { ListingClickedPayload, LiveClaimEventDto, RankUpdatedPayload } from '../models';
 
 type Listener<T> = (data: T) => void;
 
@@ -9,7 +9,7 @@ class SignalRManager {
   private isConnecting = false;
   private onlineUsersListeners = new Set<Listener<number>>();
   private listingClickedListeners = new Set<Listener<ListingClickedPayload>>();
-  private liveBidListeners = new Set<Listener<LiveBidEventDto>>();
+  private liveClaimListeners = new Set<Listener<LiveClaimEventDto>>();
   private rankUpdatedListeners = new Set<Listener<RankUpdatedPayload>>();
   private leaderboardUpdatedListeners = new Set<Listener<string | null>>();
 
@@ -56,8 +56,8 @@ class SignalRManager {
         this.listingClickedListeners.forEach((fn) => fn(payload));
       });
 
-      this.connection.on('BidPlaced', (bidEvent: LiveBidEventDto) => {
-        this.liveBidListeners.forEach((fn) => fn(bidEvent));
+      this.connection.on('ClaimPlaced', (claimEvent: LiveClaimEventDto) => {
+        this.liveClaimListeners.forEach((fn) => fn(claimEvent));
       });
 
       this.connection.on('RankUpdated', (payload: RankUpdatedPayload) => {
@@ -168,9 +168,9 @@ class SignalRManager {
     return () => this.listingClickedListeners.delete(fn);
   }
 
-  onLiveBid(fn: Listener<LiveBidEventDto>): () => void {
-    this.liveBidListeners.add(fn);
-    return () => this.liveBidListeners.delete(fn);
+  onLiveClaim(fn: Listener<LiveClaimEventDto>): () => void {
+    this.liveClaimListeners.add(fn);
+    return () => this.liveClaimListeners.delete(fn);
   }
 
   onRankUpdated(fn: Listener<RankUpdatedPayload>): () => void {

@@ -6,11 +6,11 @@ import { Radius, Spacing } from '../constants/theme';
 import { useAppTheme } from '../context/ThemeContext';
 import { PlatformStatsDto } from '../models';
 
-interface BidPressureChartProps {
+interface ClaimPressureChartProps {
   stats: PlatformStatsDto | null;
 }
 
-export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => {
+export const ClaimPressureChart: React.FC<ClaimPressureChartProps> = ({ stats }) => {
   const { colors, isDark } = useAppTheme();
   const [viewMode, setViewMode] = useState<'timeline' | 'hourly' | 'weekly'>('timeline');
   const [hourlyMetric, setHourlyMetric] = useState<'both' | 'volume' | 'count'>('both');
@@ -21,29 +21,29 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
   const chartWidth = Math.max(300, screenWidth - Spacing.three * 2);
   const chartHeight = 160;
 
-  // Calculate volume & bids
+  // Calculate volume & claims
   const todayVolume = useMemo(() => {
     if (!stats) return 0;
-    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
-      return stats.recentBidsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
+    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
+      return stats.recentClaimsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
     }
-    return (stats.hourlyBidPressures || []).reduce((acc, h) => acc + Number(h.volume || 0), 0);
+    return (stats.hourlyClaimPressures || []).reduce((acc, h) => acc + Number(h.volume || 0), 0);
   }, [stats]);
 
-  const todayBidsCount = useMemo(() => {
+  const todayClaimsCount = useMemo(() => {
     if (!stats) return 0;
-    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
-      return stats.recentBidsTimeline.length;
+    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
+      return stats.recentClaimsTimeline.length;
     }
-    return (stats.hourlyBidPressures || []).reduce((acc, h) => acc + h.bidCount, 0);
+    return (stats.hourlyClaimPressures || []).reduce((acc, h) => acc + h.claimCount, 0);
   }, [stats]);
 
-  const peakBid = useMemo(() => {
+  const peakClaim = useMemo(() => {
     if (!stats) return 0;
-    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
-      return Math.max(...stats.recentBidsTimeline.map((b) => Number(b.amount || 0)));
+    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
+      return Math.max(...stats.recentClaimsTimeline.map((b) => Number(b.amount || 0)));
     }
-    const maxH = Math.max(...(stats.hourlyBidPressures || []).map((h) => Number(h.volume || 0)), 0);
+    const maxH = Math.max(...(stats.hourlyClaimPressures || []).map((h) => Number(h.volume || 0)), 0);
     return maxH;
   }, [stats]);
 
@@ -52,16 +52,16 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
     if (!stats) return [];
 
     if (viewMode === 'hourly') {
-      const hourly = stats.hourlyBidPressures || [];
+      const hourly = stats.hourlyClaimPressures || [];
       return hourly.map((h, i) => ({
         label: `${String(h.hour).padStart(2, '0')}:00`,
-        value: hourlyMetric === 'count' ? h.bidCount : Number(h.volume || 0),
+        value: hourlyMetric === 'count' ? h.claimCount : Number(h.volume || 0),
         raw: h,
       }));
     }
 
     if (viewMode === 'weekly') {
-      const daily = stats.dailyBidPressures || [];
+      const daily = stats.dailyClaimPressures || [];
       if (daily.length > 0) {
         return daily.map((d) => ({
           label: d.date.slice(5),
@@ -82,7 +82,7 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
     }
 
     // Timeline mode
-    const timeline = stats.recentBidsTimeline || [];
+    const timeline = stats.recentClaimsTimeline || [];
     if (timeline.length > 0) {
       return timeline.slice(-15).map((t, idx) => ({
         label: t.listingName ? t.listingName.slice(0, 5) : `#${idx + 1}`,
@@ -91,7 +91,7 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
       }));
     }
 
-    // Default curve if no bids yet
+    // Default curve if no claims yet
     return [
       { label: '00:00', value: 10 },
       { label: '06:00', value: 25 },
@@ -140,12 +140,12 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
           </View>
           <View style={[styles.kpiPill, { backgroundColor: colors.surfaceSubtle }]}>
             <Text style={[styles.kpiLabel, { color: colors.textMuted }]}>Count</Text>
-            <Text style={[styles.kpiVal, { color: colors.text }]}>{todayBidsCount}</Text>
+            <Text style={[styles.kpiVal, { color: colors.text }]}>{todayClaimsCount}</Text>
           </View>
-          {peakBid > 0 && (
+          {peakClaim > 0 && (
             <View style={[styles.kpiPill, { backgroundColor: colors.primaryLight }]}>
               <Text style={[styles.kpiLabel, { color: colors.primary }]}>Peak</Text>
-              <Text style={[styles.kpiVal, { color: colors.primary }]}>₹{peakBid.toFixed(0)}</Text>
+              <Text style={[styles.kpiVal, { color: colors.primary }]}>₹{peakClaim.toFixed(0)}</Text>
             </View>
           )}
         </View>

@@ -23,8 +23,8 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
 
         var skip = (page - 1) * pageSize;
 
-        // Ranked strictly by CurrentBidAmount DESC, FirstBidAt ASC (rule A1/A2). The (CategoryId,
-        // CurrentBidAmount, FirstBidAt) index backs this ordering, and EF Core translates the
+        // Ranked strictly by CurrentClaimAmount DESC, FirstClaimAt ASC (rule A1/A2). The (CategoryId,
+        // CurrentClaimAmount, FirstClaimAt) index backs this ordering, and EF Core translates the
         // Skip/Take/CountAsync pair into a single indexed OFFSET/FETCH + COUNT round trip each.
         var query = dbContext.Listings
             .AsNoTracking()
@@ -33,7 +33,7 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
         if (request.TimeMode?.ToLowerInvariant() == "today")
         {
             var todayUtc = DateTime.UtcNow.Date;
-            query = query.Where(l => l.LastBidAt >= todayUtc);
+            query = query.Where(l => l.LastClaimAt >= todayUtc);
         }
 
         if (!string.IsNullOrWhiteSpace(request.Query))
@@ -46,15 +46,15 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
         }
 
         var ordered = query
-            .OrderByDescending(l => l.CurrentBidAmount)
-            .ThenBy(l => l.FirstBidAt);
+            .OrderByDescending(l => l.CurrentClaimAmount)
+            .ThenBy(l => l.FirstClaimAt);
 
         var totalCount = await ordered.CountAsync(ct);
 
         var pageItems = await ordered
             .Skip(skip)
             .Take(pageSize)
-            .Select(l => new { l.Id, l.Name, l.Url, l.CurrentBidAmount, l.FirstBidAt, l.LastBidAt, l.ClickCount, BidCount = l.Bids.Count(), l.SiteName, l.LogoUrl, l.Description, l.FaviconUrl })
+            .Select(l => new { l.Id, l.Name, l.Url, l.CurrentClaimAmount, l.FirstClaimAt, l.LastClaimAt, l.ClickCount, ClaimCount = l.Claims.Count(), l.SiteName, l.LogoUrl, l.Description, l.FaviconUrl })
             .ToListAsync(ct);
 
         var entries = pageItems
@@ -63,11 +63,11 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
                 l.Id,
                 l.Name,
                 l.Url,
-                l.CurrentBidAmount,
-                l.FirstBidAt,
-                l.LastBidAt,
+                l.CurrentClaimAmount,
+                l.FirstClaimAt,
+                l.LastClaimAt,
                 l.ClickCount,
-                l.BidCount,
+                l.ClaimCount,
                 l.SiteName,
                 l.LogoUrl,
                 l.Description,
@@ -75,6 +75,6 @@ public class GetCategoryLeaderboardQueryHandler(RankerDbContext dbContext, ICate
             .ToList();
 
         var leaderboard = new PagedResult<LeaderboardEntryDto>(entries, page, pageSize, totalCount);
-        return new CategoryLeaderboardResponseDto(category.Id, category.Name, category.Slug, category.Icon, category.MinBidIncrement, category.MinStartingBid, leaderboard);
+        return new CategoryLeaderboardResponseDto(category.Id, category.Name, category.Slug, category.Icon, category.MinClaimIncrement, category.MinStartingClaim, leaderboard);
     }
 }

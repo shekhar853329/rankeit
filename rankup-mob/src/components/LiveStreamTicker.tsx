@@ -4,13 +4,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Radius, Spacing } from '../constants/theme';
 import { useSignalR } from '../context/SignalRContext';
 import { useAppTheme } from '../context/ThemeContext';
-import { LiveBidEventDto } from '../models';
+import { LiveClaimEventDto } from '../models';
 import { getLiveStream } from '../services/api';
 
 export const LiveStreamTicker: React.FC = () => {
   const { colors } = useAppTheme();
-  const { lastLiveBid } = useSignalR();
-  const [events, setEvents] = useState<LiveBidEventDto[]>([]);
+  const { lastLiveClaim } = useSignalR();
+  const [events, setEvents] = useState<LiveClaimEventDto[]>([]);
 
   useEffect(() => {
     getLiveStream(8)
@@ -22,12 +22,12 @@ export const LiveStreamTicker: React.FC = () => {
       .catch(() => {});
   }, []);
 
-  // Prepend real-time bid if SignalR pushes one
+  // Prepend real-time claim if SignalR pushes one
   useEffect(() => {
-    if (lastLiveBid) {
-      setEvents((prev) => [lastLiveBid, ...prev.slice(0, 7)]);
+    if (lastLiveClaim) {
+      setEvents((prev) => [lastLiveClaim, ...prev.slice(0, 7)]);
     }
-  }, [lastLiveBid]);
+  }, [lastLiveClaim]);
 
   return (
     <View
@@ -52,12 +52,12 @@ export const LiveStreamTicker: React.FC = () => {
       {/* Stream list */}
       <View style={styles.streamList}>
         {events.map((ev, idx) => (
-          <View key={ev.bidId ?? idx} style={styles.streamItem}>
+          <View key={ev.claimId ?? idx} style={styles.streamItem}>
             <View style={[styles.iconWrap, { backgroundColor: colors.surfaceSubtle }]}>
               <Ionicons
-                name={ev.isTopBid ? 'trophy' : 'flash'}
+                name={ev.isTopClaim ? 'trophy' : 'flash'}
                 size={14}
-                color={ev.isTopBid ? colors.gold : colors.primary}
+                color={ev.isTopClaim ? colors.gold : colors.primary}
               />
             </View>
             <View style={styles.itemInfo}>

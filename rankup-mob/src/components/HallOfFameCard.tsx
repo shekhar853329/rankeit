@@ -115,8 +115,8 @@ export const HallOfFameCard: React.FC = () => {
                 </View>
               </View>
 
-              <Text style={[styles.itemBid, { color: colors.primary }]}>
-                ₹{(item.bid ?? 0).toFixed(0)}
+              <Text style={[styles.itemClaim, { color: colors.primary }]}>
+                ₹{(item.claimAmount ?? 0).toFixed(0)}
               </Text>
             </View>
           );
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   itemClicks: {
     fontSize: 11,
   },
-  itemBid: {
+  itemClaim: {
     fontSize: 14,
     fontWeight: '800',
   },

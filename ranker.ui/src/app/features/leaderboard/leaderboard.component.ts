@@ -50,13 +50,13 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly seo = inject(SeoService);
 
-  @ViewChild('bidChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('claimChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
   private echartsModule: typeof import('echarts') | null = null;
   private echartsInstance: echarts.ECharts | null = null;
   private chartResizeObserver: ResizeObserver | null = null;
   private chartIntersectionObserver: IntersectionObserver | null = null;
 
-  /* ── Category Bid Pressure Chart State ── */
+  /* ── Category Claim Pressure Chart State ── */
   readonly categoryStats = signal<PlatformStatsDto | null>(null);
   readonly chartViewMode = signal<'timeline' | 'hourly' | 'weekly'>('timeline');
   readonly chartMetric = signal<'both' | 'volume' | 'count'>('both');
@@ -65,25 +65,25 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   readonly todayTotalVolume = computed(() => {
     const stats = this.categoryStats();
     if (!stats) return 0;
-    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
-      return stats.recentBidsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
+    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
+      return stats.recentClaimsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
     }
-    return stats.hourlyBidPressures.reduce((acc, h) => acc + Number(h.volume || 0), 0);
+    return stats.hourlyClaimPressures.reduce((acc, h) => acc + Number(h.volume || 0), 0);
   });
 
-  readonly todayTotalBids = computed(() => {
+  readonly todayTotalClaims = computed(() => {
     const stats = this.categoryStats();
     if (!stats) return 0;
-    if (stats.recentBidsTimeline && stats.recentBidsTimeline.length > 0) {
-      return stats.recentBidsTimeline.length;
+    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
+      return stats.recentClaimsTimeline.length;
     }
-    return stats.hourlyBidPressures.reduce((acc, h) => acc + h.bidCount, 0);
+    return stats.hourlyClaimPressures.reduce((acc, h) => acc + h.claimCount, 0);
   });
 
-  readonly peakBidInfo = computed(() => {
+  readonly peakClaimInfo = computed(() => {
     const stats = this.categoryStats();
     if (!stats) return null;
-    const timeline = stats.recentBidsTimeline ?? [];
+    const timeline = stats.recentClaimsTimeline ?? [];
     if (timeline.length > 0) {
       const highest = [...timeline].sort((a, b) => Number(b.amount) - Number(a.amount))[0];
       return {
@@ -94,7 +94,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         time: highest.createdAt,
       };
     }
-    const hourly = stats.hourlyBidPressures;
+    const hourly = stats.hourlyClaimPressures;
     const peakHour = [...hourly].sort((a, b) => Number(b.volume) - Number(a.volume))[0];
     if (peakHour && peakHour.volume > 0) {
       return {
@@ -108,8 +108,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     return null;
   });
 
-  readonly avgBidAmount = computed(() => {
-    const count = this.todayTotalBids();
+  readonly avgClaimAmount = computed(() => {
+    const count = this.todayTotalClaims();
     const vol = this.todayTotalVolume();
     return count > 0 ? vol / count : 0;
   });
@@ -118,8 +118,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   readonly categorySlug = signal('');
   readonly categoryId = signal<number | null>(null);
   readonly categoryName = signal('');
-  readonly minBidIncrement = signal(1);
-  readonly minStartingBid = signal(1);
+  readonly minClaimIncrement = signal(1);
+  readonly minStartingClaim = signal(1);
 
   // ── Feed state ─────────────────────────────────────────────
   readonly entries = signal<LeaderboardEntryDto[]>([]);
@@ -135,8 +135,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   // ── Sidebar: trending ──────────────────────────────────────
   readonly trendingCategories = signal<CategoryDto[]>([]);
 
-  // ── Stats bar: top 3 bidders of today ─────────────────────
-  readonly top3Bidders = signal<DailyListingEntryDto[]>([]);
+  // ── Stats bar: top 3 sponsors of today ─────────────────────
+  readonly top3Sponsors = signal<DailyListingEntryDto[]>([]);
 
   // ── Timer & Clock ──────────────────────────────────────────
   private countdownTimerId: ReturnType<typeof setInterval> | null = null;
@@ -157,9 +157,9 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   readonly claimPrice = computed<number | null>(() => {
     const data = this.claimCategoryData();
-    if (!data) return this.minStartingBid();
-    const currentTop = data.leaderboard.items[0]?.currentBidAmount;
-    return currentTop !== undefined ? currentTop + data.minBidIncrement : data.minStartingBid;
+    if (!data) return this.minStartingClaim();
+    const currentTop = data.leaderboard.items[0]?.currentClaimAmount;
+    return currentTop !== undefined ? currentTop + data.minClaimIncrement : data.minStartingClaim;
   });
 
   readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
@@ -182,7 +182,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       error: () => {},
     });
 
-    this.loadTop3Bidders();
+    this.loadTop3Sponsors();
 
     this.route.fragment.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((fragment) => {
       if (fragment === 'claim-rank-section') {
@@ -225,8 +225,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         this.notFound.set(false);
         this.categoryId.set(result.categoryId);
         this.categoryName.set(result.categoryName);
-        this.minBidIncrement.set(result.minBidIncrement);
-        this.minStartingBid.set(result.minStartingBid);
+        this.minClaimIncrement.set(result.minClaimIncrement);
+        this.minStartingClaim.set(result.minStartingClaim);
         this.entries.set(result.leaderboard.items);
         this.totalCount.set(result.leaderboard.totalCount);
         this.claimCategoryData.set(result);
@@ -235,7 +235,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         const catSlug = result.categorySlug;
         this.seo.updateTags({
           title: `Top ${catName} Products & Live Leaderboard`,
-          description: `Browse real-time ${catName} rankings on RankUp. Verified live bids, transparent ranking algorithms, and active competition for the #1 spot in ${catName}.`,
+          description: `Browse real-time ${catName} rankings on RankUp. Verified live placements, transparent ranking algorithms, and active competition for the #1 spot in ${catName}.`,
           url: `https://rankup.cyou/leaderboard/${catSlug}`,
           keywords: [catName, `${catName} rankings`, `${catName} leaderboard`, 'product discovery', 'top products'],
           schema: {
@@ -262,7 +262,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         this.refresh();
         this.loadCategoryStats(this.categorySlug());
       }
-      this.loadTop3Bidders();
+      this.loadTop3Sponsors();
     });
 
     this.signalr.listingClicked$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ listingId, clickCount }) => {
@@ -302,11 +302,11 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       });
   }
 
-  private loadTop3Bidders(): void {
+  private loadTop3Sponsors(): void {
     this.leaderboardService.getDailyListings(1, 3).subscribe({
       next: (result) => {
         const today = result.items[0];
-        if (today) this.top3Bidders.set(today.entries.slice(0, 3));
+        if (today) this.top3Sponsors.set(today.entries.slice(0, 3));
       },
       error: () => {},
     });
@@ -395,13 +395,13 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   incrementClaimAmount(): void {
     const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
-    this.claimAmount.set(current + Math.max(this.minBidIncrement(), 1));
+    this.claimAmount.set(current + Math.max(this.minClaimIncrement(), 1));
   }
 
   decrementClaimAmount(): void {
     const floor = 1;
     const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
-    const inc = Math.max(this.minBidIncrement(), 1);
+    const inc = Math.max(this.minClaimIncrement(), 1);
     const nextVal = current > inc ? current - inc : (current > floor ? floor : floor);
     this.claimAmount.set(Math.max(nextVal, floor));
   }
@@ -419,7 +419,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     this.isAmountFieldFocused.set(false);
     const num = parseFloat(val);
     if (isNaN(num) || num < 1) {
-      const fallback = this.claimPrice() ?? this.minStartingBid() ?? 1;
+      const fallback = this.claimPrice() ?? this.minStartingClaim() ?? 1;
       this.claimAmount.set(fallback);
     } else {
       this.claimAmount.set(Math.max(1, Math.round(num * 100) / 100));
@@ -432,9 +432,9 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   moveToClaimRank(targetAmount?: number, rank?: number): void {
 
-    const minInc = this.minBidIncrement() || 1;
-    const currentTop = this.entries()[0]?.currentBidAmount;
-    const minReq = currentTop !== undefined ? currentTop + minInc : this.minStartingBid();
+    const minInc = this.minClaimIncrement() || 1;
+    const currentTop = this.entries()[0]?.currentClaimAmount;
+    const minReq = currentTop !== undefined ? currentTop + minInc : this.minStartingClaim();
     const amount = targetAmount ?? minReq;
 
     this.claimAmount.set(Math.max(amount, 1));
@@ -456,21 +456,21 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     }
   }
 
-  prepareOutbid(entry: LeaderboardEntryDto, minAmount?: number, rank?: number): void {
+  prepareClaim(entry: LeaderboardEntryDto, minAmount?: number, rank?: number): void {
     this.moveToClaimRank(minAmount, rank);
   }
 
   initiateClaim(targetListingUrl?: string): void {
     const categoryId = this.categoryId();
     if (categoryId === null) return;
-    const minInc = this.minBidIncrement() || 1;
-    const currentTop = this.entries()[0]?.currentBidAmount ?? null;
-    const minReq = currentTop !== null ? currentTop + minInc : this.minStartingBid();
+    const minInc = this.minClaimIncrement() || 1;
+    const currentTop = this.entries()[0]?.currentClaimAmount ?? null;
+    const minReq = currentTop !== null ? currentTop + minInc : this.minStartingClaim();
     const amount = Math.max(this.effectiveClaimAmount() ?? minReq, 1);
 
     let rank = 1;
     if (currentTop !== null && amount <= currentTop) {
-      const higherCount = this.entries().filter((e) => e.currentBidAmount >= amount).length;
+      const higherCount = this.entries().filter((e) => e.currentClaimAmount >= amount).length;
       rank = higherCount + 1;
     }
 
@@ -491,10 +491,10 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       categoryName: this.categoryName(),
       amount,
       categoryId,
-      minStartingBid: this.minStartingBid(),
-      minBidIncrement: minInc,
-      currentTopBid: currentTop,
-      currentBidAmount: existing?.currentBidAmount ?? 0,
+      minStartingClaim: this.minStartingClaim(),
+      minClaimIncrement: minInc,
+      currentTopClaim: currentTop,
+      currentClaimAmount: existing?.currentClaimAmount ?? 0,
       listingId: existing?.listingId ?? null,
       listingName: existing?.listingName || title,
       listingUrl: url,
@@ -576,7 +576,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     return this.isSidebarUrlValid() && this.categoryId() !== null;
   }
 
-  /* ── Interactive Bid Pressure Chart Methods ── */
+  /* ── Interactive Claim Pressure Chart Methods ── */
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId) && this.chartContainerRef?.nativeElement) {
       if (typeof IntersectionObserver !== 'undefined') {
@@ -673,31 +673,31 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     let option: echarts.EChartsOption;
 
     if (mode === 'timeline') {
-      let bids = stats.recentBidsTimeline ?? [];
+      let claims = stats.recentClaimsTimeline ?? [];
       const preset = this.chartTimePreset();
       const now = Date.now();
 
       if (preset === '1h') {
         const oneHourAgo = now - 60 * 60 * 1000;
-        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= oneHourAgo);
-        if (filtered.length > 0) bids = filtered;
+        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= oneHourAgo);
+        if (filtered.length > 0) claims = filtered;
       } else if (preset === '6h') {
         const sixHoursAgo = now - 6 * 60 * 60 * 1000;
-        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= sixHoursAgo);
-        if (filtered.length > 0) bids = filtered;
+        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= sixHoursAgo);
+        if (filtered.length > 0) claims = filtered;
       } else if (preset === 'today') {
         const startOfTodayUtc = new Date();
         startOfTodayUtc.setUTCHours(0, 0, 0, 0);
-        const filtered = bids.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
-        if (filtered.length > 0) bids = filtered;
+        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
+        if (filtered.length > 0) claims = filtered;
       }
 
-      // Sort bids chronologically
-      const sortedBids = [...bids].sort(
+      // Sort claims chronologically
+      const sortedClaims = [...claims].sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
 
-      const seriesData = sortedBids.map((b) => {
+      const seriesData = sortedClaims.map((b) => {
         const t = new Date(b.createdAt).getTime();
         return {
           name: b.listingName,
@@ -736,11 +736,11 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
             const utcTimeStr = `${String(date.getUTCHours()).padStart(2, '0')}:${String(
               date.getUTCMinutes()
             ).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')} UTC`;
-            const currentBidDisplay = raw.currentBidLevel ? `
+            const currentClaimDisplay = raw.currentClaimLevel ? `
                   <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px;">
-                    <span style="font-size: 11px; color: ${textColor};">Standing Rank Bid:</span>
+                    <span style="font-size: 11px; color: ${textColor};">Standing Rank Placement:</span>
                     <span style="font-size: 14px; font-weight: 700; font-family: 'Space Grotesk', monospace; color: ${headingColor};">
-                      ${currency}${Number(raw.currentBidLevel).toFixed(2)}
+                      ${currency}${Number(raw.currentClaimLevel).toFixed(2)}
                     </span>
                   </div>` : '';
             return `
@@ -755,7 +755,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
                     ${currency}${Number(raw.amount).toFixed(2)}
                   </span>
                 </div>
-                ${currentBidDisplay}
+                ${currentClaimDisplay}
                 <div style="font-size: 11px; color: ${textColor}; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid ${gridLineColor}; padding-top: 6px;">
                   <div>🕒 <b>Local:</b> ${timeStr} <span style="opacity: 0.65">(${utcTimeStr})</span></div>
                   ${raw.paymentReference ? `<div>💳 <b>Payment ID:</b> <code style="font-family: monospace; background: rgba(249,87,56,0.08); color: #f95738; padding: 1px 4px; border-radius: 3px;">${raw.paymentReference}</code></div>` : ''}
@@ -813,7 +813,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         ],
         series: [
           {
-            name: 'Bid Volume',
+            name: 'Placement Volume',
             type: 'line',
             smooth: 0.25,
             symbol: 'circle',
@@ -834,7 +834,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
               ]),
             },
             markPoint: {
-              data: [{ type: 'max', name: 'Peak Bid' }],
+              data: [{ type: 'max', name: 'Peak Placement' }],
               symbolSize: 40,
               symbolOffset: [0, '-5%'],
               label: {
@@ -861,10 +861,10 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         ],
       };
     } else if (mode === 'hourly') {
-      const hours = stats.hourlyBidPressures;
+      const hours = stats.hourlyClaimPressures;
       const categories = hours.map((h) => `${String(h.hour).padStart(2, '0')}:00`);
       const volumes = hours.map((h) => Number(h.volume));
-      const counts = hours.map((h) => h.bidCount);
+      const counts = hours.map((h) => h.claimCount);
 
       const series: any[] = [];
       const yAxes: any[] = [
@@ -884,7 +884,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       if (metric === 'both' || metric === 'count') {
         yAxes.push({
           type: 'value',
-          name: 'Bids (#)',
+          name: 'Placements (#)',
           nameTextStyle: { color: textColor, fontSize: 10 },
           minInterval: 1,
           axisLabel: { color: textColor, fontSize: 10 },
@@ -920,7 +920,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
       if (metric === 'both' || metric === 'count') {
         series.push({
-          name: 'Bid Count',
+          name: 'Placement Count',
           type: 'bar',
           yAxisIndex: metric === 'both' ? 1 : 0,
           barMaxWidth: 14,
@@ -955,7 +955,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
             const idx = params[0].dataIndex;
             const hourPoint = hours[idx];
             const avg =
-              hourPoint.avgBid ?? (hourPoint.bidCount > 0 ? hourPoint.volume / hourPoint.bidCount : 0);
+              hourPoint.avgClaim ?? (hourPoint.claimCount > 0 ? hourPoint.volume / hourPoint.claimCount : 0);
             return `
               <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; min-width: 170px;">
                 <div style="font-weight: 700; font-size: 13px; color: ${headingColor}; margin-bottom: 6px;">
@@ -965,10 +965,10 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
                   Volume: ${currency}${Number(hourPoint.volume).toFixed(2)}
                 </div>
                 <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-bottom: 4px;">
-                  Bids: ${hourPoint.bidCount} transaction${hourPoint.bidCount === 1 ? '' : 's'}
+                  Placements: ${hourPoint.claimCount} transaction${hourPoint.claimCount === 1 ? '' : 's'}
                 </div>
                 <div style="font-size: 11px; color: ${textColor}; border-top: 1px solid ${gridLineColor}; padding-top: 4px;">
-                  Avg Bid: ${currency}${Number(avg).toFixed(2)}
+                  Avg Placement: ${currency}${Number(avg).toFixed(2)}
                 </div>
               </div>
             `;
@@ -988,7 +988,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         series,
       };
     } else {
-      const days = stats.dailyBidPressures ?? [];
+      const days = stats.dailyClaimPressures ?? [];
       const categories = days.map((d) => d.date);
       const volumes = days.map((d) => Number(d.volume));
 
@@ -1018,7 +1018,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
                   📅 ${day.date}
                 </div>
                 <div style="color: #f95738; font-weight: 700;">Volume: ${currency}${Number(day.volume).toFixed(2)}</div>
-                <div style="color: #10b981; font-weight: 600;">Bids: ${day.bidCount} transactions</div>
+                <div style="color: #10b981; font-weight: 600;">Placements: ${day.claimCount} transactions</div>
               </div>
             `;
           },

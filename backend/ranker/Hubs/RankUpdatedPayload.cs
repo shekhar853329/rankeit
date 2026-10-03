@@ -5,6 +5,6 @@ public sealed record RankUpdatedPayload(
     string CategorySlug,
     int ListingId,
     string ListingName,
-    decimal NewBidAmount,
+    decimal NewClaimAmount,
     bool BecameCategoryTop,
     DateTime OccurredAt);

@@ -18,11 +18,11 @@ public class Category
 
     public ICollection<Category> ChildCategories { get; set; } = new List<Category>();
 
-    /// <summary>Minimum amount a new bid must exceed the current top bid by.</summary>
-    public decimal MinBidIncrement { get; set; }
+    /// <summary>Minimum amount a new claim must exceed the current top claim by.</summary>
+    public decimal MinClaimIncrement { get; set; }
 
-    /// <summary>Minimum bid required for a brand-new listing when the category has no current top bid.</summary>
-    public decimal MinStartingBid { get; set; }
+    /// <summary>Minimum claim required for a brand-new listing when the category has no current top claim.</summary>
+    public decimal MinStartingClaim { get; set; }
 
     public ICollection<Listing> Listings { get; set; } = new List<Listing>();
 }

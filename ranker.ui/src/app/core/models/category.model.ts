@@ -6,8 +6,8 @@ export interface CategoryDto {
   slug: string;
   icon?: string | null;
   parentCategoryId: number | null;
-  minBidIncrement: number;
-  minStartingBid: number;
+  minClaimIncrement: number;
+  minStartingClaim: number;
   activityScore: number;
   recentClaimCount: number;
   listingCount: number;

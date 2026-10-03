@@ -136,7 +136,7 @@
                 </span>
                 #{{ i + 1 }} {{ i === 0 ? 'HOTTEST' : (i === 1 ? 'TRENDING' : 'SURGING') }}
               </span>
-              <span class="hot-card__time">{{ card.topEntries[0] ? timeAgo(card.topEntries[0].lastBidAt) : 'Active'
+              <span class="hot-card__time">{{ card.topEntries[0] ? timeAgo(card.topEntries[0].lastClaimAt) : 'Active'
                 }}</span>
             </div>
 
@@ -157,7 +157,7 @@
           <!-- Sector King Banner -->
           @if (card.topEntries[0]) {
           <a class="sector-king-banner sector-king-banner--clickable" [href]="resolveUrl(card.topEntries[0].listingUrl)"
-            target="_blank" rel="noopener noreferrer" (click)="onBidderClick($event, card.topEntries[0])"
+            target="_blank" rel="noopener noreferrer" (click)="onListingClick($event, card.topEntries[0])"
             [title]="'Visit ' + (card.topEntries[0].siteName || card.topEntries[0].listingName) + ' (' + card.topEntries[0].listingUrl + ')'">
             <div class="sector-king-banner__left">
               <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
@@ -179,8 +179,8 @@
               </div>
             </div>
             <div class="sector-king-banner__right">
-              <span class="king-bid text-primary">
-                ${{ card.topEntries[0].currentBidAmount | number: '1.0-0' }}
+              <span class="king-claim text-primary">
+                ₹{{ card.topEntries[0].currentClaimAmount | number: '1.0-0' }}
               </span>
               @if (card.topEntries[0].clickCount) {
               <span class="king-clicks text-secondary">+{{ card.topEntries[0].clickCount }} clicks</span>
@@ -201,8 +201,8 @@
               </div>
             </div>
             <div class="sector-king-banner__right">
-              <span class="king-bid text-primary">
-                ${{ card.category.minStartingBid | number: '1.0-0' }}
+              <span class="king-claim text-primary">
+                ₹{{ card.category.minStartingClaim | number: '1.0-0' }}
               </span>
             </div>
           </div>
@@ -264,9 +264,9 @@
                   'competitor' : 'competitors' }}</span>
               </div>
             </div>
-            <div class="arena-min-bid">
-              <span class="min-bid-label">Floor</span>
-              <span class="min-bid-val">${{ card.category.minStartingBid | number: '1.0-0' }}</span>
+            <div class="arena-min-claim">
+              <span class="min-claim-label">Floor</span>
+              <span class="min-claim-val">₹{{ card.category.minStartingClaim | number: '1.0-0' }}</span>
             </div>
           </div>
 
@@ -275,7 +275,7 @@
             @if (card.topEntries.length > 0) {
             @for (entry of card.topEntries; track entry.listingId; let rankIdx = $index) {
             <a class="arena-leader-row" [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="noopener noreferrer"
-              (click)="onBidderClick($event, entry)"
+              (click)="onListingClick($event, entry)"
               [title]="'Visit ' + (entry.siteName || entry.listingName) + ' (' + entry.listingUrl + ')'">
               <div class="arena-leader-left">
                 <span class="arena-medal" [class.arena-medal--gold]="rankIdx === 0"
@@ -289,7 +289,7 @@
                 <span class="arena-leader-name">{{ entry.siteName || entry.listingName }}</span>
                 <span class="material-symbols-outlined arena-leader-ext-icon">open_in_new</span>
               </div>
-              <span class="arena-leader-bid">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
+              <span class="arena-leader-claim">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
             </a>
             }
             } @else {

@@ -3,14 +3,14 @@ using MediatR;
 namespace Ranker.Domain.Events;
 
 /// <summary>
-/// Published after a bid transaction commits. Consumed by SignalR broadcast and global-leaderboard
+/// Published after a claim transaction commits. Consumed by SignalR broadcast and global-leaderboard
 /// cache-invalidation handlers.
 /// </summary>
-public sealed record BidPlacedEvent(
+public sealed record ClaimPlacedEvent(
     int ListingId,
     int CategoryId,
     string CategorySlug,
     string ListingName,
-    decimal NewBidAmount,
+    decimal NewClaimAmount,
     DateTime OccurredAt,
     bool BecameCategoryTop) : INotification;

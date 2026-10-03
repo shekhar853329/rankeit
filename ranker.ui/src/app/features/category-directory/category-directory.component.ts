@@ -131,7 +131,7 @@ export class CategoryDirectoryComponent implements OnInit {
     return `https://${trimmed}`;
   }
 
-  onBidderClick(event: MouseEvent, entry: LeaderboardEntryDto): void {
+  onListingClick(event: MouseEvent, entry: LeaderboardEntryDto): void {
     event.stopPropagation();
     if (!entry?.listingId) return;
     this.listingService.recordClick(entry.listingId).subscribe({

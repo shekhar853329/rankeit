@@ -2,7 +2,7 @@ namespace Ranker.Dtos;
 
 /// <summary>
 /// One representative (category #1) listing on the cross-category leaderboard, ranked by a
-/// normalized score rather than raw bid amount so high-price verticals don't automatically dominate.
+/// normalized score rather than raw claim amount so high-price verticals don't automatically dominate.
 /// </summary>
 public sealed record GlobalLeaderboardEntryDto(
     int Rank,
@@ -13,10 +13,10 @@ public sealed record GlobalLeaderboardEntryDto(
     int ListingId,
     string ListingName,
     string ListingUrl,
-    decimal CurrentBidAmount,
+    decimal CurrentClaimAmount,
     decimal NormalizedScore,
     int ClickCount,
-    int BidCount,
+    int ClaimCount,
     string? SiteName,
     string? LogoUrl,
     string? Description,
