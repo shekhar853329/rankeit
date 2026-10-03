@@ -120,7 +120,7 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
         <View style={styles.titleWrap}>
           <View style={styles.titleRow}>
             <Text style={[styles.title, { color: colors.text }]}>
-              Bid Pressure &amp; Auction Liquidity
+              Placement Velocity &amp; Ranking Depth
             </Text>
             <View style={[styles.liveBadge, { backgroundColor: colors.secondaryLight }]}>
               <View style={[styles.liveDot, { backgroundColor: colors.secondaryGreen }]} />
@@ -128,7 +128,7 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
             </View>
           </View>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            Continuous payment activity &amp; auction depth
+            Continuous payment activity &amp; placement depth
           </Text>
         </View>
 
@@ -139,7 +139,7 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
             <Text style={[styles.kpiVal, { color: colors.text }]}>₹{todayVolume.toFixed(0)}</Text>
           </View>
           <View style={[styles.kpiPill, { backgroundColor: colors.surfaceSubtle }]}>
-            <Text style={[styles.kpiLabel, { color: colors.textMuted }]}>Bids</Text>
+            <Text style={[styles.kpiLabel, { color: colors.textMuted }]}>Count</Text>
             <Text style={[styles.kpiVal, { color: colors.text }]}>{todayBidsCount}</Text>
           </View>
           {peakBid > 0 && (
@@ -230,7 +230,7 @@ export const BidPressureChart: React.FC<BidPressureChartProps> = ({ stats }) => 
                     styles.metricBtnText,
                     { color: hourlyMetric === m ? '#fff' : colors.textMuted },
                   ]}>
-                  {m === 'both' ? 'Both' : m === 'volume' ? 'Vol' : 'Bids'}
+                  {m === 'both' ? 'Both' : m === 'volume' ? 'Vol' : 'Count'}
                 </Text>
               </Pressable>
             ))}

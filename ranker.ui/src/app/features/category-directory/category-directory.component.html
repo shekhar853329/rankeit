@@ -7,7 +7,7 @@
       <div class="notice-strip__left">
         <span class="surge-badge">
           <span class="pulse-dot"></span>
-          AUCTION SURGE
+          DISCOVERY SURGE
         </span>
         <span class="notice-text">
           High contention recorded across <strong>AI</strong>, <strong>SEO</strong>, and <strong>Dev Tools</strong>
@@ -45,7 +45,7 @@
           </div>
           <!-- <div class="stat-pill stat-pill--highlight">
             <span class="material-symbols-outlined icon-xs">payments</span>
-            <strong>Decentralized</strong> Bidding
+            <strong>Transparent</strong> Rankings
           </div> -->
         </div>
       </div>
@@ -67,12 +67,12 @@
           <div class="time-pills">
             <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
               (click)="setTimeMode('alltime')" id="category-time-alltime"
-              title="Show all-time rankings including past bids">
+              title="Show all-time rankings across all listings">
               <span class="material-symbols-outlined icon-xs">history</span>
               All-Time
             </button>
             <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
-              (click)="setTimeMode('today')" id="category-time-today" title="Show bids placed today">
+              (click)="setTimeMode('today')" id="category-time-today" title="Show listings promoted today">
               <span class="material-symbols-outlined icon-xs">today</span>
               Today
             </button>
@@ -114,7 +114,7 @@
           </span>
           <div>
             <h2 class="hot-title">Hot Contention Sectors</h2>
-            <span class="hot-sub">Highest bidding velocity and rank changes today</span>
+            <span class="hot-sub">Highest promotional velocity and rank changes today</span>
           </div>
         </div>
         <div class="hot-tag">
@@ -297,9 +297,9 @@
               <span class="material-symbols-outlined icon-xs text-primary">local_fire_department</span>
               <span>
                 @if (timeMode() === 'today') {
-                No active bids today. First bidder secures Rank #1 today!
+                No active placements today. First creator secures Rank #1 today!
                 } @else {
-                No active bids. First bidder secures Rank #1 at minimum starting bid!
+                No active placements. First creator secures Rank #1 at minimum starting price!
                 }
               </span>
             </div>

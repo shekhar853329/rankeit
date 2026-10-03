@@ -40,8 +40,8 @@ export class DailyListingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.updateTags({
-      title: "Today's Active Auctions & Daily Listing Feed",
-      description: "Track today's live competitive bidding activity, new product claims, and daily auction champions on RankUp.",
+      title: "Today's Featured Placements & Daily Listing Feed",
+      description: "Track today's live promotional activity, new product claims, and daily featured leaders on RankUp.",
       url: 'https://rankup.cyou/daily',
     });
 

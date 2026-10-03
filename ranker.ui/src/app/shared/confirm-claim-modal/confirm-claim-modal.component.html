@@ -1,353 +1,357 @@
 @if (modal.claimModal(); as payload) {
-<div class="modal-backdrop" (click)="close()" (keydown)="onKeydown($event)" tabindex="-1" role="dialog" aria-modal="true"
-  aria-labelledby="claim-modal-title">
+<div class="modal-backdrop" (click)="close()" (keydown)="onKeydown($event)" tabindex="-1" role="dialog"
+  aria-modal="true" aria-labelledby="claim-modal-title">
   <div class="modal-panel" (click)="$event.stopPropagation()">
 
     <!-- ══════════════════════════════════════════════════════════
          SUCCESS STATE: Completed Transaction Details
          ══════════════════════════════════════════════════════════ -->
     @if (transactionStatus() === 'success') {
-      @if (transactionDetails(); as details) {
-        <div class="modal-panel__header">
-          <div class="modal-panel__badge-row">
-            <span class="status-pill status-pill--rebid">
-              🎉 Payment Confirmed
-            </span>
-          </div>
-          <button type="button" class="modal-panel__close" (click)="finishSuccess()" aria-label="Close">✕</button>
+    @if (transactionDetails(); as details) {
+    <div class="modal-panel__header">
+      <div class="modal-panel__badge-row">
+        <span class="status-pill status-pill--rebid">
+          🎉 Payment Confirmed
+        </span>
+      </div>
+      <button type="button" class="modal-panel__close" (click)="finishSuccess()" aria-label="Close">✕</button>
+    </div>
+
+    <div class="txn-hero txn-hero--success">
+      <div class="txn-hero__icon-circle">
+        <span class="material-symbols-outlined txn-hero__icon">check_circle</span>
+      </div>
+      <h2 class="txn-hero__title">Payment & Placement Successful!</h2>
+      <p class="txn-hero__desc">
+        Your placement is confirmed and your ranking is now live on the <strong>{{ details.categoryName }}</strong>
+        leaderboard.
+      </p>
+      <div class="txn-hero__amount font-numeric">
+        ₹{{ (details.amountPaid ?? 0) | number: '1.2-2' }}
+      </div>
+      <span class="txn-hero__amount-sub">Amount Paid via Razorpay</span>
+    </div>
+
+    <div class="txn-card">
+      <div class="txn-card__header">
+        <span class="material-symbols-outlined icon-sm">receipt_long</span>
+        <span>TRANSACTION DETAILS</span>
+      </div>
+
+      <div class="txn-card__row">
+        <span class="txn-card__label">Listing / Product</span>
+        <span class="txn-card__value font-medium">{{ details.listingName }}</span>
+      </div>
+
+      <div class="txn-card__row">
+        <span class="txn-card__label">Product URL</span>
+        <span class="txn-card__value text-muted font-mono text-xs">{{ details.listingUrl }}</span>
+      </div>
+
+      <div class="txn-card__row">
+        <span class="txn-card__label">Current Total Placement</span>
+        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newBidAmount ?? 0) | number: '1.2-2'
+          }}</span>
+      </div>
+
+      <div class="txn-card__row">
+        <span class="txn-card__label">Category</span>
+        <span class="txn-card__value">{{ details.categoryName }}</span>
+      </div>
+
+      @if (details.paymentId) {
+      <div class="txn-card__row">
+        <span class="txn-card__label">Payment Reference</span>
+        <div class="txn-ref-pill" (click)="copyPaymentId(details.paymentId)" role="button" tabindex="0"
+          title="Click to copy payment ID">
+          <span class="font-mono text-xs">{{ details.paymentId }}</span>
+          <span class="material-symbols-outlined icon-xs text-muted">
+            {{ copied() ? 'done' : 'content_copy' }}
+          </span>
         </div>
-
-        <div class="txn-hero txn-hero--success">
-          <div class="txn-hero__icon-circle">
-            <span class="material-symbols-outlined txn-hero__icon">check_circle</span>
-          </div>
-          <h2 class="txn-hero__title">Payment & Bid Successful!</h2>
-          <p class="txn-hero__desc">
-            Your bid is confirmed and your ranking is now live on the <strong>{{ details.categoryName }}</strong> leaderboard.
-          </p>
-          <div class="txn-hero__amount font-numeric">
-            ₹{{ (details.amountPaid ?? 0) | number: '1.2-2' }}
-          </div>
-          <span class="txn-hero__amount-sub">Amount Paid via Razorpay</span>
-        </div>
-
-        <div class="txn-card">
-          <div class="txn-card__header">
-            <span class="material-symbols-outlined icon-sm">receipt_long</span>
-            <span>TRANSACTION DETAILS</span>
-          </div>
-
-          <div class="txn-card__row">
-            <span class="txn-card__label">Listing / Product</span>
-            <span class="txn-card__value font-medium">{{ details.listingName }}</span>
-          </div>
-
-          <div class="txn-card__row">
-            <span class="txn-card__label">Product URL</span>
-            <span class="txn-card__value text-muted font-mono text-xs">{{ details.listingUrl }}</span>
-          </div>
-
-          <div class="txn-card__row">
-            <span class="txn-card__label">Current Total Bid</span>
-            <span class="txn-card__value font-numeric text-primary">₹{{ (details.newBidAmount ?? 0) | number: '1.2-2' }}</span>
-          </div>
-
-          <div class="txn-card__row">
-            <span class="txn-card__label">Category</span>
-            <span class="txn-card__value">{{ details.categoryName }}</span>
-          </div>
-
-          @if (details.paymentId) {
-          <div class="txn-card__row">
-            <span class="txn-card__label">Payment Reference</span>
-            <div class="txn-ref-pill" (click)="copyPaymentId(details.paymentId)" role="button" tabindex="0" title="Click to copy payment ID">
-              <span class="font-mono text-xs">{{ details.paymentId }}</span>
-              <span class="material-symbols-outlined icon-xs text-muted">
-                {{ copied() ? 'done' : 'content_copy' }}
-              </span>
-            </div>
-          </div>
-          }
-
-          @if (details.orderId) {
-          <div class="txn-card__row">
-            <span class="txn-card__label">Order ID</span>
-            <span class="font-mono text-xs text-muted">{{ details.orderId }}</span>
-          </div>
-          }
-
-          <div class="txn-card__row">
-            <span class="txn-card__label">Date & Time</span>
-            <span class="txn-card__value text-muted">{{ details.timestamp | date: 'medium' }}</span>
-          </div>
-
-          <div class="txn-card__row">
-            <span class="txn-card__label">Status</span>
-            <span class="status-chip status-chip--success">
-              <span class="material-symbols-outlined icon-xs">verified</span>
-              Settled & Secured
-            </span>
-          </div>
-        </div>
-
-        <div class="modal-panel__actions">
-          <button type="button" class="btn btn-primary btn--block" (click)="finishSuccess()">
-            <span>View on Leaderboard 🚀</span>
-          </button>
-        </div>
+      </div>
       }
+
+      @if (details.orderId) {
+      <div class="txn-card__row">
+        <span class="txn-card__label">Order ID</span>
+        <span class="font-mono text-xs text-muted">{{ details.orderId }}</span>
+      </div>
+      }
+
+      <div class="txn-card__row">
+        <span class="txn-card__label">Date & Time</span>
+        <span class="txn-card__value text-muted">{{ details.timestamp | date: 'medium' }}</span>
+      </div>
+
+      <div class="txn-card__row">
+        <span class="txn-card__label">Status</span>
+        <span class="status-chip status-chip--success">
+          <span class="material-symbols-outlined icon-xs">verified</span>
+          Settled & Secured
+        </span>
+      </div>
+    </div>
+
+    <div class="modal-panel__actions">
+      <button type="button" class="btn btn-primary btn--block" (click)="finishSuccess()">
+        <span>View on Leaderboard 🚀</span>
+      </button>
+    </div>
+    }
 
     <!-- ══════════════════════════════════════════════════════════
          FAILED STATE: Transaction Error Details
          ══════════════════════════════════════════════════════════ -->
     } @else if (transactionStatus() === 'failed') {
-      @if (transactionDetails(); as details) {
-        <div class="modal-panel__header">
-          <div class="modal-panel__badge-row">
-            <span class="status-pill status-pill--error">
-              ⚠️ Transaction Incomplete
-            </span>
-          </div>
-          <button type="button" class="modal-panel__close" (click)="close()" aria-label="Close">✕</button>
-        </div>
+    @if (transactionDetails(); as details) {
+    <div class="modal-panel__header">
+      <div class="modal-panel__badge-row">
+        <span class="status-pill status-pill--error">
+          ⚠️ Transaction Incomplete
+        </span>
+      </div>
+      <button type="button" class="modal-panel__close" (click)="close()" aria-label="Close">✕</button>
+    </div>
 
-        <div class="txn-hero txn-hero--failed">
-          <div class="txn-hero__icon-circle txn-hero__icon-circle--error">
-            <span class="material-symbols-outlined txn-hero__icon txn-hero__icon--error">cancel</span>
-          </div>
-          <h2 class="txn-hero__title">Payment Not Completed</h2>
-          <p class="txn-hero__desc txn-hero__desc--error">
-            {{ details.errorMessage || 'The transaction was cancelled or could not be completed.' }}
-          </p>
-        </div>
+    <div class="txn-hero txn-hero--failed">
+      <div class="txn-hero__icon-circle txn-hero__icon-circle--error">
+        <span class="material-symbols-outlined txn-hero__icon txn-hero__icon--error">cancel</span>
+      </div>
+      <h2 class="txn-hero__title">Payment Not Completed</h2>
+      <p class="txn-hero__desc txn-hero__desc--error">
+        {{ details.errorMessage || 'The transaction was cancelled or could not be completed.' }}
+      </p>
+    </div>
 
-        <div class="txn-card">
-          <div class="txn-card__header">
-            <span class="material-symbols-outlined icon-sm">info</span>
-            <span>ATTEMPT DETAILS</span>
-          </div>
+    <div class="txn-card">
+      <div class="txn-card__header">
+        <span class="material-symbols-outlined icon-sm">info</span>
+        <span>ATTEMPT DETAILS</span>
+      </div>
 
-          <div class="txn-card__row">
-            <span class="txn-card__label">Listing / Product</span>
-            <span class="txn-card__value font-medium">{{ details.listingName }}</span>
-          </div>
+      <div class="txn-card__row">
+        <span class="txn-card__label">Listing / Product</span>
+        <span class="txn-card__value font-medium">{{ details.listingName }}</span>
+      </div>
 
-          <div class="txn-card__row">
-            <span class="txn-card__label">Category</span>
-            <span class="txn-card__value">{{ details.categoryName }}</span>
-          </div>
+      <div class="txn-card__row">
+        <span class="txn-card__label">Category</span>
+        <span class="txn-card__value">{{ details.categoryName }}</span>
+      </div>
 
-          @if (details.amountPaid) {
-          <div class="txn-card__row">
-            <span class="txn-card__label">Attempted Amount</span>
-            <span class="txn-card__value font-numeric">₹{{ details.amountPaid | number: '1.2-2' }}</span>
-          </div>
-          }
-
-          @if (details.orderId) {
-          <div class="txn-card__row">
-            <span class="txn-card__label">Order ID</span>
-            <span class="font-mono text-xs text-muted">{{ details.orderId }}</span>
-          </div>
-          }
-
-          <div class="txn-card__row">
-            <span class="txn-card__label">Status</span>
-            <span class="status-chip status-chip--error">
-              <span class="material-symbols-outlined icon-xs">close</span>
-              Incomplete / Cancelled
-            </span>
-          </div>
-        </div>
-
-        <div class="modal-panel__actions">
-          <button type="button" class="btn btn-ghost" (click)="close()">
-            Close
-          </button>
-          <button type="button" class="btn btn-primary" (click)="retryPayment()">
-            <span>🔄 Try Again</span>
-          </button>
-        </div>
+      @if (details.amountPaid) {
+      <div class="txn-card__row">
+        <span class="txn-card__label">Attempted Amount</span>
+        <span class="txn-card__value font-numeric">₹{{ details.amountPaid | number: '1.2-2' }}</span>
+      </div>
       }
+
+      @if (details.orderId) {
+      <div class="txn-card__row">
+        <span class="txn-card__label">Order ID</span>
+        <span class="font-mono text-xs text-muted">{{ details.orderId }}</span>
+      </div>
+      }
+
+      <div class="txn-card__row">
+        <span class="txn-card__label">Status</span>
+        <span class="status-chip status-chip--error">
+          <span class="material-symbols-outlined icon-xs">close</span>
+          Incomplete / Cancelled
+        </span>
+      </div>
+    </div>
+
+    <div class="modal-panel__actions">
+      <button type="button" class="btn btn-ghost" (click)="close()">
+        Close
+      </button>
+      <button type="button" class="btn btn-primary" (click)="retryPayment()">
+        <span>🔄 Try Again</span>
+      </button>
+    </div>
+    }
 
     <!-- ══════════════════════════════════════════════════════════
          DEFAULT / IDLE STATE: Confirmation Form
          ══════════════════════════════════════════════════════════ -->
     } @else {
 
-      <!-- ── Header ────────────────────────────────────────────── -->
-      <div class="modal-panel__header">
-        <div>
-          <div class="modal-panel__badge-row">
-            <span class="status-pill" [class.status-pill--rebid]="isRebid()">
-              {{ isRebid() ? '🔄 Raising Existing Position' : '🚀 Claim Position' }}
-            </span>
-          </div>
-          <h2 class="modal-panel__title" id="claim-modal-title">Confirm & Pay</h2>
-        </div>
-        <button type="button" class="modal-panel__close" (click)="close()" [disabled]="submitting()"
-          aria-label="Close">✕</button>
-      </div>
-
-      <!-- ── Summary Row (read-only: category + product + bid) ─── -->
-      <div class="summary-row">
-        <div class="summary-item">
-          <span class="summary-label">Category</span>
-          <span class="summary-value">{{ selectedCategoryName() }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Product</span>
-          <span class="summary-value">{{ listingName() || domainUrl() || '—' }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Target Bid</span>
-          <span class="summary-value font-numeric text-primary">₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}</span>
-        </div>
-      </div>
-
-      <!-- ── Domain / Website URL (read-only) ──────────────────── -->
-      <div class="domain-input-block">
-        <div class="field-title-row">
-          <span class="field-title">Website Domain / Product URL</span>
-        </div>
-        <div class="readonly-url">
-          <span class="material-symbols-outlined icon-sm readonly-url__icon">link</span>
-          <span class="readonly-url__value">{{ domainUrl() || '—' }}</span>
-        </div>
-
-        <!-- Rebid credit notice -->
-        @if (isRebid()) {
-        <div class="domain-alert domain-alert--found">
-          <div class="domain-alert__icon">
-            <span class="material-symbols-outlined icon-md text-success">verified</span>
-          </div>
-          <div class="domain-alert__content">
-            <div class="domain-alert__title">
-              Active listing found
-              @if (matchedRank()) {
-              <span class="rank-tag">Rank #{{ matchedRank() }}</span>
-              }
-            </div>
-            <div class="domain-alert__desc">
-              Your previous payment of <strong>₹{{ existingBidAmount() | number: '1.2-2' }}</strong> will be
-              <strong>credited 100%</strong> toward your new bid.
-            </div>
-          </div>
-        </div>
-        }
-      </div>
-
-      <!-- ── Owner Contact Email ─────────────────────────────────── -->
-      <label>
-        <div class="field-title-row">
-          <span class="field-title">Owner Contact Email</span>
-          @if (isRebid() && maskedOwnerEmail()) {
-          <span class="auth-hint-pill">Registered: {{ maskedOwnerEmail() }}</span>
-          }
-        </div>
-        <input type="email" [ngModel]="ownerEmail()" (ngModelChange)="ownerEmail.set($event)"
-          placeholder="you@example.com" [disabled]="submitting()" />
-        @if (isRebid()) {
-        <span class="field-hint">Must match the email on record to authorize your previous payment credit.</span>
-        }
-      </label>
-
-      <!-- ── Payment Calculation Breakdown ──────────────────────── -->
-      <div class="calc-ledger">
-        <div class="calc-ledger__header">
-          <span class="material-symbols-outlined icon-sm">receipt_long</span>
-          <span>PAYMENT BREAKDOWN</span>
-        </div>
-
-        <div class="calc-ledger__row">
-          <div class="calc-ledger__row-left">
-            <span class="calc-ledger__item-title">Target Bid Amount</span>
-            <span class="calc-ledger__item-desc">Your total leaderboard score</span>
-          </div>
-          <span class="calc-ledger__item-val font-numeric">
-            ₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}
+    <!-- ── Header ────────────────────────────────────────────── -->
+    <div class="modal-panel__header">
+      <div>
+        <div class="modal-panel__badge-row">
+          <span class="status-pill" [class.status-pill--rebid]="isRebid()">
+            {{ isRebid() ? '🔄 Raising Existing Position' : '🚀 Claim Position' }}
           </span>
         </div>
+        <h2 class="modal-panel__title" id="claim-modal-title">Confirm & Pay</h2>
+      </div>
+      <button type="button" class="modal-panel__close" (click)="close()" [disabled]="submitting()"
+        aria-label="Close">✕</button>
+    </div>
 
-        <div class="calc-ledger__row calc-ledger__row--credit">
-          <div class="calc-ledger__row-left">
-            <span class="calc-ledger__item-title">
-              Previous Payment Credited
-              @if (isRebid()) {
-              <span class="credit-pill">Credited</span>
-              }
-            </span>
-            <span class="calc-ledger__item-desc">
-              {{ isRebid() ? 'Paid previously on this domain' : 'New listing — no prior credit' }}
-            </span>
-          </div>
-          <span class="calc-ledger__item-val font-numeric text-success">
-            -₹{{ creditedAmount() | number: '1.2-2' }}
-          </span>
+    <!-- ── Summary Row (read-only: category + product + promote) ─── -->
+    <div class="summary-row">
+      <div class="summary-item">
+        <span class="summary-label">Category</span>
+        <span class="summary-value">{{ selectedCategoryName() }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Product</span>
+        <span class="summary-value">{{ listingName() || domainUrl() || '—' }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Target Placement</span>
+        <span class="summary-value font-numeric text-primary">₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- ── Domain / Website URL (read-only) ──────────────────── -->
+    <div class="domain-input-block">
+      <div class="field-title-row">
+        <span class="field-title">Website Domain / Product URL</span>
+      </div>
+      <div class="readonly-url">
+        <span class="material-symbols-outlined icon-sm readonly-url__icon">link</span>
+        <span class="readonly-url__value">{{ domainUrl() || '—' }}</span>
+      </div>
+
+      <!-- Rebid credit notice -->
+      @if (isRebid()) {
+      <div class="domain-alert domain-alert--found">
+        <div class="domain-alert__icon">
+          <span class="material-symbols-outlined icon-md text-success">verified</span>
         </div>
-
-        <div class="calc-ledger__divider"></div>
-
-        <div class="calc-ledger__row calc-ledger__row--total">
-          <div class="calc-ledger__row-left">
-            <span class="calc-ledger__total-title">Net Amount Due Now</span>
-            <span class="calc-ledger__total-desc">Charged via Razorpay today</span>
-          </div>
-          <span class="calc-ledger__total-val font-numeric text-primary">
-            ₹{{ payableAmount() | number: '1.2-2' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- ── Validation Warnings / Errors ────────────────────────── -->
-      @if (isBelowMinimum()) {
-      <div class="alert-box alert-box--warning">
-        <span class="material-symbols-outlined icon-sm">warning</span>
-        <span>Target bid must be at least ₹{{ absoluteMinimumBid() | number: '1.2-2' }}.</span>
-      </div>
-      }
-
-      @if (isNotHigherThanExisting()) {
-      <div class="alert-box alert-box--warning">
-        <span class="material-symbols-outlined icon-sm">warning</span>
-        <span>Target bid must be higher than your current bid of ₹{{ existingBidAmount() | number: '1.2-2' }}.</span>
-      </div>
-      }
-
-      @if (quoteError(); as err) {
-      <div class="alert-box alert-box--error">
-        <span class="material-symbols-outlined icon-sm">error</span>
-        <span>{{ err }}</span>
-      </div>
-      }
-
-      <!-- ── Terms checkbox ──────────────────────────────────────── -->
-      <label class="modal-panel__terms">
-        <input type="checkbox" [ngModel]="agreed()" (ngModelChange)="agreed.set($event)" [disabled]="submitting()" />
-        <span>I agree to the <a href="/terms" target="_blank" rel="noopener"
-            class="modal-panel__link">Terms of Service</a></span>
-      </label>
-
-      <!-- ── Action Buttons ──────────────────────────────────────── -->
-      <div class="modal-panel__actions">
-        <button type="button" class="btn btn-ghost" (click)="close()" [disabled]="submitting()">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-primary" [disabled]="!isFormValid() || submitting()"
-          (click)="proceedToCheckout()">
-          @if (submitting()) {
-            @if (quoteValidating()) {
-              <span>Validating...</span>
-            } @else if (transactionStatus() === 'processing') {
-              <span>Awaiting Razorpay...</span>
-            } @else {
-              <span>Opening Checkout...</span>
+        <div class="domain-alert__content">
+          <div class="domain-alert__title">
+            Active listing found
+            @if (matchedRank()) {
+            <span class="rank-tag">Rank #{{ matchedRank() }}</span>
             }
-          } @else {
-            <span>💳 Pay ₹{{ payableAmount() | number: '1.2-2' }}</span>
-          }
-        </button>
+          </div>
+          <div class="domain-alert__desc">
+            Your previous payment of <strong>₹{{ existingBidAmount() | number: '1.2-2' }}</strong> will be
+            <strong>credited 100%</strong> toward your new placement.
+          </div>
+        </div>
       </div>
+      }
+    </div>
+
+    <!-- ── Owner Contact Email ─────────────────────────────────── -->
+    <label>
+      <div class="field-title-row">
+        <span class="field-title">Owner Contact Email</span>
+        @if (isRebid() && maskedOwnerEmail()) {
+        <span class="auth-hint-pill">Registered: {{ maskedOwnerEmail() }}</span>
+        }
+      </div>
+      <input type="email" [ngModel]="ownerEmail()" (ngModelChange)="ownerEmail.set($event)"
+        placeholder="you@example.com" [disabled]="submitting()" />
+      @if (isRebid()) {
+      <span class="field-hint">Must match the email on record to authorize your previous payment credit.</span>
+      }
+    </label>
+
+    <!-- ── Payment Calculation Breakdown ──────────────────────── -->
+    <div class="calc-ledger">
+      <div class="calc-ledger__header">
+        <span class="material-symbols-outlined icon-sm">receipt_long</span>
+        <span>PAYMENT BREAKDOWN</span>
+      </div>
+
+      <div class="calc-ledger__row">
+        <div class="calc-ledger__row-left">
+          <span class="calc-ledger__item-title">Target Placement Amount</span>
+          <span class="calc-ledger__item-desc">Your total leaderboard score</span>
+        </div>
+        <span class="calc-ledger__item-val font-numeric">
+          ₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}
+        </span>
+      </div>
+
+      <div class="calc-ledger__row calc-ledger__row--credit">
+        <div class="calc-ledger__row-left">
+          <span class="calc-ledger__item-title">
+            Previous Payment Credited
+            @if (isRebid()) {
+            <span class="credit-pill">Credited</span>
+            }
+          </span>
+          <span class="calc-ledger__item-desc">
+            {{ isRebid() ? 'Paid previously on this domain' : 'New listing — no prior credit' }}
+          </span>
+        </div>
+        <span class="calc-ledger__item-val font-numeric text-success">
+          -₹{{ creditedAmount() | number: '1.2-2' }}
+        </span>
+      </div>
+
+      <div class="calc-ledger__divider"></div>
+
+      <div class="calc-ledger__row calc-ledger__row--total">
+        <div class="calc-ledger__row-left">
+          <span class="calc-ledger__total-title">Net Amount Due Now</span>
+          <span class="calc-ledger__total-desc">Charged via Razorpay today</span>
+        </div>
+        <span class="calc-ledger__total-val font-numeric text-primary">
+          ₹{{ payableAmount() | number: '1.2-2' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- ── Validation Warnings / Errors ────────────────────────── -->
+    @if (isBelowMinimum()) {
+    <div class="alert-box alert-box--warning">
+      <span class="material-symbols-outlined icon-sm">warning</span>
+      <span>Target placement must be at least ₹{{ absoluteMinimumBid() | number: '1.2-2' }}.</span>
+    </div>
+    }
+
+    @if (isNotHigherThanExisting()) {
+    <div class="alert-box alert-box--warning">
+      <span class="material-symbols-outlined icon-sm">warning</span>
+      <span>Target placement must be higher than your current placement of ₹{{ existingBidAmount() | number: '1.2-2'
+        }}.</span>
+    </div>
+    }
+
+    @if (quoteError(); as err) {
+    <div class="alert-box alert-box--error">
+      <span class="material-symbols-outlined icon-sm">error</span>
+      <span>{{ err }}</span>
+    </div>
+    }
+
+    <!-- ── Terms checkbox ──────────────────────────────────────── -->
+    <label class="modal-panel__terms">
+      <input type="checkbox" [ngModel]="agreed()" (ngModelChange)="agreed.set($event)" [disabled]="submitting()" />
+      <span>I agree to the <a href="/terms" target="_blank" rel="noopener" class="modal-panel__link">Terms of
+          Service</a></span>
+    </label>
+
+    <!-- ── Action Buttons ──────────────────────────────────────── -->
+    <div class="modal-panel__actions">
+      <button type="button" class="btn btn-ghost" (click)="close()" [disabled]="submitting()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" [disabled]="!isFormValid() || submitting()"
+        (click)="proceedToCheckout()">
+        @if (submitting()) {
+        @if (quoteValidating()) {
+        <span>Validating...</span>
+        } @else if (transactionStatus() === 'processing') {
+        <span>Awaiting Razorpay...</span>
+        } @else {
+        <span>Opening Checkout...</span>
+        }
+        } @else {
+        <span>💳 Pay ₹{{ payableAmount() | number: '1.2-2' }}</span>
+        }
+      </button>
+    </div>
 
     }
 

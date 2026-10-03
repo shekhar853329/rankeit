@@ -10,19 +10,19 @@
     </div>
 
     <div class="hero-station__inner">
-      <!-- ── Central Claim Top Row: Headline + Stepper & Live Auction Metadata ── -->
+      <!-- ── Central Claim Top Row: Headline + Stepper & Live Ranking Metadata ── -->
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
             Live Product Leaderboard: Claim a Spot for
           </h1>
           <div class="bid-stepper">
-            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease bid"
+            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
               id="bid-decrement">−</button>
             <span class="stepper-display" id="target-bid-display">
               {{ currencySymbol() }}{{ effectiveClaimAmount() ?? 10 | number: '1.0-0' }}
             </span>
-            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase bid"
+            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase amount"
               id="bid-increment">+</button>
           </div>
         </div>
@@ -32,7 +32,7 @@
           <div class="countdown-badge">
             <span class="material-symbols-outlined countdown-badge__icon">timer</span>
             <span class="countdown-badge__label">Resets:</span>
-            <span class="countdown-badge__time" id="auction-countdown">{{ countdownText() }}</span>
+            <span class="countdown-badge__time" id="daily-countdown">{{ countdownText() }}</span>
             <span class="countdown-badge__sep">•</span>
             <span class="countdown-badge__utc">Midnight UTC</span>
           </div>
@@ -150,7 +150,7 @@
             <span class="material-symbols-outlined field-icon">payments</span>
             <div class="field-content">
               <div class="field-label-row">
-                <label for="claim-amount" class="field-label">Bid Amount</label>
+                <label for="claim-amount" class="field-label">Placement Amount</label>
                 @if (claimPrice(); as minRank1) {
                 <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: {{
                   currencySymbol() }}{{ minRank1 }}</span>
@@ -158,17 +158,17 @@
               </div>
               <div class="amount-stepper-row">
                 <span class="amount-currency">{{ currencySymbol() }}</span>
-                <input id="claim-amount" type="number" class="field-input field-input--amount" aria-label="Bid Amount"
+                <input id="claim-amount" type="number" class="field-input field-input--amount" aria-label="Placement Amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? claimPrice() ?? 10)"
                   (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
                 <div class="stepper-actions">
                   <button type="button" class="stepper-arrow-btn"
-                    (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
+                    (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease amount">
                     <span class="material-symbols-outlined">remove</span>
                   </button>
                   <button type="button" class="stepper-arrow-btn"
-                    (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
+                    (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase amount">
                     <span class="material-symbols-outlined">add</span>
                   </button>
                 </div>
@@ -242,7 +242,7 @@
             <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
               (click)="setTimeMode('today')" id="view-today-btn">
               <span class="pulse-dot"></span>
-              <span>Today's Auction</span>
+              <span>Today's Showcase</span>
             </button>
             <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
               (click)="setTimeMode('alltime')" id="view-alltime-btn">
@@ -380,7 +380,7 @@
             <!-- Right Anchor: Bid Price & Outbid Trigger -->
             <div class="champion-card__right">
               <div class="price-stack">
-                <span class="price-stack__label">Active Bid</span>
+                <span class="price-stack__label">Active Placement</span>
                 <span class="price-stack__val text-primary">{{ currencySymbol() }}{{ row.currentBidAmount | number:
                   '1.0-0' }}</span>
               </div>
@@ -446,7 +446,7 @@
 
             <div class="champion-card__right">
               <div class="price-stack">
-                <span class="price-stack__label">Current Bid</span>
+                <span class="price-stack__label">Current Placement</span>
                 <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
               </div>
               <button type="button" class="outbid-btn outbid-btn--secondary"
@@ -511,7 +511,7 @@
 
             <div class="champion-card__right">
               <div class="price-stack">
-                <span class="price-stack__label">Current Bid</span>
+                <span class="price-stack__label">Current Placement</span>
                 <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentBidAmount | number: '1.0-0' }}</span>
               </div>
               <button type="button" class="outbid-btn outbid-btn--secondary"
@@ -596,23 +596,23 @@
         <div class="liquidity-header">
           <div class="liquidity-title-group">
             <div class="liquidity-title-row">
-              <span class="liquidity-title">Bid Pressure & Auction Liquidity</span>
-              <span class="live-pulse-badge" title="Live SignalR auction feed active">
+              <span class="liquidity-title">Placement Activity & Volume</span>
+              <span class="live-pulse-badge" title="Live SignalR feed active">
                 <span class="live-pulse-dot"></span>
                 LIVE SYNC
               </span>
             </div>
-            <span class="liquidity-sub">Continuous payment activity, transaction velocity & auction depth</span>
+            <span class="liquidity-sub">Continuous payment activity, transaction velocity & placement depth</span>
           </div>
 
           <!-- Quick KPIs in Header -->
           <div class="liquidity-stats-row">
-            <div class="liquidity-stat-pill" title="Total auction volume today">
+            <div class="liquidity-stat-pill" title="Total placement volume today">
               <span class="stat-pill-label">Today's Vol</span>
               <span class="stat-pill-val">{{ currencySymbol() }}{{ todayTotalVolume() | number: '1.2-2' }}</span>
             </div>
             <div class="liquidity-stat-pill" title="Total payments registered today">
-              <span class="stat-pill-label">Bids</span>
+              <span class="stat-pill-label">Count</span>
               <span class="stat-pill-val">{{ todayTotalBids() }}</span>
             </div>
             @if (peakBidInfo(); as peak) {
@@ -643,7 +643,7 @@
             </button>
             <button type="button" class="chart-tab-btn" [class.chart-tab-btn--active]="chartViewMode() === 'weekly'"
               role="tab" [attr.aria-selected]="chartViewMode() === 'weekly'" (click)="setChartViewMode('weekly')"
-              title="7-day bidding volume trend">
+              title="7-day placement volume trend">
               <span class="material-symbols-outlined icon-xs">date_range</span>
               <span>7D Trend</span>
             </button>
@@ -664,7 +664,7 @@
               </button>
               <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'count'"
                 (click)="setChartMetric('count')">
-                Bids
+                Count
               </button>
             </div>
             }
@@ -781,7 +781,7 @@
 
       </section>
 
-      <!-- CARD 2: Complementary Leaderboard Card (All-Time Pantheon vs Today's Auction) -->
+      <!-- CARD 2: Complementary Leaderboard Card (All-Time Pantheon vs Today's Showcase) -->
       <section class="side-card" id="hall-of-fame">
         <div class="side-card__header">
           <div class="side-card__title-group">
@@ -790,7 +790,7 @@
             <h3 class="side-card__title">All-Time Pantheon</h3>
             } @else {
             <span class="material-symbols-outlined icon-sm text-primary">local_fire_department</span>
-            <h3 class="side-card__title">Today's Auction</h3>
+            <h3 class="side-card__title">Today's Showcase</h3>
             }
           </div>
 
@@ -834,11 +834,10 @@
           } @empty {
           <div class="hof-empty">
             <span class="material-symbols-outlined icon-sm">
-              {{ hallOfFameMode() === 'alltime' ? 'emoji_events' : 'gavel' }}
+              {{ hallOfFameMode() === 'alltime' ? 'emoji_events' : 'trending_up' }}
             </span>
             <span>
-              {{ hallOfFameMode() === 'alltime' ? 'No all-time champions found yet.' : 'No bids placed in today\'s
-              auction yet.' }}
+              {{ hallOfFameMode() === 'alltime' ? 'No all-time champions found yet.' : 'No placements on today\'s showcase yet.' }}
             </span>
           </div>
           }
@@ -849,7 +848,7 @@
           <button type="button" class="side-card__action-btn" (click)="toggleLeaderboardTimeMode()"
             id="hof-toggle-mode-btn">
             <span>
-              {{ hallOfFameMode() === 'alltime' ? 'Switch View to All-Time Pantheon' : 'Switch View to Today\'s Auction'
+              {{ hallOfFameMode() === 'alltime' ? 'Switch View to All-Time Pantheon' : 'Switch View to Today\'s Showcase'
               }}
             </span>
             <span class="material-symbols-outlined icon-xs">swap_horiz</span>
@@ -872,7 +871,7 @@
               <span class="pulse-beacon__ping"></span>
               <span class="pulse-beacon__dot"></span>
             </span>
-            <h3 class="side-card__title">Live Bid Stream</h3>
+            <h3 class="side-card__title">Live Activity Feed</h3>
           </div>
           <span class="side-card__status text-secondary">Auto-syncing</span>
         </div>
@@ -903,7 +902,7 @@
           </div>
         </div>
         <p class="economics-desc">
-          Rankings operate as a decentralized English ascending auction with a continuous daily reset window.
+          Rankings operate as a transparent sponsored ranking leaderboard with a continuous daily reset window.
         </p>
 
         <div class="economics-grid">
@@ -937,7 +936,7 @@
       <span class="material-symbols-outlined icon-sm">bolt</span>
     </div>
     <div class="toast-content">
-      <span class="toast-title">Outbid Order Staged</span>
+      <span class="toast-title">Placement Order Staged</span>
       <span class="toast-message">{{ toastMessage() }}</span>
     </div>
   </div>

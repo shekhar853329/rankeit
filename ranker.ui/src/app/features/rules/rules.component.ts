@@ -13,9 +13,9 @@ export class RulesComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.updateTags({
-      title: 'Bidding Rules, Governance & Auction Mechanics',
+      title: 'Ranking Rules, Governance & Placement Mechanics',
       description:
-        'Understand how RankUp rankings work: credit rollover rules, continuous English ascending auctions, anti-sniping protection, and transparent bid calculations.',
+        'Understand how RankUp rankings work: credit rollover rules, continuous sponsored rankings, fair placement protection, and transparent ranking calculations.',
       url: 'https://rankup.cyou/rules',
     });
   }

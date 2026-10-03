@@ -894,7 +894,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
       if (metric === 'both' || metric === 'volume') {
         series.push({
-          name: 'Auction Volume',
+          name: 'Placement Volume',
           type: 'line',
           smooth: 0.35,
           symbol: 'circle',

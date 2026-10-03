@@ -15,23 +15,23 @@ export default function RulesScreen() {
     {
       num: '01',
       icon: 'trophy',
-      title: 'Highest Bid Takes Rank #1',
-      desc: 'Rankings are calculated directly by your active bid amount within your chosen category. The highest bid sits at Rank #1, the second highest at Rank #2, and so on.',
+      title: 'Top Placement Takes Rank #1',
+      desc: 'Rankings are calculated directly by your active sponsored placement amount within your chosen category. The highest placement sits at Rank #1, the second highest at Rank #2, and so on.',
       highlight:
-        'Early-Bird Tiebreaker: If two products have the exact same bid, whichever placed its bid first keeps the higher rank.',
+        'Early-Bird Tiebreaker: If two products have the exact same placement amount, whichever placed its listing first keeps the higher rank.',
     },
     {
       num: '02',
       icon: 'cursor',
-      title: 'Bid for #1 or Any Position',
-      desc: 'You do not have to bid for Rank #1 right away. You can place any bid amount starting from as low as ₹1.00 to enter the leaderboard.',
+      title: 'Promote for #1 or Any Position',
+      desc: 'You do not have to pay for Rank #1 right away. You can place any placement amount starting from as low as ₹1.00 to enter the leaderboard.',
       highlight:
-        'To claim Rank #1: Your bid must beat the current leader by at least the category increment (e.g. +₹1). If the category is brand new, simply match the starting price.',
+        'To claim Rank #1: Your placement must beat the current leader by at least the category increment (e.g. +₹1). If the category is brand new, simply match the starting price.',
     },
     {
       num: '03',
       icon: 'refresh-circle',
-      title: 'Re-Bidding: Pay Only the Difference',
+      title: 'Rank Upgrades: Pay Only the Difference',
       desc: 'When raising your existing listing rank, 100% of your previous payment is automatically credited. You only pay the net difference!',
       highlight:
         'Example: If you previously paid ₹10 and want to raise your rank to ₹25, you only pay ₹15.',
@@ -40,7 +40,7 @@ export default function RulesScreen() {
       num: '04',
       icon: 'timer',
       title: 'Daily Reset at Midnight UTC',
-      desc: 'Rankings reset every day at 00:00 UTC (Midnight). Today is a live ascending English auction, while past champions are archived forever in the All-Time Pantheon.',
+      desc: 'Rankings reset every day at 00:00 UTC (Midnight). Today is the live daily sponsored leaderboard, while past leaders are archived forever in the All-Time Pantheon.',
       highlight:
         'Winners get inducted into the Hall of Fame with lifetime discovery exposure.',
     },
@@ -48,7 +48,7 @@ export default function RulesScreen() {
       num: '05',
       icon: 'shield-checkmark',
       title: '100% Transparent Discovery',
-      desc: 'Zero black-box algorithms. Every bid, transaction reference, and click count is open and verifiable by the community in real time.',
+      desc: 'Zero black-box algorithms. Every placement, transaction reference, and click count is open and verifiable by the community in real time.',
       highlight:
         'No hidden algorithmic penalties or pay-per-click traps.',
     },
@@ -77,10 +77,10 @@ export default function RulesScreen() {
             </View>
           </View>
 
-          <Text style={[styles.title, { color: colors.text }]}>How Rankings &amp; Bidding Work</Text>
+          <Text style={[styles.title, { color: colors.text }]}>How Rankings &amp; Sponsored Placements Work</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
             RankUp gives creators and founders a direct, transparent way to showcase their products.
-            Learn how bids place your listing and how payments are credited.
+            Learn how promotional placements rank your listing and how payments are credited.
           </Text>
         </View>
 
@@ -105,9 +105,9 @@ export default function RulesScreen() {
               <View style={[styles.stepNum, { backgroundColor: colors.primary }]}>
                 <Text style={styles.stepNumText}>2</Text>
               </View>
-              <Text style={[styles.stepHeading, { color: colors.text }]}>Set Your Bid</Text>
+              <Text style={[styles.stepHeading, { color: colors.text }]}>Set Your Amount</Text>
               <Text style={[styles.stepDesc, { color: colors.textMuted }]}>
-                Bid to claim #1, or pick any position.
+                Promote to claim #1, or pick any position.
               </Text>
             </View>
 

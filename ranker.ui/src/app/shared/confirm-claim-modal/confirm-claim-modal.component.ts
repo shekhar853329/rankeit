@@ -395,7 +395,7 @@ export class ConfirmClaimModalComponent implements OnInit {
     const categoryId = this.selectedCategoryId();
 
     if (!target || !email || !domain) {
-      this.toast.show('Please fill in domain, email, and target bid.', 'error');
+      this.toast.show('Please fill in domain, email, and target placement amount.', 'error');
       return;
     }
 
@@ -423,7 +423,7 @@ export class ConfirmClaimModalComponent implements OnInit {
 
       if (!quote.success) {
         this.submitting.set(false);
-        const errMessage = quote.errorMessage || 'Bid calculation failed.';
+        const errMessage = quote.errorMessage || 'Placement calculation failed.';
         this.quoteError.set(errMessage);
         this.toast.show(errMessage, 'error');
         return;
@@ -454,8 +454,8 @@ export class ConfirmClaimModalComponent implements OnInit {
           amountInRupees: chargeAmount,
           email: email,
           description: this.isRebid()
-            ? `Raise bid to ₹${target} (Paid ₹${chargeAmount}) for ${quote.listingName || this.listingName()}`
-            : `Claim rank with ₹${target} for ${this.listingName()}`,
+            ? `Upgrade sponsored placement to ₹${target} (Paid ₹${chargeAmount}) for ${quote.listingName || this.listingName()}`
+            : `Promote listing with ₹${target} for ${this.listingName()}`,
         });
       } catch (checkoutErr: unknown) {
         // Return to confirmation modal screen and show failed transaction details
@@ -510,11 +510,11 @@ export class ConfirmClaimModalComponent implements OnInit {
                 timestamp: new Date(),
               });
               this.toast.show(
-                `🎉 Success! New bid: ₹${result.newCurrentBidAmount} (Amount paid: ₹${result.amountCharged})`,
+                `🎉 Success! New placement: ₹${result.newCurrentBidAmount} (Amount paid: ₹${result.amountCharged})`,
                 'success',
               );
             } else {
-              const errMsg = result.errorMessage ?? 'Bid placement was rejected by server.';
+              const errMsg = result.errorMessage ?? 'Placement was rejected by server.';
               this.transactionStatus.set('failed');
               this.transactionDetails.set({
                 success: false,
@@ -533,7 +533,7 @@ export class ConfirmClaimModalComponent implements OnInit {
           },
           error: (err) => {
             this.submitting.set(false);
-            const msg = err.error?.errorMessage || err.message || 'Something went wrong placing your bid.';
+            const msg = err.error?.errorMessage || err.message || 'Something went wrong processing your placement.';
             this.transactionStatus.set('failed');
             this.transactionDetails.set({
               success: false,

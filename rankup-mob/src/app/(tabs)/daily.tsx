@@ -121,7 +121,7 @@ export default function DailyListingsScreen() {
             <Ionicons name="calendar-outline" size={36} color={colors.textMuted} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>No daily records yet</Text>
             <Text style={[styles.emptySub, { color: colors.textMuted }]}>
-              Records will appear as daily auction windows complete.
+              Records will appear as daily placement windows complete.
             </Text>
           </View>
         ) : (

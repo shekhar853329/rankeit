@@ -76,7 +76,7 @@
           <span class="stat-sub">of {{ p.totalListingsInCategory }} in {{ p.categoryName }}</span>
         </div>
         <div class="stat-item stat-item--bid">
-          <span class="stat-eyebrow">Active Bid</span>
+          <span class="stat-eyebrow">Active Placement</span>
           <span class="stat-value stat-value--bid">${{ p.currentBidAmount | number: '1.0-2' }}</span>
         </div>
       </div>
@@ -159,10 +159,10 @@
     <div class="info-card card">
       <div class="info-card-header">
         <span class="material-symbols-outlined info-icon">payments</span>
-        <span class="info-label">Total Bids</span>
+        <span class="info-label">Total Placements</span>
       </div>
       <span class="info-value">{{ p.bidCount }}</span>
-      <span class="info-sub">Auction transactions</span>
+      <span class="info-sub">Placement transactions</span>
     </div>
 
     <div class="info-card card">
@@ -262,7 +262,7 @@
   <div class="profile-footer-link">
     <a [routerLink]="['/listings', p.listingId]" class="btn-full-details">
       <span class="material-symbols-outlined text-[16px]">receipt_long</span>
-      View Full Bid History & Auction Details
+      View Full Placement History & Details
       <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
     </a>
   </div>

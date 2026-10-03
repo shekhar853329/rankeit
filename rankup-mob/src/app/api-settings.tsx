@@ -121,7 +121,7 @@ export default function ApiSettingsScreen() {
           </Text>
           <Text style={[styles.activeUrl, { color: colors.primary }]}>{currentUrl}</Text>
           <Text style={[styles.cardHint, { color: colors.textMuted }]}>
-            All live auction feeds, REST endpoints, and SignalR hubs connect to this address.
+            All live ranking feeds, REST endpoints, and SignalR hubs connect to this address.
           </Text>
         </View>
 

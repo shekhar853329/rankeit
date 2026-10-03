@@ -17,7 +17,7 @@ export default function MoreScreen() {
       title: 'Guide & Transparency',
       items: [
         {
-          title: 'How Rankings & Bidding Work',
+          title: 'How Rankings & Sponsored Placements Work',
           subtitle: '3-step guide, early-bird tiebreakers, payment credits',
           icon: 'help-circle-outline',
           route: '/rules',
@@ -35,7 +35,7 @@ export default function MoreScreen() {
       items: [
         {
           title: 'Terms of Service',
-          subtitle: 'Transparent English auction & non-refundable ranking terms',
+          subtitle: 'Transparent ranking rules & non-refundable placement terms',
           icon: 'document-text-outline',
           route: '/terms',
         },

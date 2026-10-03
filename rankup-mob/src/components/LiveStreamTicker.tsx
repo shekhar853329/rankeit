@@ -44,7 +44,7 @@ export const LiveStreamTicker: React.FC = () => {
           <View style={styles.beaconWrap}>
             <View style={[styles.beaconDot, { backgroundColor: colors.secondaryGreen }]} />
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>Live Bid Stream</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Live Activity Feed</Text>
         </View>
         <Text style={[styles.statusText, { color: colors.secondaryGreen }]}>Auto-syncing</Text>
       </View>
@@ -63,7 +63,7 @@ export const LiveStreamTicker: React.FC = () => {
             <View style={styles.itemInfo}>
               <Text numberOfLines={1} style={[styles.itemText, { color: colors.text }]}>
                 <Text style={{ fontWeight: '800' }}>{ev.listingName || 'Maker'}</Text>{' '}
-                {ev.actionText || 'placed a bid'}
+                {ev.actionText || 'promoted their listing'}
               </Text>
               <Text style={[styles.itemMeta, { color: colors.textMuted }]}>
                 {ev.timeAgo || 'Just now'} • {ev.highlightText || `₹${ev.amount}`}
@@ -75,7 +75,7 @@ export const LiveStreamTicker: React.FC = () => {
         {events.length === 0 && (
           <View style={styles.empty}>
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-              Waiting for live bids in today's auction...
+              Waiting for live activity on today's leaderboard...
             </Text>
           </View>
         )}

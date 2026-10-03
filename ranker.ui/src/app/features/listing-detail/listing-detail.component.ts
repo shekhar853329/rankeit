@@ -62,7 +62,7 @@ export class ListingDetailComponent implements OnInit {
             title: `${result.listingName} - Rank #${result.currentRankInCategory} in ${result.categoryName}`,
             description:
               result.description ||
-              `${result.listingName} is ranked #${result.currentRankInCategory} in ${result.categoryName} on RankUp with an active bid of $${result.currentBidAmount}.`,
+              `${result.listingName} is ranked #${result.currentRankInCategory} in ${result.categoryName} on RankUp with an active placement of $${result.currentBidAmount}.`,
             url: `https://rankup.cyou/listings/${result.listingId}`,
             image: result.logoUrl || result.faviconUrl || undefined,
             type: 'product',

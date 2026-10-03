@@ -15,7 +15,7 @@ export default function TermsScreen() {
     {
       title: '1. What the Service Is',
       content:
-        'RankUp is a transparent, real-time product discovery platform. Rankings are determined directly by active bid amounts placed by listing creators. Unlike black-box advertising platforms, RankUp is an open ascending auction.',
+        'RankUp is a transparent, real-time product discovery and digital advertising platform (MCC 7311 - Advertising Services). Rankings are determined directly by active sponsored placement amounts chosen by listing creators. RankUp provides promotional visibility and is not an auction house; no consumer goods or commodities are auctioned.',
     },
     {
       title: '2. Eligibility & Requirements',
@@ -25,7 +25,7 @@ export default function TermsScreen() {
     {
       title: '3. Payments, Credits & Non-Refundability',
       content:
-        'All bids are processed in real-time. Re-bids on active listings automatically credit 100% of previous payments made toward that listing in the same category. Due to the immediate real-time delivery of discovery traffic and permanent induction into the historical ledger, all completed payments are final and non-refundable.',
+        'All sponsored placements are processed in real-time. Upgrades on active listings automatically credit 100% of previous payments made toward that listing in the same category. Due to the immediate real-time delivery of digital discovery impressions and permanent induction into the historical directory, all completed payments are final and non-refundable.',
     },
     {
       title: '4. Prohibited Content',

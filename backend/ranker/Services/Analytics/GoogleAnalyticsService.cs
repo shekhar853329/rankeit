@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.Json;
 using Google.Apis.AnalyticsData.v1beta;
 using Google.Apis.AnalyticsData.v1beta.Data;
@@ -568,12 +568,12 @@ public class GoogleAnalyticsService : IGoogleAnalyticsService
 
         var topPages = new List<GaTopPageDto>
         {
-            new("/", "RankUp – Real-time Bid-based Rankings", (int)(totalViews * 0.42), (int)(totalUsers * 0.52), 154.2, 28.5),
+            new("/", "RankUp – Real-time Sponsored Rankings", (int)(totalViews * 0.42), (int)(totalUsers * 0.52), 154.2, 28.5),
             new("/categories", "Categories Directory – Browse Top Rankings", (int)(totalViews * 0.18), (int)(totalUsers * 0.28), 118.0, 31.2),
             new("/leaderboard/saas", "SaaS & Cloud Tools Leaderboard", (int)(totalViews * 0.14), (int)(totalUsers * 0.22), 175.4, 26.0),
             new("/daily", "Daily Featured Listings & Launches", (int)(totalViews * 0.11), (int)(totalUsers * 0.19), 132.8, 34.1),
             new("/leaderboard/ai-tools", "AI Tools & Generators Leaderboard", (int)(totalViews * 0.09), (int)(totalUsers * 0.16), 164.0, 24.8),
-            new("/rules", "Rules & Auction Guidelines", (int)(totalViews * 0.04), (int)(totalUsers * 0.07), 94.5, 42.0),
+            new("/rules", "Rules & Placement Guidelines", (int)(totalViews * 0.04), (int)(totalUsers * 0.07), 94.5, 42.0),
             new("/contact", "Contact & Support", (int)(totalViews * 0.02), (int)(totalUsers * 0.04), 62.1, 48.3)
         };
 

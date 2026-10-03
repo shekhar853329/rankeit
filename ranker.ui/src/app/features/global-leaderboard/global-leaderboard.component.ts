@@ -267,16 +267,16 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   /* ── All-Time Hall of Fame & Today's Top Lists ── */
   readonly allTimeHallOfFame = signal<HallOfFameItem[]>([]);
-  readonly todayAuctionTop = signal<HallOfFameItem[]>([]);
+  readonly todayShowcaseTop = signal<HallOfFameItem[]>([]);
   readonly hallOfFameLoading = signal(false);
 
-  // Inverted view: If viewing today's auction in main stage, Hall of Fame card shows all-time pantheon, and vice versa
+  // Inverted view: If viewing today's showcase in main stage, Hall of Fame card shows all-time pantheon, and vice versa
   readonly hallOfFameMode = computed<'today' | 'alltime'>(() =>
     this.timeMode() === 'today' ? 'alltime' : 'today'
   );
 
   readonly hallOfFameList = computed<HallOfFameItem[]>(() =>
-    this.hallOfFameMode() === 'alltime' ? this.allTimeHallOfFame() : this.todayAuctionTop()
+    this.hallOfFameMode() === 'alltime' ? this.allTimeHallOfFame() : this.todayShowcaseTop()
   );
 
   categoryIcon(slug: string): string {
@@ -487,15 +487,15 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.seo.updateTags({
       title: 'Live Product Leaderboard & Real-Time Rankings',
       description:
-        'RankUp: real-time bid-based competitive rankings and product discovery across 50+ curated categories. Outbid competitors and claim the #1 spot in your vertical.',
+        'RankUp: real-time sponsored product discovery across 50+ curated categories. Feature your product and claim the #1 spot in your vertical.',
       url: 'https://rankup.cyou/',
-      keywords: ['product leaderboard', 'startup ranking', 'live rankings', 'bid to rank', 'product discovery', 'top products'],
+      keywords: ['product leaderboard', 'startup ranking', 'live rankings', 'sponsored placement', 'product discovery', 'top products'],
       schema: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'RankUp',
         url: 'https://rankup.cyou/',
-        description: 'Real-time bid-based competitive rankings and discovery across every category.',
+        description: 'Real-time sponsored rankings and product discovery across every category.',
         potentialAction: {
           '@type': 'SearchAction',
           target: 'https://rankup.cyou/categories?q={search_term_string}',
@@ -523,7 +523,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       const scheduleSecondary = () => {
         this.loadLiveStream();
         this.loadAllTimeHallOfFame();
-        this.loadTodayAuctionTop();
+        this.loadTodayShowcaseTop();
         if (this.allCategories().length === 0) {
           this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe({
             next: (result) => {
@@ -602,7 +602,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         this.loadCategory(slug, currentCount, query);
       }
       this.loadTop3Bidders();
-      this.loadTodayAuctionTop();
+      this.loadTodayShowcaseTop();
       this.loadAllTimeHallOfFame();
       this.loadPlatformStats();
 
@@ -614,9 +614,9 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           user: payload.listingName.startsWith('@') ? payload.listingName : '@' + payload.listingName,
           action: payload.becameCategoryTop
             ? `recaptured #1 for ${this.currencySymbol()}${payload.newBidAmount}`
-            : `bumped bid to ${this.currencySymbol()}${payload.newBidAmount}`,
+            : `bumped placement to ${this.currencySymbol()}${payload.newBidAmount}`,
           timeAgo: 'Just now',
-          highlight: payload.becameCategoryTop ? 'Took Top Spot' : 'Active Bid',
+          highlight: payload.becameCategoryTop ? 'Took Top Spot' : 'Active Placement',
         },
         ...events.slice(0, 4),
       ]);
@@ -659,8 +659,8 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.loadSelection(10);
     if (mode === 'today' && this.allTimeHallOfFame().length === 0) {
       this.loadAllTimeHallOfFame();
-    } else if (mode === 'alltime' && this.todayAuctionTop().length === 0) {
-      this.loadTodayAuctionTop();
+    } else if (mode === 'alltime' && this.todayShowcaseTop().length === 0) {
+      this.loadTodayShowcaseTop();
     }
   }
 
@@ -1120,14 +1120,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           }));
 
           if (this.timeMode() === 'today') {
-            this.todayAuctionTop.set(mappedTop5);
+            this.todayShowcaseTop.set(mappedTop5);
             if (this.allTimeHallOfFame().length === 0) {
               this.loadAllTimeHallOfFame();
             }
           } else {
             this.allTimeHallOfFame.set(mappedTop5);
-            if (this.todayAuctionTop().length === 0) {
-              this.loadTodayAuctionTop();
+            if (this.todayShowcaseTop().length === 0) {
+              this.loadTodayShowcaseTop();
             }
           }
         }
@@ -1227,12 +1227,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadTodayAuctionTop(): void {
+  private loadTodayShowcaseTop(): void {
     this.hallOfFameLoading.set(true);
     this.leaderboardService.getGlobalLeaderboard(5, 'today').subscribe({
       next: (entries) => {
         if (entries && entries.length > 0) {
-          this.todayAuctionTop.set(
+          this.todayShowcaseTop.set(
             entries.slice(0, 5).map((e, idx) => ({
               id: e.listingId,
               rank: idx + 1,
@@ -1603,7 +1603,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
       if (metric === 'both' || metric === 'volume') {
         series.push({
-          name: 'Auction Volume',
+          name: 'Placement Volume',
           type: 'line',
           smooth: 0.35,
           symbol: 'circle',

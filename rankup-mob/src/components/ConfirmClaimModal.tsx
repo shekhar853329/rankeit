@@ -169,12 +169,12 @@ export const ConfirmClaimModal: React.FC = () => {
       return;
     }
     if (isRebid && targetAmount <= existingBid) {
-      setStatusMessage(`Target bid must be higher than current bid of ₹${existingBid}.`);
+      setStatusMessage(`Target placement must be higher than current placement of ₹${existingBid}.`);
       return;
     }
 
     setSubmitting(true);
-    setStatusMessage('Validating bid quote...');
+    setStatusMessage('Validating quote...');
 
     try {
       // 1. Calculate Quote
@@ -191,7 +191,7 @@ export const ConfirmClaimModal: React.FC = () => {
         return;
       }
 
-      setStatusMessage('Placing bid & securing position...');
+      setStatusMessage('Securing placement position...');
 
       // 2. Place Bid
       const paymentRef = `pay_${Date.now()}_sim`;
@@ -226,7 +226,7 @@ export const ConfirmClaimModal: React.FC = () => {
           modalPayload.onSuccess();
         }
       } else {
-        setStatusMessage(placeRes.errorMessage || 'Bid placement failed.');
+        setStatusMessage(placeRes.errorMessage || 'Placement request failed.');
       }
     } catch (err: any) {
       setStatusMessage(err?.message || 'Transaction could not be completed.');
@@ -366,7 +366,7 @@ export const ConfirmClaimModal: React.FC = () => {
                     </Text>
                   </View>
                   <View style={styles.summaryCol}>
-                    <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Target Bid</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Target Placement</Text>
                     <Text style={[styles.summaryVal, { color: colors.primary, fontWeight: '800' }]}>
                       ₹{targetAmount}
                     </Text>
@@ -433,16 +433,16 @@ export const ConfirmClaimModal: React.FC = () => {
                       <Text style={[styles.rebidAlertDesc, { color: colors.text }]}>
                         Previous payment of{' '}
                         <Text style={{ fontWeight: '700' }}>₹{existingBid.toFixed(2)}</Text> will be
-                        credited 100% toward this bid.
+                        credited 100% toward this placement.
                       </Text>
                     </View>
                   </View>
                 )}
 
-                {/* Bid Stepper */}
+                {/* Placement Stepper */}
                 <View style={styles.inputGroup}>
                   <View style={styles.bidHeaderRow}>
-                    <Text style={[styles.inputLabel, { color: colors.text }]}>Target Bid Amount</Text>
+                    <Text style={[styles.inputLabel, { color: colors.text }]}>Target Placement Amount</Text>
                     <Text style={[styles.minBidLabel, { color: colors.textMuted }]}>
                       Min: ₹{minStartingBid}
                     </Text>
@@ -522,7 +522,7 @@ export const ConfirmClaimModal: React.FC = () => {
                   </View>
 
                   <View style={styles.ledgerRow}>
-                    <Text style={[styles.ledgerItemTitle, { color: colors.text }]}>Target Bid Amount</Text>
+                    <Text style={[styles.ledgerItemTitle, { color: colors.text }]}>Target Placement Amount</Text>
                     <Text style={[styles.ledgerItemVal, { color: colors.text }]}>₹{targetAmount.toFixed(2)}</Text>
                   </View>
 

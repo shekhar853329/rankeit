@@ -15,8 +15,8 @@ export class TermsComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.updateTags({
-      title: 'Terms of Service & Bid Settlement Policies',
-      description: 'Review RankUp terms of service, bidding governance, Razorpay payment reconciliation, and user rights.',
+      title: 'Terms of Service & Sponsored Listing Policies',
+      description: 'Review RankUp terms of service, sponsored advertising policies, payment processing, and user rights.',
       url: 'https://rankup.cyou/terms',
     });
   }

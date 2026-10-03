@@ -19,32 +19,21 @@
           <span class="breadcrumb-sep">/</span>
           <span class="breadcrumb-current text-primary font-bold">{{ categoryName() || 'Arena' }}</span>
         </nav>
-
-        <!-- <div class="arena-badges">
-          <span class="arena-badge arena-badge--contention">
-            <span class="material-symbols-outlined icon-xs text-primary">local_fire_department</span>
-            Live Contested Arena
-          </span>
-          <span class="arena-badge">
-            <span class="material-symbols-outlined icon-xs text-secondary">payments</span>
-            Floor ${{ minStartingBid() | number: '1.0-0' }} · +${{ minBidIncrement() | number: '1.0-0' }} Step
-          </span>
-        </div> -->
       </div>
 
-      <!-- ── Central Claim Top Row: Headline + Stepper & Live Auction Metadata ── -->
+      <!-- ── Central Claim Top Row: Headline + Stepper & Live Ranking Metadata ── -->
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
             Top {{ categoryName() }} Rankings: Claim Spot for
           </h1>
           <div class="bid-stepper">
-            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease bid"
+            <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
               id="bid-decrement">−</button>
             <span class="stepper-display" id="target-bid-display">
               ${{ effectiveClaimAmount() ?? minStartingBid() | number: '1.0-0' }}
             </span>
-            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase bid"
+            <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase amount"
               id="bid-increment">+</button>
           </div>
         </div>
@@ -54,14 +43,14 @@
           <div class="countdown-badge">
             <span class="material-symbols-outlined countdown-badge__icon">timer</span>
             <span class="countdown-badge__label">Resets:</span>
-            <span class="countdown-badge__time" id="auction-countdown">{{ countdownText() }}</span>
+            <span class="countdown-badge__time" id="daily-countdown">{{ countdownText() }}</span>
             <span class="countdown-badge__sep">•</span>
             <span class="countdown-badge__utc">Midnight UTC</span>
           </div>
         </div>
       </div>
 
-      <!-- ── Master Interactive Claim / Outbid Command Center Bar ── -->
+      <!-- ── Master Interactive Claim Command Center Bar ── -->
       <div class="command-bar-wrapper" id="claim-rank-section">
         <form class="command-bar" (submit)="$event.preventDefault(); initiateClaim()">
           <!-- URL / @Handle Input -->
@@ -83,12 +72,12 @@
             }
           </div>
 
-          <!-- Bid Amount Stepper/Input -->
+          <!-- Claim/Promote Amount Stepper/Input -->
           <div class="command-bar__field command-bar__field--amount">
             <span class="material-symbols-outlined field-icon">payments</span>
             <div class="field-content">
               <div class="field-label-row">
-                <label for="category-claim-amount" class="field-label">Bid Amount</label>
+                <label for="category-claim-amount" class="field-label">Placement Amount</label>
                 @if (claimPrice(); as minRank1) {
                 <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: ${{
                   minRank1 }}</span>
@@ -97,17 +86,17 @@
               <div class="amount-stepper-row">
                 <span class="amount-currency">₹</span>
                 <input id="category-claim-amount" type="number" class="field-input field-input--amount"
-                  aria-label="Bid Amount"
+                  aria-label="Placement Amount"
                   [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingBid())"
                   (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
                   (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
                 <div class="stepper-actions">
                   <button type="button" class="stepper-arrow-btn"
-                    (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease bid">
+                    (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease amount">
                     <span class="material-symbols-outlined">remove</span>
                   </button>
                   <button type="button" class="stepper-arrow-btn"
-                    (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase bid">
+                    (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase amount">
                     <span class="material-symbols-outlined">add</span>
                   </button>
                 </div>
@@ -152,12 +141,12 @@
             <div class="time-pills">
               <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
                 (click)="setTimeMode('alltime')" id="cat-feed-time-alltime"
-                title="All-time rankings including past bids">
+                title="All-time rankings including past claims">
                 <span class="material-symbols-outlined icon-xs">history</span>
                 All-Time
               </button>
               <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
-                (click)="setTimeMode('today')" id="cat-feed-time-today" title="Bids placed today">
+                (click)="setTimeMode('today')" id="cat-feed-time-today" title="Claims placed today">
                 <span class="material-symbols-outlined icon-xs">today</span>
                 Today
               </button>
@@ -184,7 +173,7 @@
         <div class="empty-state">
           <span class="material-symbols-outlined empty-icon">rocket_launch</span>
           @if (timeMode() === 'today') {
-          <h3>No bids placed in this arena today</h3>
+          <h3>No claims placed in this arena today</h3>
           <p>Be the first to claim Rank #1 today — starting at just {{ currencySymbol }}{{ claimPrice() ??
             minStartingBid() }}!</p>
           } @else {
@@ -252,7 +241,7 @@
 
               <div class="podium-card__right">
                 <div class="price-box">
-                  <span class="price-label">Active Bid</span>
+                  <span class="price-label">Active Placement</span>
                   <span class="price-val text-primary">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="outbid-action-btn outbid-action-btn--primary"
@@ -301,7 +290,7 @@
               </div>
               <div class="podium-card__right">
                 <div class="price-box">
-                  <span class="price-label">Current Bid</span>
+                  <span class="price-label">Current Placement</span>
                   <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
@@ -350,7 +339,7 @@
               </div>
               <div class="podium-card__right">
                 <div class="price-box">
-                  <span class="price-label">Current Bid</span>
+                  <span class="price-label">Current Placement</span>
                   <span class="price-val">${{ entry.currentBidAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="outbid-action-btn outbid-action-btn--secondary"
@@ -413,30 +402,30 @@
         }
         }
 
-        <!-- ── Real-Time Category Bid Pressure & Liquidity Chart (Apache ECharts) ── -->
+        <!-- ── Real-Time Category Claim Pressure & Liquidity Chart (Apache ECharts) ── -->
         <div class="liquidity-chart-card">
           <!-- Chart Header & Category KPIs -->
           <div class="liquidity-header">
             <div class="liquidity-title-group">
               <div class="liquidity-title-row">
                 <span class="material-symbols-outlined text-primary">analytics</span>
-                <h3 class="liquidity-title">{{ categoryName() }} Bid Pressure & Liquidity</h3>
+                <h3 class="liquidity-title">{{ categoryName() }} Placement Activity & Volume</h3>
                 <span class="live-pulse-badge">
                   <span class="live-pulse-dot"></span>
                   LIVE SYNC
                 </span>
               </div>
-              <span class="liquidity-sub">Continuous category bidding activity, velocity & auction depth</span>
+              <span class="liquidity-sub">Continuous category placement activity, velocity & depth</span>
             </div>
 
             <!-- Quick KPIs in Header -->
             <div class="liquidity-stats-row">
-              <div class="liquidity-stat-pill" title="Total category auction volume today">
+              <div class="liquidity-stat-pill" title="Total category placement volume today">
                 <span class="stat-pill-label">Today's Vol</span>
                 <span class="stat-pill-val">${{ todayTotalVolume() | number: '1.2-2' }}</span>
               </div>
               <div class="liquidity-stat-pill" title="Total category payments registered today">
-                <span class="stat-pill-label">Bids</span>
+                <span class="stat-pill-label">Count</span>
                 <span class="stat-pill-val">{{ todayTotalBids() }}</span>
               </div>
               @if (peakBidInfo(); as peak) {
@@ -468,7 +457,7 @@
               </button>
               <button type="button" class="chart-tab-btn" role="tab" [attr.aria-selected]="chartViewMode() === 'weekly'"
                 [class.chart-tab-btn--active]="chartViewMode() === 'weekly'" (click)="setChartViewMode('weekly')"
-                title="7-day bidding volume trend">
+                title="7-day placement volume trend">
                 <span class="material-symbols-outlined icon-xs">date_range</span>
                 <span>7D Trend</span>
               </button>
@@ -489,7 +478,7 @@
                 </button>
                 <button type="button" class="metric-btn" [class.metric-btn--active]="chartMetric() === 'count'"
                   (click)="setChartMetric('count')">
-                  Bids
+                  Count
                 </button>
               </div>
               }

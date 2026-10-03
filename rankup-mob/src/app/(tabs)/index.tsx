@@ -679,11 +679,11 @@ export default function GlobalLeaderboardScreen() {
                         </View>
                       </View>
 
-                      {/* Right: Active Bid & Outbid Button */}
+                      {/* Right: Active Placement & Claim Button */}
                       <View style={styles.championRight}>
                         <View style={styles.priceStack}>
                           <Text style={[styles.priceLabel, { color: colors.textMuted }]}>
-                            Active Bid
+                            Active Placement
                           </Text>
                           <Text style={[styles.priceVal, { color: colors.primary }]}>
                             ₹{row.currentBidAmount.toFixed(0)}
@@ -778,7 +778,7 @@ export default function GlobalLeaderboardScreen() {
 
                       <View style={styles.championRight}>
                         <View style={styles.priceStack}>
-                          <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Bid</Text>
+                          <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Placement</Text>
                           <Text style={[styles.priceVal, { color: colors.text }]}>
                             ₹{row.currentBidAmount.toFixed(0)}
                           </Text>
@@ -795,7 +795,7 @@ export default function GlobalLeaderboardScreen() {
                             })
                           }>
                           <Text style={[styles.outbidBtnSecText, { color: colors.text }]}>
-                            Outbid
+                            Claim
                           </Text>
                         </Pressable>
                       </View>

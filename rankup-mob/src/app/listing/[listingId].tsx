@@ -167,7 +167,7 @@ export default function ListingDetailScreen() {
                   </Text>
                 </View>
                 <View style={[styles.statBox, { backgroundColor: colors.surfaceSubtle }]}>
-                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Active Bid</Text>
+                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Active Placement</Text>
                   <Text style={[styles.statVal, { color: colors.primary }]}>
                     ₹{listing.currentBidAmount.toFixed(0)}
                   </Text>
@@ -203,7 +203,7 @@ export default function ListingDetailScreen() {
               <View style={styles.timelineHeader}>
                 <Ionicons name="receipt-outline" size={18} color={colors.primary} />
                 <Text style={[styles.timelineTitle, { color: colors.text }]}>
-                  Bidding &amp; Payment History
+                  Placement &amp; Payment History
                 </Text>
               </View>
 

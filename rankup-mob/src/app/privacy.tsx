@@ -25,7 +25,7 @@ export default function PrivacyScreen() {
     {
       title: '3. Why We Use This Data',
       content:
-        'Data is used to operate the live ascending auction, credit previous payments to returning founders, display public rankings, and verify audit records.',
+        'Data is used to operate the live sponsored ranking platform, credit previous payments to returning founders, display public rankings, and verify audit records.',
     },
     {
       title: '4. Zero Third-Party Selling',

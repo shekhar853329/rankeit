@@ -78,10 +78,10 @@
       </div>
     </div>
 
-    <!-- Price & Outbid Action Box -->
+    <!-- Price & promote Action Box -->
     <div class="hero-price-panel">
       <div class="price-header">
-        <span class="price-eyebrow">Winning Bid</span>
+        <span class="price-eyebrow">Active Placement</span>
         <span class="price-display">${{ l.currentBidAmount | number: '1.0-2' }}</span>
       </div>
 
@@ -118,7 +118,7 @@
     <div class="bento-card card">
       <div class="bento-header">
         <span class="material-symbols-outlined bento-icon">update</span>
-        <span class="bento-label">Latest Bid Activity</span>
+        <span class="bento-label">Latest Activity</span>
       </div>
       <span class="bento-val">{{ l.lastBidAt | date: 'mediumDate' }}</span>
       <span class="bento-sub">{{ timeAgo(l.lastBidAt) }}</span>
@@ -127,10 +127,10 @@
     <div class="bento-card card">
       <div class="bento-header">
         <span class="material-symbols-outlined bento-icon">payments</span>
-        <span class="bento-label">Total Bids Placed</span>
+        <span class="bento-label">Total Placements</span>
       </div>
       <span class="bento-val font-mono">{{ l.bids.length }}</span>
-      <span class="bento-sub">Auction transactions</span>
+      <span class="bento-sub">Placement transactions</span>
     </div>
 
     <div class="bento-card card">
@@ -146,13 +146,13 @@
     </div>
   </div>
 
-  <!-- Bid Ledger / History -->
+  <!-- Promotion Ledger / History -->
   <section class="bid-ledger card">
     <header class="ledger-header">
       <div class="ledger-title-wrap">
         <span class="material-symbols-outlined ledger-icon">receipt_long</span>
         <div>
-          <h2>Verified Bid Ledger</h2>
+          <h2>Verified Placement Ledger</h2>
           <p class="ledger-sub">Cryptographically signed and auditable payment transactions</p>
         </div>
       </div>
@@ -164,7 +164,7 @@
 
     @if (l.bids.length === 0) {
     <div class="ledger-empty">
-      <p>No historical bid transactions recorded yet.</p>
+      <p>No historical placement transactions recorded yet.</p>
     </div>
     } @else {
     <div class="table-responsive">
@@ -172,7 +172,7 @@
         <thead>
           <tr>
             <th>Date & Time (UTC)</th>
-            <th>Standing Bid</th>
+            <th>Standing Placement</th>
             <th>Payment Charged</th>
             <th>Payment Reference</th>
             <th>Settlement</th>
@@ -188,11 +188,12 @@
             <td class="col-amount">
               <span class="amount-val">${{ bid.amount | number: '1.0-2' }}</span>
               @if (idx === 0) {
-              <span class="tag-peak">Winning</span>
+              <span class="tag-peak">Top Rank</span>
               }
             </td>
             <td class="col-paid">
-              <span class="paid-badge font-mono">+${{ (bid.paymentAmount > 0 ? bid.paymentAmount : bid.amount) | number: '1.2-2' }}</span>
+              <span class="paid-badge font-mono">+${{ (bid.paymentAmount > 0 ? bid.paymentAmount : bid.amount) | number:
+                '1.2-2' }}</span>
             </td>
             <td class="col-ref">
               <span class="ref-badge">
@@ -218,7 +219,7 @@
   <div class="detail-not-found card">
     <span class="material-symbols-outlined not-found-icon">search_off</span>
     <h2>Listing Not Found</h2>
-    <p>The product or bid reference you're looking for does not exist or has been removed from the registry.</p>
+    <p>The product or placement reference you're looking for does not exist or has been removed from the registry.</p>
     <a routerLink="/" class="btn-return-home">
       <span class="material-symbols-outlined text-[18px]">home</span>
       Return to Global Leaderboard
