@@ -1,0 +1,24 @@
+<span class="number-ticker" [attr.aria-label]="label() ? (label() + ' ' + value()) : (value() + '')">
+  <span class="sr-only">{{ value() }}</span>
+  <span class="ticker-viewport" aria-hidden="true">
+    @for (col of displayColumns(); track col.id) {
+      <span
+        class="ticker-col"
+        [class.ticker-col--entering]="col.state === 'entering'"
+        [class.ticker-col--leaving]="col.state === 'leaving'"
+        [class.ticker-col--rolling]="col.state === 'rolling'"
+      >
+        <span
+          class="ticker-track"
+          [style.transform]="col.transform"
+          [style.transitionDuration]="col.animating ? (duration() + 'ms') : '0ms'"
+          [style.transitionDelay]="col.animating ? (col.delay + 'ms') : '0ms'"
+        >
+          @for (char of col.chars; track $index) {
+            <span class="ticker-char">{{ char }}</span>
+          }
+        </span>
+      </span>
+    }
+  </span>
+</span>

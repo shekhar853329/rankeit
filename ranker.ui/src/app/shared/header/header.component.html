@@ -19,19 +19,27 @@
     </div>
 
     <!-- ── Live network stats pill (with Analytics link to the right of visited today) ── -->
-    <div class="site-header__stats">
-      <span class="status-beacon">
+    <div class="site-header__stats" [class.stats--increased]="onlineTrend() === 'up'" [class.stats--decreased]="onlineTrend() === 'down'">
+      <span class="status-beacon" [class.status-beacon--pulse-up]="onlineTrend() === 'up'">
         <span class="status-beacon__ping"></span>
         <span class="status-beacon__dot"></span>
       </span>
       <span class="site-header__stats-text">
-        <strong class="stats-online-count">{{ onlineUsers() }}</strong>
-        <span class="stats-online-label"> online</span>
+        <span class="stat-metric">
+          <strong class="stats-online-count" [class.count--increased]="onlineTrend() === 'up'" [class.count--decreased]="onlineTrend() === 'down'">
+            <app-number-ticker [value]="onlineUsers()" label="Online users" />
+          </strong>
+          <span class="stats-online-label">online</span>
+        </span>
         @if (visitsToday() !== null) {
         <span class="site-header__stats-sep" aria-hidden="true">•</span>
-        <strong class="stats-views-count">{{ visitsToday() }}</strong>
-        <span class="stats-views-label"> views</span>
-        <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+        <span class="stat-metric">
+          <strong class="stats-views-count">
+            <app-number-ticker [value]="visitsToday()!" label="Visits today" />
+          </strong>
+          <span class="stats-views-label">views</span>
+          <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+        </span>
         }
       </span>
       <span class="site-header__stats-divider" aria-hidden="true"></span>
@@ -73,19 +81,27 @@
   <nav id="mobile-nav" class="site-header__mobile-nav" [class.is-open]="menuOpen()" aria-label="Mobile navigation">
 
     <!-- Stats row inside mobile drawer -->
-    <div class="mobile-nav__stats">
-      <span class="status-beacon status-beacon--sm">
+    <div class="mobile-nav__stats" [class.stats--increased]="onlineTrend() === 'up'" [class.stats--decreased]="onlineTrend() === 'down'">
+      <span class="status-beacon status-beacon--sm" [class.status-beacon--pulse-up]="onlineTrend() === 'up'">
         <span class="status-beacon__ping"></span>
         <span class="status-beacon__dot"></span>
       </span>
       <span class="site-header__stats-text">
-        <strong class="stats-online-count">{{ onlineUsers() }}</strong>
-        <span class="stats-online-label"> online</span>
+        <span class="stat-metric">
+          <strong class="stats-online-count" [class.count--increased]="onlineTrend() === 'up'" [class.count--decreased]="onlineTrend() === 'down'">
+            <app-number-ticker [value]="onlineUsers()" label="Online users" />
+          </strong>
+          <span class="stats-online-label">online</span>
+        </span>
         @if (visitsToday() !== null) {
         <span class="site-header__stats-sep" aria-hidden="true">•</span>
-        <strong class="stats-views-count">{{ visitsToday() }}</strong>
-        <span class="stats-views-label"> views</span>
-        <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+        <span class="stat-metric">
+          <strong class="stats-views-count">
+            <app-number-ticker [value]="visitsToday()!" label="Visits today" />
+          </strong>
+          <span class="stats-views-label">views</span>
+          <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+        </span>
         }
       </span>
       <span class="site-header__stats-divider" aria-hidden="true"></span>
