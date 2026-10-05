@@ -26,7 +26,7 @@ export const HallOfFameCard: React.FC = () => {
           setItems(res);
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   };
 
@@ -52,7 +52,7 @@ export const HallOfFameCard: React.FC = () => {
             color={mode === 'alltime' ? colors.gold : colors.primary}
           />
           <Text style={[styles.title, { color: colors.text }]}>
-            {mode === 'alltime' ? 'All-Time Pantheon' : "Today's Showcase"}
+            {mode === 'alltime' ? 'All-Time' : "Today"}
           </Text>
         </View>
 
@@ -127,7 +127,7 @@ export const HallOfFameCard: React.FC = () => {
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>
               {mode === 'alltime'
                 ? 'No all-time champions found yet.'
-                : "No placements on today's showcase yet."}
+                : "No placements on today yet."}
             </Text>
           </View>
         )}
@@ -140,7 +140,7 @@ export const HallOfFameCard: React.FC = () => {
           onPress={toggleMode}>
           <Text style={[styles.switchBtnText, { color: colors.text }]}>
             {mode === 'alltime'
-              ? "Switch View to Today's Showcase"
+              ? "Switch View to Today"
               : 'Switch View to All-Time Pantheon'}
           </Text>
           <Ionicons name="swap-horizontal" size={14} color={colors.text} />

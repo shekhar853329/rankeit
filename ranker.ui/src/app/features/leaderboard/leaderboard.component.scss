@@ -36,7 +36,7 @@
   background: var(--color-surface-container-lowest);
   border: 1px solid var(--border);
   box-shadow: 0 4px 24px rgba(21, 28, 34, 0.05);
-  scroll-margin-top: calc(var(--header-height, 72px) + 1.5rem);
+  scroll-margin-top: calc(var(--header-height, 60px) + 1.5rem);
 
   &__orbs-wrap {
     position: absolute;

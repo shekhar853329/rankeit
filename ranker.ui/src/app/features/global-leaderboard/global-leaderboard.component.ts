@@ -270,7 +270,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   readonly todayShowcaseTop = signal<HallOfFameItem[]>([]);
   readonly hallOfFameLoading = signal(false);
 
-  // Inverted view: If viewing today's showcase in main stage, Hall of Fame card shows all-time pantheon, and vice versa
+  // Inverted view: If viewing today in main stage, Hall of Fame card shows all-time pantheon, and vice versa
   readonly hallOfFameMode = computed<'today' | 'alltime'>(() =>
     this.timeMode() === 'today' ? 'alltime' : 'today'
   );
@@ -512,7 +512,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       next: (result) => {
         this.tabs.set(result.items);
       },
-      error: () => {},
+      error: () => { },
     });
 
     this.loadTop3Sponsors();
@@ -529,7 +529,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
             next: (result) => {
               this.allCategories.set(result.items);
             },
-            error: () => {},
+            error: () => { },
           });
         }
         void this.signalr.joinGlobalGroup();
@@ -817,7 +817,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         next: (result) => {
           this.allCategories.set(result.items);
         },
-        error: () => {},
+        error: () => { },
       });
     }
   }
@@ -1073,7 +1073,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         const today = result.items[0];
         if (today) this.top3Sponsors.set(today.entries.slice(0, 3));
       },
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -1150,7 +1150,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           setTimeout(() => this.updateChart(), 40);
         }
       },
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -1170,7 +1170,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
           );
         }
       },
-      error: () => {},
+      error: () => { },
     });
   }
 

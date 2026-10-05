@@ -243,12 +243,12 @@
             <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
               (click)="setTimeMode('today')" id="view-today-btn">
               <span class="pulse-dot"></span>
-              <span>Today's Showcase</span>
+              <span>Today</span>
             </button>
             <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
               (click)="setTimeMode('alltime')" id="view-alltime-btn">
               <span class="material-symbols-outlined icon-sm">military_tech</span>
-              <span>All-Time Pantheon</span>
+              <span>All-Time</span>
             </button>
           </div>
           <span class="stage-count">{{ displayedRows().length }} {{ displayedRows().length === 1 ? 'project' :
@@ -786,16 +786,16 @@
 
       </section>
 
-      <!-- CARD 2: Complementary Leaderboard Card (All-Time Pantheon vs Today's Showcase) -->
+      <!-- CARD 2: Complementary Leaderboard Card (All-Time vs Today) -->
       <section class="side-card" id="hall-of-fame">
         <div class="side-card__header">
           <div class="side-card__title-group">
             @if (hallOfFameMode() === 'alltime') {
             <span class="material-symbols-outlined icon-sm text-tertiary">military_tech</span>
-            <h3 class="side-card__title">All-Time Pantheon</h3>
+            <h3 class="side-card__title">All-Time</h3>
             } @else {
             <span class="material-symbols-outlined icon-sm text-primary">local_fire_department</span>
-            <h3 class="side-card__title">Today's Showcase</h3>
+            <h3 class="side-card__title">Today</h3>
             }
           </div>
 
