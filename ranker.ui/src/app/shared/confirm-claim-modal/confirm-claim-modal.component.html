@@ -29,7 +29,7 @@
       <div class="txn-hero__amount font-numeric">
         ₹{{ (details.amountPaid ?? 0) | number: '1.2-2' }}
       </div>
-      <span class="txn-hero__amount-sub">Amount Paid via Razorpay</span>
+      <span class="txn-hero__amount-sub">Amount Paid via Payment Gateway</span>
     </div>
 
     <div class="txn-card">
@@ -50,7 +50,8 @@
 
       <div class="txn-card__row">
         <span class="txn-card__label">Current Total Placement</span>
-        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newClaimAmount ?? 0) | number: '1.2-2' }}</span>
+        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newClaimAmount ?? 0) | number: '1.2-2'
+          }}</span>
       </div>
 
       <div class="txn-card__row">
@@ -293,7 +294,7 @@
       <div class="calc-ledger__row calc-ledger__row--total">
         <div class="calc-ledger__row-left">
           <span class="calc-ledger__total-title">Net Amount Due Now</span>
-          <span class="calc-ledger__total-desc">Charged via Razorpay today</span>
+          <span class="calc-ledger__total-desc">Charged via Payment Gateway today</span>
         </div>
         <span class="calc-ledger__total-val font-numeric text-primary">
           ₹{{ payableAmount() | number: '1.2-2' }}
@@ -312,7 +313,8 @@
     @if (isNotHigherThanExisting()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>
-      <span>Target placement must be higher than your current placement of ₹{{ existingClaimAmount() | number: '1.2-2' }}.</span>
+      <span>Target placement must be higher than your current placement of ₹{{ existingClaimAmount() | number: '1.2-2'
+        }}.</span>
     </div>
     }
 
@@ -341,7 +343,7 @@
         @if (quoteValidating()) {
         <span>Validating...</span>
         } @else if (transactionStatus() === 'processing') {
-        <span>Awaiting Razorpay...</span>
+        <span>Awaiting Payment Gateway...</span>
         } @else {
         <span>Opening Checkout...</span>
         }

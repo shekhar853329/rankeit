@@ -37,8 +37,8 @@
       <li><a routerLink="." [fragment]="'operator'" class="tos-link">Operator &amp; Contact</a></li>
       <li><a routerLink="." [fragment]="'what-is'" class="tos-link">What the Service Is</a></li>
       <li><a routerLink="." [fragment]="'eligibility'" class="tos-link">Eligibility</a></li>
-      <li><a routerLink="." [fragment]="'payments'" class="tos-link">Payments &amp; Digital Fulfillment</a></li>
-      <li><a routerLink="." [fragment]="'no-refunds'" class="tos-link">Cancellation &amp; Refund Policy</a></li>
+      <li><a routerLink="." [fragment]="'payments'" class="tos-link">Payments, Pricing &amp; Products (INR)</a></li>
+      <li><a routerLink="." [fragment]="'no-refunds'" class="tos-link">Return &amp; Refund</a></li>
       <li><a routerLink="." [fragment]="'listings'" class="tos-link">Listing Requirements</a></li>
       <li><a routerLink="." [fragment]="'warranties'" class="tos-link">Your Warranties</a></li>
       <li><a routerLink="." [fragment]="'prohibited'" class="tos-link">Prohibited Listings &amp; Use</a></li>
@@ -67,17 +67,22 @@
       </div>
       <div class="tos-section__body">
         <p>
-          RankUp is operated by <strong>Shekhar</strong>, a solo indie developer based in India ("we", "us", "our").
-          The Service is provided at <strong>rankup.cyou</strong>.
+          RankUp is operated by <strong>{{ legal.legalName }}</strong> (operating <strong>RankUp</strong>, India) ("we",
+          "us", "our").
+          <strong>{{ legal.operatedByText }}.</strong>
         </p>
         <ul class="tos-list">
+          <li><strong>Legal Operator:</strong> {{ legal.legalName }} (as per PAN)</li>
+          <li><strong>Registered Address:</strong> {{ legal.registeredAddress }}</li>
           <li><strong>Legal &amp; listing notices:</strong>
-            <a href="mailto:shekhar3355@hotmail.com" class="tos-link">shekhar3355@hotmail.com</a>
+            <a [href]="'mailto:' + legal.supportEmail" class="tos-link">{{ legal.supportEmail }}</a>
           </li>
           <li><strong>Public contact:</strong> Via the <a routerLink="/contact" class="tos-link">Contact page</a>.</li>
         </ul>
         <p>
-          These Terms work together with the public <a routerLink="/rules" class="tos-link">Rules &amp; Governance</a>.
+          These Terms work together with the public <a routerLink="/rules" class="tos-link">Rules &amp; Governance</a>
+          and
+          <a routerLink="/privacy" class="tos-link">Privacy Policy</a>.
           If the Rules and these Terms conflict, these Terms control.
         </p>
       </div>
@@ -91,10 +96,14 @@
       </div>
       <div class="tos-section__body">
         <p>
-          RankUp is a <strong>digital product discovery and sponsored directory platform</strong> (Advertising Services - MCC 7311).
-          Founders and businesses pay for sponsored ranking placements to promote their product websites, gain visibility, and showcase
-          their tools to visitors across curated categories. Listings are paid promotional advertisements — not editorial reviews, certifications,
-          endorsements, or independent rankings. RankUp provides digital discovery and advertising placements only; no physical merchandise, commodities, or speculative assets are sold or traded on the platform.
+          RankUp is a <strong>digital product discovery and sponsored directory platform</strong> (Advertising Services
+          - MCC 7311).
+          Founders and businesses pay for sponsored ranking placements to promote their product websites, gain
+          visibility, and showcase
+          their tools to visitors across curated categories. Listings are paid promotional advertisements — not
+          editorial reviews, certifications,
+          endorsements, or independent rankings. RankUp provides digital discovery and advertising placements only; no
+          physical merchandise, commodities, or speculative assets are sold or traded on the platform.
         </p>
         <div class="tos-callout tos-callout--warning">
           <span class="material-symbols-outlined">info</span>
@@ -129,45 +138,66 @@
       </div>
     </section>
 
-    <!-- 4. Payments & Taxes -->
+    <!-- 4. Payments, Pricing & Products -->
     <section class="tos-section card" id="payments">
       <div class="tos-section__header">
         <span class="material-symbols-outlined section-icon">payments</span>
-        <h2>Payments, Taxes &amp; Digital Fulfillment</h2>
+        <h2>Payments, Products &amp; INR Pricing</h2>
       </div>
       <div class="tos-section__body">
         <p>
-          Checkout is processed by <strong>Razorpay</strong>. We do not collect or store full payment-card numbers.
-          Razorpay's own terms and privacy notice also apply to the payment itself. Amounts are priced in
-          <strong>Indian Rupees (₹)</strong>. Applicable taxes may be added at checkout.
+          Checkout is processed by <strong>Payment Gateway</strong>. We do not collect or store full payment-card
+          numbers.
+          Payment Gateway's own terms and privacy notice also apply to the payment itself.
+          <strong>All prices and fees on RankUp are explicitly quoted, settled, and charged in Indian Rupees (INR /
+            ₹).</strong>
         </p>
         <p>
           Rank amounts, minimums, #1 increments, raise-only-the-difference charges, and pricing are described in
-          the <a routerLink="/rules" class="tos-link">Rules</a> and shown before you pay. Completing checkout is an
-          offer to buy ranking placement on those terms.
+          the <a routerLink="/rules" class="tos-link">Rules</a> and shown transparently before you confirm checkout.
+          Completing checkout is an offer to buy ranking placement on those terms.
         </p>
-        <div class="tos-callout tos-callout--info" id="delivery">
-          <span class="material-symbols-outlined">bolt</span>
-          <div>
-            <strong>Digital Service Delivery &amp; Fulfillment Timeline:</strong>
-            All sponsored directory placements and ranking upgrades are 100% digital services delivered in real time.
-            Upon successful confirmation of payment via Razorpay, your listing is provisioned and written to the live
-            public leaderboard immediately (delivery timeline: instantaneous / within 0 to 1 minutes). No physical
-            goods or shipping are involved.
-          </div>
+
+        <!-- Product & Services Pricing Breakdown -->
+        <div class="tos-pricing-table"
+          style="background: var(--surface-container-low); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin: 1rem 0;">
+          <h3 style="margin: 0 0 0.75rem; font-size: 1.05rem; font-weight: 700; color: var(--text);">Products, Services
+            &amp; Pricing Schedule (in INR)</h3>
+          <ul class="tos-list" style="margin-bottom: 0;">
+            <li>
+              <strong>Standard Directory Listing &amp; Placement:</strong> Permanent website profile, category
+              placement, direct do-follow link, and real-time click telemetry.
+              <br /><em>Price: Starting from ₹1.00 – ₹10.00 INR (Base Category Entry).</em>
+            </li>
+            <li>
+              <strong>Rank #1 Spotlight Placement:</strong> Pinnacle position at the top of category directory and
+              global boards, featuring exclusive spotlight badges and maximum visibility.
+              <br /><em>Price: Current leader's placement + ₹1.00+ category increment in INR.</em>
+            </li>
+            <li>
+              <strong>Raise-Only-The-Difference Upgrades:</strong> Rank bumping where 100% of your earlier spend within
+              the active period is credited.
+              <br /><em>Price: Exact net difference (Target Rank Amount minus Current Active Spend) in INR.</em>
+            </li>
+            <li>
+              <strong>Daily Leaderboard Placements:</strong> High-velocity discovery arena resetting daily at 00:00 UTC.
+              <br /><em>Price: Flexible spend starting from ₹1.00 INR.</em>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
 
-    <!-- 5. No Refunds -->
+    <!-- 5. Return, Refund & Cancellation Policy -->
     <section class="tos-section card tos-section--accent" id="no-refunds">
       <div class="tos-section__header">
-        <span class="material-symbols-outlined section-icon">cancel</span>
-        <h2>No Refunds</h2>
+        <span class="material-symbols-outlined section-icon">currency_exchange</span>
+        <h2>Return, Refund &amp; Cancellation Policy</h2>
       </div>
       <div class="tos-section__body">
         <p>
-          <strong>All payments are final and not refundable.</strong> Ranking placement is a digital service that
+          <strong>All active live placements are final and non-refundable.</strong> Ranking placement is a digital
+          service that
           begins as soon as payment is confirmed: the listing is created or the rank is raised, and the paid amount
           is counted on the public board.
         </p>
@@ -175,6 +205,7 @@
           Being outranked later, a drop at midnight UTC, fewer clicks than you hoped for, downtime, or a later
           removal for breach of these Terms does not create a refund.
         </p>
+
         <div class="tos-callout tos-callout--danger">
           <span class="material-symbols-outlined">warning</span>
           <div>
@@ -283,7 +314,7 @@
         <p>
           RankUp, our wordmark, and the look of the Service are ours. You may not copy the Service, scrape the
           board for a competing ranking product, or use our brand in a way that suggests we endorse you.
-          Razorpay and other third-party names remain their owners' property.
+          Payment Gateway and other third-party names remain their owners' property.
         </p>
       </div>
     </section>
@@ -457,7 +488,7 @@
             consent.</li>
           <li>These Terms, the Rules, the Privacy Policy, and the checkout details you confirm form the entire
             agreement for the Service.</li>
-          <li>Payments and hosting involve third parties including Razorpay. Their outages or decisions are
+          <li>Payments and hosting involve third parties including Payment Gateway. Their outages or decisions are
             outside our control.</li>
         </ul>
       </div>

@@ -89,7 +89,7 @@
         <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
         <span>Claim This Position</span>
       </button>
-      <span class="price-sub">Instant settlement via Razorpay</span>
+      <span class="price-sub">Instant settlement</span>
     </div>
   </header>
 
@@ -192,7 +192,8 @@
               }
             </td>
             <td class="col-paid">
-              <span class="paid-badge font-mono">+₹{{ (claim.paymentAmount > 0 ? claim.paymentAmount : claim.amount) | number:
+              <span class="paid-badge font-mono">+₹{{ (claim.paymentAmount > 0 ? claim.paymentAmount : claim.amount) |
+                number:
                 '1.2-2' }}</span>
             </td>
             <td class="col-ref">

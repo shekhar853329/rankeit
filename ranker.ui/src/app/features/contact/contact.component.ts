@@ -2,10 +2,12 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { RouterLink } from '@angular/router';
 import { ToastService } from '../../core/services/toast.service';
 import { SeoService } from '../../core/services/seo.service';
+import { LEGAL_CONFIG } from '../../core/constants/legal.constants';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -14,9 +16,10 @@ export class ContactComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly seo = inject(SeoService);
 
-  readonly email = 'shekhar3355@hotmail.com';
-  readonly address = 'Bhagwanpur, District - Muzaffarpur, Bihar, PIN: 842001';
-  readonly creationDate = 'September 22, 2026';
+  readonly legal = LEGAL_CONFIG;
+  readonly email = LEGAL_CONFIG.supportEmail;
+  readonly address = LEGAL_CONFIG.registeredAddress;
+  readonly creationDate = LEGAL_CONFIG.estDate;
   readonly copied = signal(false);
 
   ngOnInit(): void {

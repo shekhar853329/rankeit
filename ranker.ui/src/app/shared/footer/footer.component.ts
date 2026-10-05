@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HealthService } from '../../core/services/health.service';
+import { LEGAL_CONFIG } from '../../core/constants/legal.constants';
 
 @Component({
   selector: 'app-footer',
@@ -12,6 +13,7 @@ import { HealthService } from '../../core/services/health.service';
 })
 export class FooterComponent {
   protected readonly healthService = inject(HealthService);
+  readonly legal = LEGAL_CONFIG;
   readonly currentYear = new Date().getFullYear();
 
   onCheckHealth(): void {

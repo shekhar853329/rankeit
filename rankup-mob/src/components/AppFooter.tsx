@@ -44,7 +44,7 @@ export const AppFooter: React.FC = () => {
 
       <View style={styles.bottomRow}>
         <Text style={[styles.copyText, { color: colors.textFaint }]}>
-          © 2026 RankUp. Built for creators &amp; indie founders.
+          © 2026 RankUp. Built for creators &amp; founders.
         </Text>
         <View style={[styles.auditPill, { backgroundColor: colors.surfaceSubtle }]}>
           <Text style={[styles.auditText, { color: colors.textMuted }]}>Audit #AUDIT-1</Text>

@@ -12,11 +12,19 @@
       </span>
     </div>
 
-    <h1 class="contact-title">Get in Touch & About the Project</h1>
+    <h1 class="contact-title">Contact Us &amp; Support</h1>
     <p class="contact-subtitle">
-      Welcome to RankUp! Whether you have questions about your listings or placements, want to explore a
-      partnership, or simply want to share feedback—reach out directly to the creator.
+      Welcome to RankUp! Whether you have questions regarding payment reconciliation, sponsored ranking placements, or
+      platform support—reach out directly to our team.
     </p>
+
+    <!-- Mandatory Payment Gateway Compliance Notice -->
+    <div class="legal-badge-banner"
+      style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--surface-container); border: 1px solid var(--border-strong); padding: 0.5rem 1.25rem; border-radius: 9999px; font-size: 0.875rem; color: var(--text); margin-top: 0.5rem;">
+      <span class="material-symbols-outlined"
+        style="color: var(--secondary, #10b981); font-size: 18px;">verified_user</span>
+      <span><strong>Legal Notice:</strong> {{ legal.operatedByText }}.</span>
+    </div>
   </header>
 
   <!-- Creator & Project Spotlight Card -->
@@ -57,12 +65,8 @@
             <span>Operating Address: <strong>{{ address }}</strong></span>
           </div>
           <div class="chip">
-            <span class="material-symbols-outlined chip-icon">rocket_launch</span>
-            <span>Project: <strong>RankUp Discovery Engine</strong></span>
-          </div>
-          <div class="chip">
-            <span class="material-symbols-outlined chip-icon">bolt</span>
-            <span>Tech: <strong>.NET 10 + Angular 20 + SignalR</strong></span>
+            <span class="material-symbols-outlined chip-icon">payments</span>
+            <span>Billing Currency: <strong>INR (₹)</strong></span>
           </div>
         </div>
       </div>
@@ -95,7 +99,8 @@
           <span class="sla-badge">Fast Response</span>
         </div>
         <p>
-          Need assistance with payment reconciliation, upgrading an active placement, updating your product title or logo, or
+          Need assistance with payment reconciliation, upgrading an active placement, updating your product title or
+          logo, or
           verifying your listing email? Contact me directly.
         </p>
 
@@ -170,7 +175,8 @@
           <span class="sla-badge sla-badge--emerald">Registered Location</span>
         </div>
         <p>
-          {{ address }}, India
+          <strong>{{ legal.operatedByText }}</strong><br />
+          {{ address }}
         </p>
 
         <div class="channel-action">
@@ -183,17 +189,33 @@
     </div>
   </div>
 
-  <!-- About the Project Philosophy Card -->
-  <div class="about-project-card card">
+  <!-- Website Operated By & Business Disclosures Card -->
+  <div class="about-project-card card" id="operated-by">
     <div class="about-header">
-      <span class="material-symbols-outlined icon">explore</span>
+      <span class="material-symbols-outlined icon" style="color: var(--secondary, #10b981);">verified_user</span>
       <div>
-        <h3>About the RankUp Vision</h3>
-        <p>Three core promises that define how this platform is built and operated:</p>
+        <h3>Website Operated By &amp; Business Information</h3>
+        <p><strong>{{ legal.operatedByText }}</strong>. Official platform disclosures and operational credentials:</p>
       </div>
     </div>
 
-    <div class="pillars-grid">
+    <div class="compliance-box"
+      style="background: var(--surface-container-low); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem;">
+      <ul
+        style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.92rem; color: var(--text-muted);">
+        <li><strong style="color: var(--text);">Operating Entity:</strong> {{ legal.operatedByText }} (Legal name as per
+          PAN Card)</li>
+        <li><strong style="color: var(--text);">Registered Address (Aadhaar):</strong> {{ address }}</li>
+        <li><strong style="color: var(--text);">Official Support Email:</strong> <a [href]="'mailto:' + email"
+            style="color: var(--accent); text-decoration: none;">{{ email }}</a></li>
+        <li><strong style="color: var(--text);">Platform Overview:</strong> RankUp is an open web discovery directory
+          and transparent sponsored ranking engine for creators, indie makers, and businesses.</li>
+        <li><strong style="color: var(--text);">Payment &amp; Currency:</strong> All transactions are securely processed
+          in Indian Rupees (INR / ₹).</li>
+      </ul>
+    </div>
+
+    <div class="pillars-grid" style="margin-top: 1.5rem;">
       <div class="pillar-item">
         <div class="pillar-num">01</div>
         <h4>100% Transparent</h4>
@@ -203,7 +225,8 @@
       <div class="pillar-item">
         <div class="pillar-num">02</div>
         <h4>Fair Difference Billing</h4>
-        <p>You never pay full price twice. Upgrading your spot always credits 100% of your previous active placement.</p>
+        <p>You never pay full price twice. Upgrading your spot always credits 100% of your previous active placement.
+        </p>
       </div>
       <div class="pillar-item">
         <div class="pillar-num">03</div>

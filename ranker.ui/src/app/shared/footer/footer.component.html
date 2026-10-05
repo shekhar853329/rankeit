@@ -16,7 +16,7 @@
           </span>
         </div>
         <p class="brand-desc">
-          © {{ currentYear }} RankUp • Built by Shekhar • Est. Sep 2026
+          © {{ currentYear }} RankUp • {{ legal.operatedByText }} • Est. {{ legal.estDate }}
         </p>
       </div>
 
@@ -32,13 +32,12 @@
         </button>
 
         <nav class="footer-nav">
-          <a routerLink="/analytics" class="footer-link">Traffic &amp; Analytics</a>
+          <a routerLink="/contact" class="footer-link">Contact</a>
+          <a routerLink="/terms" [fragment]="'payments'" class="footer-link">Pricing &amp; Services</a>
           <a routerLink="/rules" class="footer-link">Rules &amp; Governance</a>
           <a routerLink="/terms" class="footer-link">Terms of Service</a>
           <a routerLink="/privacy" class="footer-link">Privacy Policy</a>
-          <a routerLink="/terms" [fragment]="'no-refunds'" class="footer-link">Refund &amp; Cancellation</a>
-          <a routerLink="/terms" [fragment]="'delivery'" class="footer-link">Delivery &amp; Fulfillment</a>
-          <a routerLink="/contact" class="footer-link">Contact</a>
+          <a routerLink="/terms" [fragment]="'no-refunds'" class="footer-link">Return &amp; Refund Policy</a>
         </nav>
       </div>
     </div>

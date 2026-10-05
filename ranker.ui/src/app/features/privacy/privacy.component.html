@@ -56,12 +56,21 @@
       <div class="privacy-section__body">
         <p>
           The controller for personal data processed through the Service is
-          <strong>Shekhar</strong>, a solo indie developer based in India.
+          <strong>{{ legal.legalName }}</strong> (operating <strong>RankUp</strong>, India).
+        </p>
+        <p>
+          <strong>{{ legal.operatedByText }}.</strong>
         </p>
         <ul class="privacy-list">
           <li>
+            <strong>Legal Operator:</strong> {{ legal.legalName }} (as per PAN)
+          </li>
+          <li>
+            <strong>Registered Address:</strong> {{ legal.registeredAddress }}
+          </li>
+          <li>
             <strong>Email:</strong>
-            <a href="mailto:shekhar3355@hotmail.com" class="privacy-link">shekhar3355@hotmail.com</a>
+            <a [href]="'mailto:' + legal.supportEmail" class="privacy-link">{{ legal.supportEmail }}</a>
           </li>
           <li>
             <strong>Contact page:</strong>
@@ -100,7 +109,7 @@
           </div>
           <p>
             The URL you submit, the category, rank amount, and the public name, description, and image we resolve for
-            that destination. Payment confirmation identifiers from Razorpay (order and checkout IDs) are stored so we
+            that destination. Payment confirmation identifiers (order and checkout IDs) are stored so we
             can place the ranking.
           </p>
         </div>
@@ -111,8 +120,9 @@
             Payment Data
           </div>
           <p>
-            Card details and billing identity are collected by <strong>Razorpay</strong>, not by us. Razorpay may send
-            us confirmation that you paid and an amount. See Razorpay's own privacy notice for details.
+            Card details and billing identity are collected by <strong>Payment Gateway</strong>, not by us. Payment
+            Gateway may send
+            us confirmation that you paid and an amount. See Payment Gateway's own privacy notice for details.
           </p>
         </div>
 
@@ -247,7 +257,7 @@
           <div class="processor-item">
             <div class="processor-item__name">
               <span class="material-symbols-outlined">payments</span>
-              Razorpay
+              Payment Gateway
             </div>
             <p>Checkout and payment confirmation. Their privacy policy governs payment data they collect.</p>
           </div>

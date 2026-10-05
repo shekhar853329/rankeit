@@ -88,10 +88,11 @@ export default function ContactScreen() {
           </View>
 
           <Text style={[styles.founderBio, { color: colors.textMuted }]}>
+            <Text style={{ fontWeight: '700', color: colors.text }}>This website and platform is operated by Shekhar.</Text>{'\n'}
             I started building <Text style={{ fontWeight: '700', color: colors.text }}>RankUp</Text> on{' '}
             <Text style={{ fontWeight: '700', color: colors.text }}>September 22, 2026</Text> with a clear mission:
             to replace black-box advertising algorithms with a 100% transparent, real-time discovery engine.
-            Founders, indie hackers, and creators shouldn't have to guess why their product isn't seen.
+            Founders and creators shouldn't have to guess why their product isn't seen.
             On RankUp, rankings are open, predictable, and fair—you only pay the difference to upgrade, and early
             supporters always retain their tiebreaker advantage.
           </Text>
