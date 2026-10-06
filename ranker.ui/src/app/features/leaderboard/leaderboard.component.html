@@ -25,7 +25,7 @@
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
-            Top {{ categoryName() }} Rankings: Claim Spot for
+            Top {{ categoryName() }} Rankings: Claim <span class="headline-rank-tag">#{{ calculatedSpotRank() }}</span> Spot for
           </h1>
           <div class="placement-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"

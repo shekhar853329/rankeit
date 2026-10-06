@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api-config';
-import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, HallOfFameItemDto, LiveClaimEventDto, PlatformStatsDto } from '../models/leaderboard.model';
+import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, HallOfFameItemDto, LiveClaimEventDto, PlatformStatsDto, SpotRankDto } from '../models/leaderboard.model';
 import { DailyListingsResponseDto } from '../models/daily-listing.model';
 
 @Injectable({ providedIn: 'root' })
@@ -57,5 +57,24 @@ export class LeaderboardService {
     return this.http.get<HallOfFameItemDto[]>(`${API_BASE_URL}/api/leaderboard/hall-of-fame`, {
       params: { topN: String(topN) },
     });
+  }
+
+  getSpotRank(
+    amount: number,
+    timeMode = 'today',
+    categorySlug?: string | null,
+    listingId?: number | null,
+  ): Observable<SpotRankDto> {
+    const params: Record<string, string> = {
+      amount: String(amount),
+      timeMode,
+    };
+    if (categorySlug?.trim()) {
+      params['categorySlug'] = categorySlug.trim();
+    }
+    if (listingId) {
+      params['listingId'] = String(listingId);
+    }
+    return this.http.get<SpotRankDto>(`${API_BASE_URL}/api/leaderboard/spot-rank`, { params });
   }
 }

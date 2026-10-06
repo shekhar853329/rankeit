@@ -256,6 +256,12 @@
   }
 }
 
+.headline-rank-tag {
+  color: var(--color-primary);
+  font-family: var(--font-numeric);
+  font-weight: 800;
+}
+
 .placement-stepper {
   display: inline-flex;
   align-items: center;

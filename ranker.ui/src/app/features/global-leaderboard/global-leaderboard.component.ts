@@ -9,6 +9,7 @@ import {
   PLATFORM_ID,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -16,8 +17,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe, isPlatformBrowser } from '@angular/common';
 import type * as echarts from 'echarts';
 import { Router, RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
 import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, PlatformStatsDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
 import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
@@ -432,6 +433,38 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.claimAmount() ?? this.globalDefaultPrice()
   );
 
+  private readonly spotRankRequest$ = new Subject<{ amount: number; timeMode: string; categorySlug: string | null }>();
+  private readonly backendSpotRank = signal<{ amount: number; timeMode: string; categorySlug: string | null; rank: number } | null>(null);
+
+  private readonly spotRankWatcher = effect(() => {
+    const amount = this.effectiveClaimAmount() ?? 0;
+    const time = this.timeMode();
+    const slug = this.claimSlug() ?? this.selectedSlug();
+    if (amount > 0) {
+      this.spotRankRequest$.next({ amount, timeMode: time, categorySlug: slug });
+    }
+  });
+
+  readonly calculatedSpotRank = computed<number>(() => {
+    const amount = this.effectiveClaimAmount() ?? 0;
+    const time = this.timeMode();
+    const slug = this.claimSlug() ?? this.selectedSlug();
+
+    // If backend confirmed rank for current parameters, use it
+    const backend = this.backendSpotRank();
+    if (backend && backend.amount === amount && backend.timeMode === time && backend.categorySlug === slug) {
+      return backend.rank;
+    }
+
+    // Instant optimistic fallback from loaded rows
+    if (amount <= 0) return 1;
+    const list = this.rows();
+    if (!list || list.length === 0) return 1;
+
+    const higherOrEqualCount = list.filter((e) => (e.currentClaimAmount ?? 0) >= amount).length;
+    return higherOrEqualCount + 1;
+  });
+
   /** Minimum price to show in empty-state CTAs — uses the selected category's minStartingClaim,
    *  or the first available category's, so the number is always real and never hardcoded. */
   readonly emptyStateClaimPrice = computed<number>(() => {
@@ -541,6 +574,29 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         setTimeout(scheduleSecondary, 400);
       }
     }
+
+    // Debounced spot rank backend resolution across entire database
+    this.spotRankRequest$
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged((prev, curr) =>
+          prev.amount === curr.amount &&
+          prev.timeMode === curr.timeMode &&
+          prev.categorySlug === curr.categorySlug
+        ),
+        switchMap((req) =>
+          this.leaderboardService.getSpotRank(req.amount, req.timeMode, req.categorySlug).pipe(
+            map((res) => ({ ...req, rank: res.rank })),
+            catchError(() => of(null))
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((res) => {
+        if (res) {
+          this.backendSpotRank.set(res);
+        }
+      });
 
     // Debounced server-side search
     this.searchChange$

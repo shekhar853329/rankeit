@@ -121,3 +121,11 @@ export interface RankUpdatedPayload {
   becameCategoryTop: boolean;
   occurredAt: string;
 }
+
+export interface SpotRankDto {
+  rank: number;
+  amount: number;
+  timeMode: string;
+  categorySlug?: string | null;
+}
+

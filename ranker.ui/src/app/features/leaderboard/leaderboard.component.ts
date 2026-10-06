@@ -8,6 +8,7 @@ import {
   PLATFORM_ID,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -15,7 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DecimalPipe, isPlatformBrowser } from '@angular/common';
 import type * as echarts from 'echarts';
-import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
 import { CategoryLeaderboardResponseDto, LeaderboardEntryDto, PlatformStatsDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
@@ -164,6 +165,38 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
 
+  private readonly spotRankRequest$ = new Subject<{ amount: number; timeMode: string; categorySlug: string }>();
+  private readonly backendSpotRank = signal<{ amount: number; timeMode: string; categorySlug: string; rank: number } | null>(null);
+
+  private readonly spotRankWatcher = effect(() => {
+    const amount = this.effectiveClaimAmount() ?? 0;
+    const time = this.timeMode();
+    const slug = this.categorySlug();
+    if (amount > 0 && slug) {
+      this.spotRankRequest$.next({ amount, timeMode: time, categorySlug: slug });
+    }
+  });
+
+  readonly calculatedSpotRank = computed<number>(() => {
+    const amount = this.effectiveClaimAmount() ?? 0;
+    const time = this.timeMode();
+    const slug = this.categorySlug();
+
+    // If backend confirmed rank for current parameters, use it
+    const backend = this.backendSpotRank();
+    if (backend && backend.amount === amount && backend.timeMode === time && backend.categorySlug === slug) {
+      return backend.rank;
+    }
+
+    // Instant optimistic fallback from loaded rows
+    if (amount <= 0) return 1;
+    const list = this.entries();
+    if (!list || list.length === 0) return 1;
+
+    const higherOrEqualCount = list.filter((e) => (e.currentClaimAmount ?? 0) >= amount).length;
+    return higherOrEqualCount + 1;
+  });
+
   readonly currencySymbol = '₹';
 
   readonly reigningChampion = computed<LeaderboardEntryDto | null>(() => {
@@ -254,6 +287,29 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
             },
           },
         });
+      });
+
+    // Debounced spot rank backend resolution across entire database
+    this.spotRankRequest$
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged((prev, curr) =>
+          prev.amount === curr.amount &&
+          prev.timeMode === curr.timeMode &&
+          prev.categorySlug === curr.categorySlug
+        ),
+        switchMap((req) =>
+          this.leaderboardService.getSpotRank(req.amount, req.timeMode, req.categorySlug).pipe(
+            map((res) => ({ ...req, rank: res.rank })),
+            catchError(() => of(null))
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((res) => {
+        if (res) {
+          this.backendSpotRank.set(res);
+        }
       });
 
     this.signalr.rankUpdated$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((payload) => {

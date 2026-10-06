@@ -62,4 +62,13 @@ public class LeaderboardController(ISender sender) : ControllerBase
         [FromQuery] int topN = 5,
         CancellationToken ct = default) =>
         Ok(await sender.Send(new GetHallOfFameQuery(topN), ct));
+
+    [HttpGet("spot-rank")]
+    public async Task<ActionResult<SpotRankDto>> GetSpotRank(
+        [FromQuery] decimal amount,
+        [FromQuery] string timeMode = "today",
+        [FromQuery] string? categorySlug = null,
+        [FromQuery] int? listingId = null,
+        CancellationToken ct = default) =>
+        Ok(await sender.Send(new GetSpotRankQuery(amount, timeMode, categorySlug, listingId), ct));
 }
