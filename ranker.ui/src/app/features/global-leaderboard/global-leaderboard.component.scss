@@ -260,9 +260,14 @@
   display: inline-flex;
   align-items: center;
   background: var(--color-surface-container-low);
-  padding: 3px 5px;
+  padding: 3px 6px;
   border-radius: 0.75rem;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    box-shadow: 0 0 0 2px var(--color-primary), inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
 }
 
 .stepper-btn {
@@ -290,13 +295,54 @@
   }
 }
 
-.stepper-display {
+.stepper-display-wrap {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.35rem;
+}
+
+.stepper-currency {
   font-family: var(--font-numeric);
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--color-primary);
-  padding: 0 0.65rem;
   letter-spacing: -0.02em;
+}
+
+.stepper-input {
+  font-family: var(--font-numeric);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 3.5ch;
+  min-width: 2.2ch;
+  text-align: left;
+  padding: 0 0 0 1px;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.headline-badge-rank1 {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: rgba(249, 87, 56, 0.12);
+  border: 1px solid rgba(249, 87, 56, 0.25);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
 }
 
 .hero-meta-group {
@@ -364,7 +410,7 @@
   gap: 0.45rem;
 
   @media (min-width: 992px) {
-    grid-template-columns: 3.8fr 3fr 2.6fr 2fr;
+    grid-template-columns: 4.8fr 3.2fr 2fr;
   }
 
   &__field {

@@ -19,12 +19,22 @@
           <div class="placement-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
               id="placement-decrement">−</button>
-            <span class="stepper-display" id="target-placement-display">
-              {{ currencySymbol() }}{{ effectiveClaimAmount() ?? 10 | number: '1.0-0' }}
-            </span>
+            <div class="stepper-display-wrap">
+              <span class="stepper-currency">{{ currencySymbol() }}</span>
+              <input id="target-placement-display" type="number" class="stepper-input"
+                aria-label="Claim Amount"
+                [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? claimPrice() ?? 10)"
+                (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
+                (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
+            </div>
             <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase amount"
               id="placement-increment">+</button>
           </div>
+          @if (claimPrice(); as minRank1) {
+          <span class="headline-badge-rank1" title="Amount required to claim Rank #1 in this category">
+            Cat-#1: {{ currencySymbol() }}{{ minRank1 }}
+          </span>
+          }
         </div>
 
         <div class="hero-meta-group">
@@ -145,37 +155,6 @@
             }
           </div>
 
-          <!-- Claim Amount Stepper/Input -->
-          <div class="command-bar__field command-bar__field--amount">
-            <span class="material-symbols-outlined field-icon">payments</span>
-            <div class="field-content">
-              <div class="field-label-row">
-                <label for="claim-amount" class="field-label">Placement Amount</label>
-                @if (claimPrice(); as minRank1) {
-                <span class="field-badge-rank1" title="Amount required to claim Rank #1 in this category">Cat-#1: {{
-                  currencySymbol() }}{{ minRank1 }}</span>
-                }
-              </div>
-              <div class="amount-stepper-row">
-                <span class="amount-currency">{{ currencySymbol() }}</span>
-                <input id="claim-amount" type="number" class="field-input field-input--amount"
-                  aria-label="Placement Amount"
-                  [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? claimPrice() ?? 10)"
-                  (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
-                  (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
-                <div class="stepper-actions">
-                  <button type="button" class="stepper-arrow-btn"
-                    (click)="decrementClaimAmount(); $event.stopPropagation()" title="Decrease amount">
-                    <span class="material-symbols-outlined">remove</span>
-                  </button>
-                  <button type="button" class="stepper-arrow-btn"
-                    (click)="incrementClaimAmount(); $event.stopPropagation()" title="Increase amount">
-                    <span class="material-symbols-outlined">add</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Primary Claim CTA Button -->
           <div class="command-bar__action">
