@@ -9,10 +9,9 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, filter, firstValueFrom, of, Subject, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, firstValueFrom, Subject, switchMap } from 'rxjs';
 import { ModalService } from '../../core/services/modal.service';
 import { ClaimService } from '../../core/services/claim.service';
 import { CategoryService } from '../../core/services/category.service';
@@ -20,7 +19,7 @@ import { ListingService } from '../../core/services/listing.service';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { ToastService } from '../../core/services/toast.service';
-import { RazorpayService, CheckoutResult } from '../../core/services/razorpay.service';
+import { DodoPaymentsService } from '../../core/services/dodo-payments.service';
 import { CategoryDto } from '../../core/models/category.model';
 
 export interface CompletedTransactionDetails {
@@ -53,8 +52,14 @@ export class ConfirmClaimModalComponent implements OnInit {
   private readonly leaderboardService = inject(LeaderboardService);
   private readonly urlMetadataService = inject(UrlMetadataService);
   private readonly toast = inject(ToastService);
-  private readonly razorpay = inject(RazorpayService);
+  private readonly dodoPayments = inject(DodoPaymentsService);
   private readonly destroyRef = inject(DestroyRef);
+
+  // ── Step State: 1 = Confirmation / Breakup, 2 = Payments Screen ────
+  protected readonly currentStep = signal<1 | 2>(1);
+  protected readonly terminalLoading = signal<boolean>(false);
+  protected readonly activeSessionId = signal<string | null>(null);
+  protected readonly activeCheckoutUrl = signal<string | null>(null);
 
   // ── Form State ─────────────────────────────────────────────
   protected readonly agreed = signal(false);
@@ -190,6 +195,8 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.transactionStatus.set('idle');
       this.transactionDetails.set(null);
       this.copied.set(false);
+      this.currentStep.set(1);
+      this.terminalLoading.set(false);
 
       // Refresh benchmark & verify domain if URL already provided
       if (payload.listingUrl) {
@@ -198,12 +205,14 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.loadCategoryBenchmarks(payload.categoryId, payload.categorySlug);
 
       // Default target amount
-      const minReq = payload.currentTopClaim !== null && payload.currentTopClaim !== undefined
-        ? payload.currentTopClaim + payload.minClaimIncrement
-        : payload.minStartingClaim;
-      const initialTarget = payload.amount !== undefined && payload.amount !== null && payload.amount > 0
-        ? payload.amount
-        : minReq;
+      const minReq =
+        payload.currentTopClaim !== null && payload.currentTopClaim !== undefined
+          ? payload.currentTopClaim + payload.minClaimIncrement
+          : payload.minStartingClaim;
+      const initialTarget =
+        payload.amount !== undefined && payload.amount !== null && payload.amount > 0
+          ? payload.amount
+          : minReq;
       this.targetAmount.set(initialTarget);
     });
   }
@@ -347,21 +356,24 @@ export class ConfirmClaimModalComponent implements OnInit {
   }
 
   protected close(): void {
-    if (this.transactionStatus() === 'processing') return;
-    if (this.transactionStatus() === 'success') {
-      this.finishSuccess();
-      return;
-    }
-    if (this.submitting() || this.quoteValidating()) return;
+    if (this.submitting() && this.transactionStatus() === 'processing') return;
+    this.dodoPayments.closeTerminal();
     this.modal.closeClaimModal();
   }
 
   protected finishSuccess(): void {
     const payload = this.modal.claimModal();
+    this.dodoPayments.closeTerminal();
     this.modal.closeClaimModal();
     if (payload?.onSuccess) {
       payload.onSuccess();
     }
+  }
+
+  protected goToStep1(): void {
+    this.dodoPayments.closeTerminal();
+    this.currentStep.set(1);
+    this.transactionStatus.set('idle');
   }
 
   protected retryPayment(): void {
@@ -370,6 +382,7 @@ export class ConfirmClaimModalComponent implements OnInit {
     this.submitting.set(false);
     this.quoteValidating.set(false);
     this.quoteError.set(null);
+    this.currentStep.set(1);
   }
 
   protected copyPaymentId(id: string): void {
@@ -382,7 +395,9 @@ export class ConfirmClaimModalComponent implements OnInit {
   }
 
   protected onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') this.close();
+    if (event.key === 'Escape' && !this.submitting()) {
+      this.close();
+    }
   }
 
   // ── Checkout ───────────────────────────────────────────────
@@ -444,128 +459,221 @@ export class ConfirmClaimModalComponent implements OnInit {
       const resolvedFaviconUrl = this.faviconUrl() ?? payload?.faviconUrl ?? null;
       const resolvedListingId = quote.listingId ?? this.listingId();
 
-      // Keep confirmation modal pop up open, update state to processing
-      this.transactionStatus.set('processing');
-
-      // Step 2: Open Razorpay for the exact net charge amount
-      let payment: CheckoutResult;
+      // Step 2: Request Dodo Payments Checkout Session
+      let session: { sessionId: string; checkoutUrl: string };
       try {
-        payment = await this.razorpay.checkout({
-          amountInRupees: chargeAmount,
-          email: email,
-          description: this.isReclaim()
-            ? `Upgrade sponsored placement to ₹${target} (Paid ₹${chargeAmount}) for ${quote.listingName || this.listingName()}`
-            : `Promote listing with ₹${target} for ${this.listingName()}`,
-        });
-      } catch (checkoutErr: unknown) {
-        // Return to confirmation modal screen and show failed transaction details
-        this.submitting.set(false);
-        this.transactionStatus.set('failed');
-        const failMsg = checkoutErr instanceof Error ? checkoutErr.message : 'Payment was not completed.';
-        this.transactionDetails.set({
-          success: false,
-          amountPaid: chargeAmount,
-          targetClaimAmount: target,
-          categoryName: this.selectedCategoryName(),
-          listingName: resolvedTitle,
-          listingUrl: domain,
-          errorMessage: failMsg,
-          timestamp: new Date(),
-        });
-        this.toast.show(failMsg, failMsg === 'Payment cancelled.' ? 'info' : 'error');
-        return;
-      }
-
-      // Step 3: Place claim with matching targetClaimAmount and confirmedPaymentAmount
-      this.claimService
-        .placeClaim({
-          categoryId,
-          listingId: resolvedListingId,
+        const metadata: Record<string, string> = {
+          categoryId: categoryId.toString(),
+          listingId: resolvedListingId ? resolvedListingId.toString() : '',
           listingName: resolvedTitle,
           listingUrl: domain,
           ownerContactEmail: email,
-          targetClaimAmount: quote.targetClaimAmount,
-          paymentReference: payment.razorpayPaymentId,
-          confirmedPaymentAmount: payment.amountInRupees,
+          targetClaimAmount: target.toFixed(2),
+          chargeAmount: chargeAmount.toFixed(2),
           siteName: resolvedSiteName,
-          logoUrl: resolvedLogoUrl,
-          description: resolvedDescription,
-          faviconUrl: resolvedFaviconUrl,
-        })
-        .subscribe({
-          next: (result) => {
-            this.submitting.set(false);
-            if (result.success) {
-              this.transactionStatus.set('success');
-              this.transactionDetails.set({
-                success: true,
-                paymentId: payment.razorpayPaymentId,
-                orderId: payment.razorpayOrderId,
-                amountPaid: result.amountCharged ?? payment.amountInRupees,
-                newClaimAmount: result.newCurrentClaimAmount ?? target,
-                targetClaimAmount: target,
-                categoryName: this.selectedCategoryName(),
-                listingName: resolvedTitle,
-                listingUrl: domain,
-                timestamp: new Date(),
-              });
-              this.toast.show(
-                `🎉 Success! New placement: ₹${result.newCurrentClaimAmount} (Amount paid: ₹${result.amountCharged})`,
-                'success',
-              );
-            } else {
-              const errMsg = result.errorMessage ?? 'Placement was rejected by server.';
-              this.transactionStatus.set('failed');
-              this.transactionDetails.set({
-                success: false,
-                paymentId: payment.razorpayPaymentId,
-                orderId: payment.razorpayOrderId,
-                amountPaid: payment.amountInRupees,
-                targetClaimAmount: target,
-                categoryName: this.selectedCategoryName(),
-                listingName: resolvedTitle,
-                listingUrl: domain,
-                errorMessage: errMsg,
-                timestamp: new Date(),
-              });
-              this.toast.show(errMsg, 'error');
-            }
-          },
-          error: (err) => {
-            this.submitting.set(false);
-            const msg = err.error?.errorMessage || err.message || 'Something went wrong processing your placement.';
-            this.transactionStatus.set('failed');
-            this.transactionDetails.set({
-              success: false,
-              paymentId: payment.razorpayPaymentId,
-              orderId: payment.razorpayOrderId,
-              amountPaid: payment.amountInRupees,
-              targetClaimAmount: target,
-              categoryName: this.selectedCategoryName(),
-              listingName: resolvedTitle,
-              listingUrl: domain,
-              errorMessage: msg,
-              timestamp: new Date(),
-            });
-            this.toast.show(msg, 'error');
-          },
-        });
+          logoUrl: resolvedLogoUrl || '',
+          description: resolvedDescription || '',
+          faviconUrl: resolvedFaviconUrl || '',
+        };
+
+        const returnUrl = typeof window !== 'undefined'
+          ? `${window.location.origin}/payment-success`
+          : 'http://localhost:4200/payment-success';
+
+        session = await firstValueFrom(
+          this.dodoPayments.createSession({
+            amountInMinorUnits: Math.max(100, Math.round(chargeAmount * 100)),
+            currency: 'INR',
+            customerEmail: email,
+            customerName: resolvedTitle,
+            listingName: resolvedTitle,
+            listingId: resolvedListingId ? resolvedListingId.toString() : undefined,
+            categoryId: categoryId.toString(),
+            returnUrl: returnUrl,
+            metadata: metadata,
+          }),
+        );
+
+        this.activeSessionId.set(session.sessionId);
+        this.activeCheckoutUrl.set(session.checkoutUrl);
+      } catch (e) {
+        this.submitting.set(false);
+        const errMessage = this.dodoPayments.describeHttpError(e, 'Could not initiate Dodo Payments session.');
+        this.quoteError.set(errMessage);
+        this.toast.show(errMessage, 'error');
+        return;
+      }
+
+      this.submitting.set(false);
+
+      // Step 3: Transition to Step 2 (Payments Screen)
+      this.currentStep.set(2);
+      this.terminalLoading.set(true);
+
+      // Mount Dodo Payments embedded terminal into #dodo-payment-terminal
+      setTimeout(async () => {
+        try {
+          await this.dodoPayments.openTerminal({
+            checkoutUrl: session.checkoutUrl,
+            sessionId: session.sessionId,
+            elementId: 'dodo-payment-terminal',
+            displayType: 'inline',
+            callbacks: {
+              onOpened: () => {
+                this.terminalLoading.set(false);
+              },
+              onFormReady: () => {
+                this.terminalLoading.set(false);
+              },
+              onPayClicked: () => {
+                this.transactionStatus.set('processing');
+              },
+              onSuccess: async (paymentId) => {
+                await this.handleDodoPaymentSuccess(
+                  session.sessionId,
+                  paymentId,
+                  chargeAmount,
+                  target,
+                  resolvedTitle,
+                  domain,
+                  resolvedSiteName,
+                  resolvedLogoUrl,
+                  resolvedDescription,
+                  resolvedFaviconUrl,
+                );
+              },
+              onError: (errMsg) => {
+                this.terminalLoading.set(false);
+                this.toast.show(errMsg, 'error');
+              },
+              onClosed: () => {
+                // If closed
+              },
+            },
+          });
+        } catch (err) {
+          this.terminalLoading.set(false);
+          console.error('Failed to load Dodo terminal:', err);
+          this.toast.show('Failed to initialize payment gateway. Please retry.', 'error');
+        }
+      }, 50);
     } catch (err: unknown) {
       this.submitting.set(false);
       this.quoteValidating.set(false);
       const message = err instanceof Error ? err.message : 'Calculation error occurred.';
-      this.transactionStatus.set('failed');
-      this.transactionDetails.set({
-        success: false,
-        amountPaid: target,
-        targetClaimAmount: target,
-        categoryName: this.selectedCategoryName(),
-        listingName: this.listingName() || domain,
-        listingUrl: domain,
-        errorMessage: message,
-        timestamp: new Date(),
-      });
+      this.quoteError.set(message);
       this.toast.show(message, 'error');
     }
+  }
+
+  private async handleDodoPaymentSuccess(
+    sessionId: string,
+    paymentId?: string,
+    chargeAmount?: number,
+    target?: number,
+    resolvedTitle?: string,
+    domain?: string,
+    resolvedSiteName?: string,
+    resolvedLogoUrl?: string | null,
+    resolvedDescription?: string | null,
+    resolvedFaviconUrl?: string | null,
+  ): Promise<void> {
+    this.transactionStatus.set('processing');
+    this.submitting.set(true);
+
+    let verifiedPaymentId = paymentId;
+    if (!verifiedPaymentId) {
+      try {
+        const status = await this.dodoPayments.pollUntilPaid(sessionId, 6, 1500);
+        verifiedPaymentId = status.paymentId || sessionId;
+      } catch {
+        verifiedPaymentId = sessionId;
+      }
+    }
+
+    const payable = chargeAmount ?? this.payableAmount();
+    const targetVal = target ?? this.targetAmount() ?? payable;
+    const title = resolvedTitle ?? this.listingName() ?? this.domainUrl();
+    const dom = domain ?? this.domainUrl();
+    const catId = this.selectedCategoryId();
+    const resolvedListingId = this.listingId();
+
+    this.dodoPayments.closeTerminal();
+
+    this.claimService
+      .placeClaim({
+        categoryId: catId,
+        listingId: resolvedListingId,
+        listingName: title,
+        listingUrl: dom,
+        ownerContactEmail: this.ownerEmail().trim(),
+        targetClaimAmount: targetVal,
+        paymentReference: verifiedPaymentId,
+        confirmedPaymentAmount: payable,
+        siteName: resolvedSiteName || title,
+        logoUrl: resolvedLogoUrl ?? null,
+        description: resolvedDescription ?? null,
+        faviconUrl: resolvedFaviconUrl ?? null,
+      })
+      .subscribe({
+        next: (result) => {
+          this.submitting.set(false);
+
+          if (result.success) {
+            this.transactionStatus.set('success');
+            this.transactionDetails.set({
+              success: true,
+              paymentId: verifiedPaymentId,
+              orderId: sessionId,
+              amountPaid: result.amountCharged ?? payable,
+              newClaimAmount: result.newCurrentClaimAmount ?? targetVal,
+              targetClaimAmount: targetVal,
+              categoryName: this.selectedCategoryName(),
+              listingName: title,
+              listingUrl: dom,
+              timestamp: new Date(),
+            });
+
+            this.toast.show(
+              `🎉 Payment Confirmed! New placement: ₹${result.newCurrentClaimAmount} (Paid: ₹${result.amountCharged})`,
+              'success',
+            );
+          } else {
+            const errMsg = result.errorMessage ?? 'Placement was rejected by server.';
+            this.handlePaymentFailure(errMsg, payable, targetVal, title, dom, verifiedPaymentId, sessionId);
+          }
+        },
+        error: (err) => {
+          this.submitting.set(false);
+          const msg = err.error?.errorMessage || err.message || 'Something went wrong processing your placement.';
+          this.handlePaymentFailure(msg, payable, targetVal, title, dom, verifiedPaymentId, sessionId);
+        },
+      });
+  }
+
+  private handlePaymentFailure(
+    errMsg: string,
+    amountPaid: number,
+    target: number,
+    listingName: string,
+    listingUrl: string,
+    paymentId?: string,
+    orderId?: string,
+  ): void {
+    this.submitting.set(false);
+    this.transactionStatus.set('failed');
+    this.transactionDetails.set({
+      success: false,
+      paymentId,
+      orderId,
+      amountPaid,
+      targetClaimAmount: target,
+      categoryName: this.selectedCategoryName(),
+      listingName,
+      listingUrl,
+      errorMessage: errMsg,
+      timestamp: new Date(),
+    });
+    this.toast.show(errMsg, 'error');
   }
 }

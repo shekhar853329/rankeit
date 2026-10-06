@@ -1,7 +1,7 @@
 namespace Ranker.Domain.Entities;
 
 /// <summary>
-/// Audit trail of all interactions with payment gateways (e.g. Razorpay/Stripe), including
+/// Audit trail of all interactions with payment gateways (e.g. DodoPayments), including
 /// orders created, signature verification requests, payloads sent/received, and results.
 /// </summary>
 public class PaymentAuditLog
@@ -11,7 +11,7 @@ public class PaymentAuditLog
     /// <summary>Action or event type, e.g. "CreateOrder", "VerifyPayment", "PlaceClaim", "Webhook".</summary>
     public required string Action { get; set; }
 
-    public string? Gateway { get; set; } = "Razorpay";
+    public string? Gateway { get; set; } = "DodoPayments";
 
     public string? OrderId { get; set; }
 

@@ -210,7 +210,7 @@ public class PlaceClaimCommandHandler(
             dbContext.PaymentAuditLogs.Add(new PaymentAuditLog
             {
                 Action = "PlaceClaim",
-                Gateway = "Razorpay",
+                Gateway = "DodoPayments",
                 PaymentReference = command.PaymentReference,
                 Amount = decision.ExpectedChargeAmount,
                 AmountInPaise = (long)(decision.ExpectedChargeAmount * 100m),

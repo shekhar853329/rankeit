@@ -20,7 +20,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.OpenApi" Version="2.12.2" />
-    <PackageReference Include="Razorpay" Version="3.3.2" />
   </ItemGroup>
 
   <ItemGroup>

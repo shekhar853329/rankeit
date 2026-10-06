@@ -17,6 +17,6 @@ public class Claim
 
     public DateTime CreatedAt { get; set; }
 
-    /// <summary>Payment gateway transaction ID (Razorpay/Stripe).</summary>
+    /// <summary>Payment gateway transaction ID (DodoPayments).</summary>
     public required string PaymentReference { get; set; }
 }

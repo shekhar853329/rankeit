@@ -65,15 +65,18 @@ builder.Services.AddHttpClient("UrlMetadataDirect", client =>
 
 builder.Services.AddScoped<IUrlMetadataService, UrlMetadataService>();
 
-// ── Razorpay ──────────────────────────────────────────────────────────────
-builder.Services.Configure<RazorpayOptions>(
-    builder.Configuration.GetSection(RazorpayOptions.SectionName));
+// ── Dodo Payments ──────────────────────────────────────────────────────────
+builder.Services.Configure<DodoPaymentsOptions>(
+    builder.Configuration.GetSection(DodoPaymentsOptions.SectionName));
 
-builder.Services.AddSingleton<Razorpay.Api.RazorpayClient>(sp =>
+builder.Services.AddHttpClient("DodoPayments", (sp, client) =>
 {
-    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorpayOptions>>().Value;
-    return new Razorpay.Api.RazorpayClient(opts.KeyId, opts.KeySecret);
+    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<DodoPaymentsOptions>>().Value;
+    client.BaseAddress = new Uri(opts.BaseUrl.TrimEnd('/') + "/");
+    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", opts.ApiKey);
 });
+
+builder.Services.AddScoped<IDodoPaymentsService, DodoPaymentsService>();
 
 // Configure forwarded headers for running behind reverse proxy (Nginx on Ubuntu)
 builder.Services.Configure<ForwardedHeadersOptions>(options =>

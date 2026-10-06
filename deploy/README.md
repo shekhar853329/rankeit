@@ -112,9 +112,8 @@ In your GitHub repository:
 | `SERVER_USER` | `ubuntu` (or your SSH username) | Ubuntu user with SSH and sudo access |
 | `SERVER_SSH_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` | Private key content generated in Step 2 |
 | `SERVER_PORT` | `22` (optional, defaults to 22) | SSH port |
-| `PROD_CONNECTION_STRING` | `Server=sql.example.com;Database=RankerDb;User Id=sa;Password=Secret!;TrustServerCertificate=True;` | Your external SQL Server connection string |
-| `RAZORPAY_KEY_ID` | `rzp_live_...` | Razorpay Key ID |
-| `RAZORPAY_KEY_SECRET` | `your_razorpay_secret` | Razorpay Key Secret |
+| `DODO_PAYMENTS_API_KEY` | `your_dodo_api_key` | Dodo Payments API Key |
+| `DODO_PAYMENTS_PRODUCT_ID` | `pdt_...` | Dodo Payments Product ID |
 
 ---
 

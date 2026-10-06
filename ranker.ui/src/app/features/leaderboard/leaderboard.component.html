@@ -106,7 +106,7 @@
 
           <div class="command-bar__action">
             <!-- <button type="submit" class="claim-submit-btn" [disabled]="!canClaimRank()"></button> -->
-            <button type="button" class="claim-submit-btn" [disabled]="true"
+            <button type="button" class="claim-submit-btn" [disabled]="!canClaimRank()"
               title="Payment gateway has not been integrated yet, the application is under review, will soon attach the gateway">
               <span>Claim Rank</span>
               <span class="material-symbols-outlined icon-sm">bolt</span>

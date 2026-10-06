@@ -1,25 +1,42 @@
 namespace Ranker.Dtos;
 
-// ── Create Order ──────────────────────────────────────────────────────────
+// ── Dodo Payments DTOs ────────────────────────────────────────────────────────
 
-/// <summary>Amount is in paise (INR × 100). Minimum 100 paise (₹1).</summary>
-public sealed record CreateRazorpayOrderRequestDto(
-    long AmountInPaise,
+public sealed record CreateDodoSessionRequestDto(
+    int AmountInMinorUnits,
     string Currency = "INR",
-    string? Receipt = null);
+    string? CustomerEmail = null,
+    string? CustomerName = null,
+    string? ReturnUrl = null,
+    string? ListingName = null,
+    string? ListingId = null,
+    string? CategoryId = null,
+    string? BillingStreet = null,
+    string? BillingCity = null,
+    string? BillingState = null,
+    string? BillingCountry = null,
+    string? BillingZipcode = null,
+    Dictionary<string, string>? Metadata = null);
 
-public sealed record CreateRazorpayOrderResponseDto(
-    string OrderId,
-    long Amount,
-    string Currency);
+public sealed record CreateDodoSessionResponseDto(
+    string SessionId,
+    string CheckoutUrl);
 
-// ── Verify Payment ────────────────────────────────────────────────────────
+public sealed record DodoSessionStatusResponseDto(
+    string SessionId,
+    string? PaymentId,
+    string? PaymentStatus,
+    bool IsPaid);
 
-public sealed record VerifyRazorpayPaymentRequestDto(
-    string RazorpayOrderId,
-    string RazorpayPaymentId,
-    string RazorpaySignature);
+public sealed record VerifyDodoPaymentRequestDto(
+    string? PaymentId,
+    string? SessionId = null);
 
-public sealed record VerifyRazorpayPaymentResponseDto(
+public sealed record VerifyDodoPaymentResponseDto(
     bool Verified,
-    string? Error = null);
+    string? PaymentId = null,
+    string? Status = null,
+    decimal? Amount = null,
+    string? Error = null,
+    int? ListingId = null,
+    decimal? NewClaimAmount = null);

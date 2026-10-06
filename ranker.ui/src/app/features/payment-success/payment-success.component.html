@@ -1,0 +1,103 @@
+<div class="success-page">
+  <div class="success-card">
+
+    @if (loading()) {
+    <div class="success-card__loading">
+      <div class="spinner"></div>
+      <h2>Verifying Your Payment...</h2>
+      <p class="text-muted">Confirming your transaction with Dodo Payments and updating the leaderboard.</p>
+    </div>
+    } @else if (error()) {
+    <div class="success-card__error">
+      <div class="icon-circle icon-circle--error">
+        <span class="material-symbols-outlined icon-xl">warning</span>
+      </div>
+      <h2>Payment Verification Notice</h2>
+      <p class="error-desc">{{ error() }}</p>
+      @if (paymentId()) {
+      <div class="ref-box" (click)="copyPaymentId()">
+        <span class="ref-label">Payment Reference:</span>
+        <span class="ref-val font-mono">{{ paymentId() }}</span>
+        <span class="material-symbols-outlined icon-xs text-muted">{{ copied() ? 'done' : 'content_copy' }}</span>
+      </div>
+      }
+      <div class="actions">
+        <a routerLink="/" class="btn btn-primary">Go to Home</a>
+      </div>
+    </div>
+    } @else {
+    <div class="success-card__content">
+      <div class="badge-row">
+        <span class="status-pill">🎉 Payment Confirmed</span>
+      </div>
+
+      <div class="hero-block">
+        <div class="icon-circle icon-circle--success">
+          <span class="material-symbols-outlined icon-xl">check_circle</span>
+        </div>
+        <h1 class="hero-title">Payment & Placement Successful!</h1>
+        <p class="hero-desc">
+          Your payment has been verified and your sponsored placement is now live on RankUp!
+        </p>
+        @if (verification()?.amount; as amt) {
+        <div class="hero-amount font-numeric">
+          ₹{{ amt | number: '1.2-2' }}
+        </div>
+        <span class="hero-amount-sub">Processed via Dodo Payments</span>
+        }
+      </div>
+
+      <div class="details-card">
+        <div class="details-card__header">
+          <span class="material-symbols-outlined icon-sm">receipt_long</span>
+          <span>TRANSACTION DETAILS</span>
+        </div>
+
+        @if (verification()?.newClaimAmount; as totalPlacement) {
+        <div class="details-card__row">
+          <span class="details-card__label">Total Leaderboard Score</span>
+          <span class="details-card__value font-numeric text-primary">₹{{ totalPlacement | number: '1.2-2' }}</span>
+        </div>
+        }
+
+        @if (paymentId(); as pid) {
+        <div class="details-card__row">
+          <span class="details-card__label">Payment Reference</span>
+          <div class="ref-pill" (click)="copyPaymentId()" title="Click to copy">
+            <span class="font-mono text-xs">{{ pid }}</span>
+            <span class="material-symbols-outlined icon-xs text-muted">{{ copied() ? 'done' : 'content_copy' }}</span>
+          </div>
+        </div>
+        }
+
+        @if (email(); as userEmail) {
+        <div class="details-card__row">
+          <span class="details-card__label">Contact Email</span>
+          <span class="details-card__value text-muted">{{ userEmail }}</span>
+        </div>
+        }
+
+        <div class="details-card__row">
+          <span class="details-card__label">Date & Time</span>
+          <span class="details-card__value text-muted">{{ now | date: 'medium' }}</span>
+        </div>
+
+        <div class="details-card__row">
+          <span class="details-card__label">Status</span>
+          <span class="status-chip status-chip--success">
+            <span class="material-symbols-outlined icon-xs">verified</span>
+            Settled & Secured
+          </span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a routerLink="/" class="btn btn-primary btn--block">
+          <span>View on Leaderboard 🚀</span>
+        </a>
+      </div>
+    </div>
+    }
+
+  </div>
+</div>

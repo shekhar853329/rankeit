@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+
 import { ToastService } from '../../core/services/toast.service';
 import { SeoService } from '../../core/services/seo.service';
 import { LEGAL_CONFIG } from '../../core/constants/legal.constants';
@@ -7,7 +7,7 @@ import { LEGAL_CONFIG } from '../../core/constants/legal.constants';
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

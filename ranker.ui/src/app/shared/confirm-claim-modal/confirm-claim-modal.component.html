@@ -29,7 +29,7 @@
       <div class="txn-hero__amount font-numeric">
         ₹{{ (details.amountPaid ?? 0) | number: '1.2-2' }}
       </div>
-      <span class="txn-hero__amount-sub">Amount Paid via Payment Gateway</span>
+      <span class="txn-hero__amount-sub">Amount Paid via Dodo Payments</span>
     </div>
 
     <div class="txn-card">
@@ -50,8 +50,7 @@
 
       <div class="txn-card__row">
         <span class="txn-card__label">Current Total Placement</span>
-        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newClaimAmount ?? 0) | number: '1.2-2'
-          }}</span>
+        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newClaimAmount ?? 0) | number: '1.2-2' }}</span>
       </div>
 
       <div class="txn-card__row">
@@ -74,7 +73,7 @@
 
       @if (details.orderId) {
       <div class="txn-card__row">
-        <span class="txn-card__label">Order ID</span>
+        <span class="txn-card__label">Session / Order ID</span>
         <span class="font-mono text-xs text-muted">{{ details.orderId }}</span>
       </div>
       }
@@ -149,7 +148,7 @@
 
       @if (details.orderId) {
       <div class="txn-card__row">
-        <span class="txn-card__label">Order ID</span>
+        <span class="txn-card__label">Session ID</span>
         <span class="font-mono text-xs text-muted">{{ details.orderId }}</span>
       </div>
       }
@@ -174,7 +173,56 @@
     }
 
     <!-- ══════════════════════════════════════════════════════════
-         DEFAULT / IDLE STATE: Confirmation Form
+         STEP 2: DODO PAYMENTS SCREEN
+         ══════════════════════════════════════════════════════════ -->
+    } @else if (currentStep() === 2) {
+
+    <div class="modal-panel__header">
+      <div class="step-header">
+        <button type="button" class="btn-step-back" (click)="goToStep1()" title="Back to edit placement details">
+          <span class="material-symbols-outlined icon-sm">arrow_back</span>
+          <span>Edit Details</span>
+        </button>
+        <div class="step-badge-row">
+          <span class="status-pill">Step 2 of 2: Checkout</span>
+        </div>
+      </div>
+      <button type="button" class="modal-panel__close" (click)="close()" aria-label="Close">✕</button>
+    </div>
+
+    <!-- Payment Summary Bar -->
+    <div class="checkout-summary-bar">
+      <div class="checkout-summary-bar__info">
+        <span class="checkout-summary-bar__title">{{ listingName() || domainUrl() }}</span>
+        <span class="checkout-summary-bar__category">{{ selectedCategoryName() }}</span>
+      </div>
+      <div class="checkout-summary-bar__amount">
+        <span class="checkout-summary-bar__label">Total Due</span>
+        <span class="checkout-summary-bar__value font-numeric text-primary">
+          ₹{{ payableAmount() | number: '1.2-2' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Dodo MoR Trust Badge -->
+    <div class="security-badge-row">
+      <span class="material-symbols-outlined icon-xs text-success">lock</span>
+      <span>Secured by <strong>Dodo Payments</strong> (MoR) • 256-bit SSL Encrypted</span>
+    </div>
+
+    <!-- Terminal Mounting Area -->
+    <div class="terminal-wrapper">
+      @if (terminalLoading()) {
+      <div class="terminal-loader">
+        <div class="loader-spinner"></div>
+        <p class="loader-text">Initializing Dodo Payments terminal...</p>
+      </div>
+      }
+      <div id="dodo-payment-terminal" class="dodo-terminal-container"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STEP 1 (IDLE): CONFIRMATION & PAYMENT BREAKUP
          ══════════════════════════════════════════════════════════ -->
     } @else {
 
@@ -294,7 +342,7 @@
       <div class="calc-ledger__row calc-ledger__row--total">
         <div class="calc-ledger__row-left">
           <span class="calc-ledger__total-title">Net Amount Due Now</span>
-          <span class="calc-ledger__total-desc">Charged via Payment Gateway today</span>
+          <span class="calc-ledger__total-desc">Charged via Dodo Payments today</span>
         </div>
         <span class="calc-ledger__total-val font-numeric text-primary">
           ₹{{ payableAmount() | number: '1.2-2' }}
@@ -313,8 +361,7 @@
     @if (isNotHigherThanExisting()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>
-      <span>Target placement must be higher than your current placement of ₹{{ existingClaimAmount() | number: '1.2-2'
-        }}.</span>
+      <span>Target placement must be higher than your current placement of ₹{{ existingClaimAmount() | number: '1.2-2' }}.</span>
     </div>
     }
 
@@ -328,8 +375,7 @@
     <!-- ── Terms checkbox ──────────────────────────────────────── -->
     <label class="modal-panel__terms">
       <input type="checkbox" [ngModel]="agreed()" (ngModelChange)="agreed.set($event)" [disabled]="submitting()" />
-      <span>I agree to the <a href="/terms" target="_blank" rel="noopener" class="modal-panel__link">Terms of
-          Service</a></span>
+      <span>I agree to the <a href="/terms" target="_blank" rel="noopener" class="modal-panel__link">Terms of Service</a></span>
     </label>
 
     <!-- ── Action Buttons ──────────────────────────────────────── -->
@@ -340,15 +386,13 @@
       <button type="button" class="btn btn-primary" [disabled]="!isFormValid() || submitting()"
         (click)="proceedToCheckout()">
         @if (submitting()) {
-        @if (quoteValidating()) {
-        <span>Validating...</span>
-        } @else if (transactionStatus() === 'processing') {
-        <span>Awaiting Payment Gateway...</span>
+          @if (quoteValidating()) {
+            <span>Validating...</span>
+          } @else {
+            <span>Preparing Checkout...</span>
+          }
         } @else {
-        <span>Opening Checkout...</span>
-        }
-        } @else {
-        <span>💳 Pay ₹{{ payableAmount() | number: '1.2-2' }}</span>
+          <span>💳 Pay ₹{{ payableAmount() | number: '1.2-2' }}</span>
         }
       </button>
     </div>

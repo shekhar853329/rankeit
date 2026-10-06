@@ -77,4 +77,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/privacy/privacy.component').then((m) => m.PrivacyComponent),
   },
+  {
+    path: 'payment-success',
+    loadComponent: () =>
+      import('./features/payment-success/payment-success.component').then(
+        (m) => m.PaymentSuccessComponent
+      ),
+  },
 ];
