@@ -429,7 +429,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   });
 
   readonly effectiveClaimAmount = computed<number | null>(() =>
-    this.claimAmount() ?? this.claimPrice() ?? this.globalDefaultPrice()
+    this.claimAmount() ?? this.globalDefaultPrice()
   );
 
   /** Minimum price to show in empty-state CTAs — uses the selected category's minStartingClaim,
@@ -757,29 +757,17 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   selectClaimCategory(slug: string | null): void {
+    // Preserve current effective claim amount so changing category never alters it
+    if (this.claimAmount() === null) {
+      this.claimAmount.set(this.effectiveClaimAmount() ?? this.globalDefaultPrice() ?? 10);
+    }
+
     this.claimSlug.set(slug);
     this.targetRank.set(1);
 
     if (!slug) {
       this.claimCategoryData.set(null);
-      this.claimAmount.set(null);
       return;
-    }
-
-    const cat =
-      this.allCategories().find((c) => c.slug === slug) ??
-      this.tabs().find((c) => c.slug === slug);
-
-    // If we have cached category data for this slug, use its Rank #1 price immediately
-    const cached = this.claimCategoryData();
-    if (cached && cached.categorySlug === slug) {
-      const minInc = cached.minClaimIncrement || 1;
-      const currentTop = cached.leaderboard.items[0]?.currentClaimAmount ?? null;
-      const rank1Amount = currentTop !== null ? currentTop + minInc : cached.minStartingClaim;
-      this.claimAmount.set(rank1Amount);
-    } else if (cat) {
-      // Immediately show category minStartingClaim while fetching alltime champion
-      this.claimAmount.set(cat.minStartingClaim);
     }
 
     // Always fetch alltime to get true reigning Rank 1 champion regardless of today filter
@@ -791,18 +779,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         const currentTop = data.leaderboard.items[0]?.currentClaimAmount ?? null;
         const rank1Amount = currentTop !== null ? currentTop + minInc : data.minStartingClaim;
 
-        // Default the claim amount to what is required to get Rank 1
-        this.claimAmount.set(rank1Amount);
-
         this.showToastNotification(
           `Selected ${data.categoryName}. Amount to claim Rank #1 is ${this.currencySymbol()}${rank1Amount}.`
         );
       },
-      error: () => {
-        if (cat) {
-          this.claimAmount.set(cat.minStartingClaim);
-        }
-      },
+      error: () => {},
     });
   }
 
@@ -865,14 +846,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   incrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
-    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
+    const current = this.effectiveClaimAmount() ?? (this.globalDefaultPrice() ?? 1);
     this.claimAmount.set(current + Math.max(step, 1));
   }
 
   decrementClaimAmount(): void {
     const step = this.incrementForCategory(this.claimSlug() ?? this.claimPositionSlug());
     const floor = 1;
-    const current = this.effectiveClaimAmount() ?? (this.claimPrice() ?? 1);
+    const current = this.effectiveClaimAmount() ?? (this.globalDefaultPrice() ?? 1);
     const inc = Math.max(step, 1);
     const nextVal = current > inc ? current - inc : (current > floor ? floor : floor);
     this.claimAmount.set(Math.max(nextVal, floor));
@@ -891,7 +872,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.isAmountFieldFocused.set(false);
     const num = parseFloat(val);
     if (isNaN(num) || num < 1) {
-      const fallback = this.claimPrice() ?? this.globalDefaultPrice() ?? 1;
+      const fallback = this.effectiveClaimAmount() ?? this.globalDefaultPrice() ?? 1;
       this.claimAmount.set(fallback);
     } else {
       this.claimAmount.set(Math.max(1, Math.round(num * 100) / 100));

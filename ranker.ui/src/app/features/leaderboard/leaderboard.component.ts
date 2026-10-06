@@ -206,7 +206,6 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           const slug = params.get('categorySlug') ?? '';
           this.categorySlug.set(slug);
           this.loading.set(true);
-          this.claimAmount.set(null);
           this.targetRank.set(1);
           void this.joinGroup(slug);
           this.loadCategoryStats(slug);
