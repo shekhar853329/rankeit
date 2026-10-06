@@ -27,6 +27,11 @@ export interface DodoSessionStatusResponse {
   isPaid: boolean;
 }
 
+export interface VerifyPaymentRequest {
+  paymentId?: string;
+  sessionId?: string;
+}
+
 export interface VerifyPaymentResponse {
   verified: boolean;
   paymentId?: string;
@@ -36,3 +41,4 @@ export interface VerifyPaymentResponse {
   listingId?: number;
   newClaimAmount?: number;
 }
+

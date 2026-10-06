@@ -46,6 +46,14 @@ export class DodoPaymentsService {
     );
   }
 
+  verifyPaymentPost(request: { paymentId?: string; sessionId?: string }): Observable<VerifyPaymentResponse> {
+    return this.http.post<VerifyPaymentResponse>(
+      `${API_BASE_URL}/api/payments/dodo/verify`,
+      request,
+    );
+  }
+
+
   // ── Terminal Management ───────────────────────────────────────────────────
 
   /**

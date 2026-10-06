@@ -172,58 +172,6 @@
     </div>
     }
 
-    <!-- ══════════════════════════════════════════════════════════
-         STEP 2: DODO PAYMENTS SCREEN
-         ══════════════════════════════════════════════════════════ -->
-    } @else if (currentStep() === 2) {
-
-    <div class="modal-panel__header">
-      <div class="step-header">
-        <button type="button" class="btn-step-back" (click)="goToStep1()" title="Back to edit placement details">
-          <span class="material-symbols-outlined icon-sm">arrow_back</span>
-          <span>Edit Details</span>
-        </button>
-        <div class="step-badge-row">
-          <span class="status-pill">Step 2 of 2: Checkout</span>
-        </div>
-      </div>
-      <button type="button" class="modal-panel__close" (click)="close()" aria-label="Close">✕</button>
-    </div>
-
-    <!-- Payment Summary Bar -->
-    <div class="checkout-summary-bar">
-      <div class="checkout-summary-bar__info">
-        <span class="checkout-summary-bar__title">{{ listingName() || domainUrl() }}</span>
-        <span class="checkout-summary-bar__category">{{ selectedCategoryName() }}</span>
-      </div>
-      <div class="checkout-summary-bar__amount">
-        <span class="checkout-summary-bar__label">Total Due</span>
-        <span class="checkout-summary-bar__value font-numeric text-primary">
-          ₹{{ payableAmount() | number: '1.2-2' }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Dodo MoR Trust Badge -->
-    <div class="security-badge-row">
-      <span class="material-symbols-outlined icon-xs text-success">lock</span>
-      <span>Secured by <strong>Dodo Payments</strong> (MoR) • 256-bit SSL Encrypted</span>
-    </div>
-
-    <!-- Terminal Mounting Area -->
-    <div class="terminal-wrapper">
-      @if (terminalLoading()) {
-      <div class="terminal-loader">
-        <div class="loader-spinner"></div>
-        <p class="loader-text">Initializing Dodo Payments terminal...</p>
-      </div>
-      }
-      <div id="dodo-payment-terminal" class="dodo-terminal-container"></div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════
-         STEP 1 (IDLE): CONFIRMATION & PAYMENT BREAKUP
-         ══════════════════════════════════════════════════════════ -->
     } @else {
 
     <!-- ── Header ────────────────────────────────────────────── -->
@@ -378,6 +326,12 @@
       <span>I agree to the <a href="/terms" target="_blank" rel="noopener" class="modal-panel__link">Terms of Service</a></span>
     </label>
 
+    <!-- ── Dodo MoR Trust Badge ───────────────────────────────── -->
+    <div class="security-badge-row">
+      <span class="material-symbols-outlined icon-xs text-success">lock</span>
+      <span>Secured by <strong>Dodo Payments</strong> (MoR) • 256-bit SSL Encrypted</span>
+    </div>
+
     <!-- ── Action Buttons ──────────────────────────────────────── -->
     <div class="modal-panel__actions">
       <button type="button" class="btn btn-ghost" (click)="close()" [disabled]="submitting()">
@@ -387,12 +341,12 @@
         (click)="proceedToCheckout()">
         @if (submitting()) {
           @if (quoteValidating()) {
-            <span>Validating...</span>
+            <span>Validating Quote...</span>
           } @else {
-            <span>Preparing Checkout...</span>
+            <span>Redirecting to Dodo Payments...</span>
           }
         } @else {
-          <span>💳 Pay ₹{{ payableAmount() | number: '1.2-2' }}</span>
+          <span>💳 Checkout with Dodo Payments • ₹{{ payableAmount() | number: '1.2-2' }}</span>
         }
       </button>
     </div>

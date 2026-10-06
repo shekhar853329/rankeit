@@ -506,57 +506,13 @@ export class ConfirmClaimModalComponent implements OnInit {
 
       this.submitting.set(false);
 
-      // Step 3: Transition to Step 2 (Payments Screen)
-      this.currentStep.set(2);
-      this.terminalLoading.set(true);
-
-      // Mount Dodo Payments embedded terminal into #dodo-payment-terminal
-      setTimeout(async () => {
-        try {
-          await this.dodoPayments.openTerminal({
-            checkoutUrl: session.checkoutUrl,
-            sessionId: session.sessionId,
-            elementId: 'dodo-payment-terminal',
-            displayType: 'inline',
-            callbacks: {
-              onOpened: () => {
-                this.terminalLoading.set(false);
-              },
-              onFormReady: () => {
-                this.terminalLoading.set(false);
-              },
-              onPayClicked: () => {
-                this.transactionStatus.set('processing');
-              },
-              onSuccess: async (paymentId) => {
-                await this.handleDodoPaymentSuccess(
-                  session.sessionId,
-                  paymentId,
-                  chargeAmount,
-                  target,
-                  resolvedTitle,
-                  domain,
-                  resolvedSiteName,
-                  resolvedLogoUrl,
-                  resolvedDescription,
-                  resolvedFaviconUrl,
-                );
-              },
-              onError: (errMsg) => {
-                this.terminalLoading.set(false);
-                this.toast.show(errMsg, 'error');
-              },
-              onClosed: () => {
-                // If closed
-              },
-            },
-          });
-        } catch (err) {
-          this.terminalLoading.set(false);
-          console.error('Failed to load Dodo terminal:', err);
-          this.toast.show('Failed to initialize payment gateway. Please retry.', 'error');
-        }
-      }, 50);
+      // Step 3: Redirect directly to the official Dodo Payments checkout detail page
+      if (typeof window !== 'undefined' && session.checkoutUrl) {
+        this.modal.closeClaimModal();
+        window.location.href = session.checkoutUrl;
+      } else {
+        throw new Error('Checkout URL was not returned by Dodo Payments.');
+      }
     } catch (err: unknown) {
       this.submitting.set(false);
       this.quoteValidating.set(false);
@@ -565,6 +521,7 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.toast.show(message, 'error');
     }
   }
+
 
   private async handleDodoPaymentSuccess(
     sessionId: string,

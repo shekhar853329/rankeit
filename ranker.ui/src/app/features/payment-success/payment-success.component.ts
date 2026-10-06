@@ -28,41 +28,32 @@ export class PaymentSuccessComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
-      const pid = params.get('payment_id');
-      const st = params.get('status');
-      const em = params.get('email');
-      const sid = params.get('session_id') || params.get('sessionId');
+      const pid = params.get('payment_id') || undefined;
+      const st = params.get('status') || undefined;
+      const em = params.get('email') || undefined;
+      const sid = params.get('session_id') || params.get('sessionId') || undefined;
 
-      this.paymentId.set(pid);
-      this.status.set(st);
-      this.email.set(em);
+      if (pid) this.paymentId.set(pid);
+      if (st) this.status.set(st);
+      if (em) this.email.set(em);
 
-      if (pid) {
-        this.verify(pid);
-      } else if (sid) {
-        this.dodoPayments.getSessionStatus(sid).subscribe({
-          next: (sess) => {
-            if (sess.paymentId) {
-              this.paymentId.set(sess.paymentId);
-              this.verify(sess.paymentId);
-            } else {
-              this.loading.set(false);
-            }
-          },
-          error: () => this.loading.set(false),
-        });
+      if (pid || sid) {
+        this.verify(pid, sid);
       } else {
         this.loading.set(false);
       }
     });
   }
 
-  private verify(pid: string): void {
+  private verify(pid?: string, sid?: string): void {
     this.loading.set(true);
-    this.dodoPayments.verifyPayment(pid).subscribe({
+    this.dodoPayments.verifyPaymentPost({ paymentId: pid, sessionId: sid }).subscribe({
       next: (res) => {
         this.loading.set(false);
         this.verification.set(res);
+        if (res.paymentId) {
+          this.paymentId.set(res.paymentId);
+        }
         if (!res.verified && res.error) {
           this.error.set(res.error);
         }
@@ -74,6 +65,7 @@ export class PaymentSuccessComponent implements OnInit {
       },
     });
   }
+
 
   copyPaymentId(): void {
     const id = this.paymentId();
