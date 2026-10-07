@@ -1,6 +1,6 @@
 <footer class="app-footer">
   <div class="footer-inner">
-    <!-- Top row: Brand & Operations status -->
+    <!-- Top row: Brand & Navigation -->
     <div class="footer-main">
       <div class="footer-brand-wrap">
         <div class="footer-brand">
@@ -16,37 +16,37 @@
           </span>
         </div>
         <p class="brand-desc">
-          © {{ currentYear }} RankUp • {{ legal.operatedByText }} • Est. {{ legal.estDate }}
+          Transparent sponsored ranking placements reset daily at 00:00 UTC.
         </p>
       </div>
 
-      <div class="footer-status-links">
-        <button type="button" class="operational-pill" [class.is-operational]="healthService.status() === 'operational'"
-          [class.is-degraded]="healthService.status() === 'degraded'"
-          [class.is-offline]="healthService.status() === 'offline'"
-          [class.is-checking]="healthService.status() === 'checking' || healthService.isChecking()"
-          [title]="healthService.statusTooltip()" [attr.aria-label]="healthService.statusTooltip()"
-          (click)="onCheckHealth()">
-          <span class="op-dot"></span>
-          <span class="op-text">{{ healthService.statusLabel() }}</span>
-        </button>
-
-        <nav class="footer-nav">
-          <a routerLink="/contact" class="footer-link">Contact</a>
-          <a routerLink="/terms" [fragment]="'payments'" class="footer-link">Pricing &amp; Services</a>
-          <a routerLink="/rules" class="footer-link">Rules &amp; Governance</a>
-          <a routerLink="/terms" class="footer-link">Terms of Service</a>
-          <a routerLink="/privacy" class="footer-link">Privacy Policy</a>
-          <a routerLink="/terms" [fragment]="'no-refunds'" class="footer-link">Return &amp; Refund Policy</a>
-        </nav>
-      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a routerLink="/contact" class="footer-link">Contact</a>
+        <a routerLink="/terms" [fragment]="'payments'" class="footer-link">Pricing &amp; Services</a>
+        <a routerLink="/rules" class="footer-link">Rules &amp; Governance</a>
+        <a routerLink="/terms" class="footer-link">Terms of Service</a>
+        <a routerLink="/privacy" class="footer-link">Privacy Policy</a>
+        <a routerLink="/terms" [fragment]="'no-refunds'" class="footer-link">Return &amp; Refund Policy</a>
+      </nav>
     </div>
 
-    <!-- Bottom sub-bar -->
+    <!-- Bottom sub-bar: Legal copyright & Operational status -->
     <div class="footer-sub-bar">
-      <span class="sub-disclaimer">
-        Transparent sponsored ranking placements reset daily at 00:00 UTC.
-      </span>
+      <p class="sub-legal">
+        © {{ currentYear }} RankUp • {{ legal.operatedByText }} • Est. {{ legal.estDate }}
+      </p>
+
+      <button type="button" class="operational-pill"
+        [class.is-operational]="healthService.status() === 'operational'"
+        [class.is-degraded]="healthService.status() === 'degraded'"
+        [class.is-offline]="healthService.status() === 'offline'"
+        [class.is-checking]="healthService.status() === 'checking' || healthService.isChecking()"
+        [title]="healthService.statusTooltip()"
+        [attr.aria-label]="healthService.statusTooltip()"
+        (click)="onCheckHealth()">
+        <span class="op-dot"></span>
+        <span class="op-text">{{ healthService.statusLabel() }}</span>
+      </button>
     </div>
   </div>
 </footer>
