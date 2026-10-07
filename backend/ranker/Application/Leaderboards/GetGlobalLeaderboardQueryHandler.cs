@@ -25,33 +25,33 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
 
     private async Task<IReadOnlyList<GlobalLeaderboardEntryDto>> ComputeAsync(int topN, string timeMode, string? searchQuery, CancellationToken ct)
     {
-        var query = dbContext.Listings.AsNoTracking();
-
         if (timeMode == "today")
         {
             var todayUtc = DateTime.UtcNow.Date;
-            query = query.Where(l => l.LastClaimAt >= todayUtc);
-        }
+            var todayQuery = dbContext.Listings
+                .AsNoTracking()
+                .Where(l => l.LastClaimAt >= todayUtc);
 
-        if (!string.IsNullOrEmpty(searchQuery))
-        {
-            query = query.Where(l =>
-                EF.Functions.Like(l.Name, $"%{searchQuery}%") ||
-                (l.SiteName != null && EF.Functions.Like(l.SiteName, $"%{searchQuery}%")) ||
-                (l.Description != null && EF.Functions.Like(l.Description, $"%{searchQuery}%")) ||
-                dbContext.Categories.Any(c => c.Id == l.CategoryId && EF.Functions.Like(c.Name, $"%{searchQuery}%")));
-        }
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                todayQuery = todayQuery.Where(l =>
+                    EF.Functions.Like(l.Name, $"%{searchQuery}%") ||
+                    (l.SiteName != null && EF.Functions.Like(l.SiteName, $"%{searchQuery}%")) ||
+                    (l.Description != null && EF.Functions.Like(l.Description, $"%{searchQuery}%")) ||
+                    dbContext.Categories.Any(c => c.Id == l.CategoryId && EF.Functions.Like(c.Name, $"%{searchQuery}%")));
+            }
 
-        var results = await query
-            .OrderByDescending(l => l.CurrentClaimAmount)
-            .ThenBy(l => l.FirstClaimAt)
-            .Take(topN)
-            .Select(l => new
+            var projected = todayQuery.Select(l => new
             {
                 l.Id,
                 l.Name,
                 l.Url,
-                l.CurrentClaimAmount,
+                TodayPaidAmount = l.Claims
+                    .Where(c => c.CreatedAt >= todayUtc)
+                    .Sum(c => (decimal?)(c.PaymentAmount > 0m ? c.PaymentAmount : c.Amount)) ?? 0m,
+                TodayFirstClaimAt = l.Claims
+                    .Where(c => c.CreatedAt >= todayUtc)
+                    .Min(c => (DateTime?)c.CreatedAt) ?? l.FirstClaimAt,
                 l.ClickCount,
                 ClaimCount = l.Claims.Count(),
                 l.CategoryId,
@@ -63,27 +63,90 @@ public class GetGlobalLeaderboardQueryHandler(RankerDbContext dbContext, GlobalL
                     .Where(c => c.Id == l.CategoryId)
                     .Select(c => new { c.Name, c.Slug, c.Icon })
                     .FirstOrDefault()
-            })
-            .ToListAsync(ct);
+            });
 
-        return results
-            .Select((x, i) => new GlobalLeaderboardEntryDto(
-                i + 1,
-                x.CategoryId,
-                x.Category != null ? x.Category.Name : string.Empty,
-                x.Category != null ? x.Category.Slug : string.Empty,
-                x.Category?.Icon,
-                x.Id,
-                x.Name,
-                x.Url,
-                x.CurrentClaimAmount,
-                x.CurrentClaimAmount,
-                x.ClickCount,
-                x.ClaimCount,
-                x.SiteName,
-                x.LogoUrl,
-                x.Description,
-                x.FaviconUrl))
-            .ToList();
+            var results = await projected
+                .OrderByDescending(x => x.TodayPaidAmount)
+                .ThenBy(x => x.TodayFirstClaimAt)
+                .Take(topN)
+                .ToListAsync(ct);
+
+            return results
+                .Select((x, i) => new GlobalLeaderboardEntryDto(
+                    i + 1,
+                    x.CategoryId,
+                    x.Category != null ? x.Category.Name : string.Empty,
+                    x.Category != null ? x.Category.Slug : string.Empty,
+                    x.Category?.Icon,
+                    x.Id,
+                    x.Name,
+                    x.Url,
+                    x.TodayPaidAmount,
+                    x.TodayPaidAmount,
+                    x.ClickCount,
+                    x.ClaimCount,
+                    x.SiteName,
+                    x.LogoUrl,
+                    x.Description,
+                    x.FaviconUrl))
+                .ToList();
+        }
+        else
+        {
+            var query = dbContext.Listings.AsNoTracking();
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                query = query.Where(l =>
+                    EF.Functions.Like(l.Name, $"%{searchQuery}%") ||
+                    (l.SiteName != null && EF.Functions.Like(l.SiteName, $"%{searchQuery}%")) ||
+                    (l.Description != null && EF.Functions.Like(l.Description, $"%{searchQuery}%")) ||
+                    dbContext.Categories.Any(c => c.Id == l.CategoryId && EF.Functions.Like(c.Name, $"%{searchQuery}%")));
+            }
+
+            var results = await query
+                .OrderByDescending(l => l.CurrentClaimAmount)
+                .ThenBy(l => l.FirstClaimAt)
+                .Take(topN)
+                .Select(l => new
+                {
+                    l.Id,
+                    l.Name,
+                    l.Url,
+                    l.CurrentClaimAmount,
+                    l.ClickCount,
+                    ClaimCount = l.Claims.Count(),
+                    l.CategoryId,
+                    l.SiteName,
+                    l.LogoUrl,
+                    l.Description,
+                    l.FaviconUrl,
+                    Category = dbContext.Categories
+                        .Where(c => c.Id == l.CategoryId)
+                        .Select(c => new { c.Name, c.Slug, c.Icon })
+                        .FirstOrDefault()
+                })
+                .ToListAsync(ct);
+
+            return results
+                .Select((x, i) => new GlobalLeaderboardEntryDto(
+                    i + 1,
+                    x.CategoryId,
+                    x.Category != null ? x.Category.Name : string.Empty,
+                    x.Category != null ? x.Category.Slug : string.Empty,
+                    x.Category?.Icon,
+                    x.Id,
+                    x.Name,
+                    x.Url,
+                    x.CurrentClaimAmount,
+                    x.CurrentClaimAmount,
+                    x.ClickCount,
+                    x.ClaimCount,
+                    x.SiteName,
+                    x.LogoUrl,
+                    x.Description,
+                    x.FaviconUrl))
+                .ToList();
+        }
     }
 }

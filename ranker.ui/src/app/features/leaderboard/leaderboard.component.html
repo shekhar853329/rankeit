@@ -211,7 +211,7 @@
 
               <div class="podium-card__right">
                 <div class="price-box">
-                  <span class="price-label">Active Placement</span>
+                  <span class="price-label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
                   <span class="price-val text-primary">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="claim-action-btn claim-action-btn--primary"
@@ -260,7 +260,7 @@
               </div>
               <div class="podium-card__right">
                 <div class="price-box">
-                  <span class="price-label">Current Placement</span>
+                  <span class="price-label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
                   <span class="price-val">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="claim-action-btn claim-action-btn--secondary"
@@ -309,7 +309,7 @@
               </div>
               <div class="podium-card__right">
                 <div class="price-box">
-                  <span class="price-label">Current Placement</span>
+                  <span class="price-label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
                   <span class="price-val">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="claim-action-btn claim-action-btn--secondary"
@@ -344,7 +344,7 @@
             </div>
 
             <div class="compact-entry-right">
-              <span class="compact-price">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
+              <span class="compact-price" [title]="timeMode() === 'today' ? 'Paid today: ₹' + (entry.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (entry.currentClaimAmount | number: '1.0-0')">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
               <button type="button" class="compact-btn"
                 (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), entry.rank); $event.stopPropagation()">
                 Claim This Position

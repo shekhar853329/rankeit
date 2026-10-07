@@ -351,7 +351,7 @@
             <!-- Right Anchor: Claim Price & Trigger -->
             <div class="champion-card__right">
               <div class="price-stack">
-                <span class="price-stack__label">Active Placement</span>
+                <span class="price-stack__label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
                 <span class="price-stack__val text-primary">{{ currencySymbol() }}{{ row.currentClaimAmount | number:
                   '1.0-0' }}</span>
               </div>
@@ -417,7 +417,7 @@
 
             <div class="champion-card__right">
               <div class="price-stack">
-                <span class="price-stack__label">Current Placement</span>
+                <span class="price-stack__label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
                 <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0'
                   }}</span>
               </div>
@@ -483,7 +483,7 @@
 
             <div class="champion-card__right">
               <div class="price-stack">
-                <span class="price-stack__label">Current Placement</span>
+                <span class="price-stack__label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
                 <span class="price-stack__val">{{ currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0'
                   }}</span>
               </div>
@@ -525,7 +525,7 @@
           </div>
 
           <div class="compact-rank-card__right">
-            <span class="compact-price">{{ currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0' }}</span>
+            <span class="compact-price" [title]="timeMode() === 'today' ? 'Paid today: ₹' + (row.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (row.currentClaimAmount | number: '1.0-0')">{{ currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0' }}</span>
             <button type="button" class="compact-claim-btn"
               (click)="claimThisPosition(row.currentClaimAmount + incrementForCategory(row.categorySlug), row.rank); $event.stopPropagation()">
               Claim This Position

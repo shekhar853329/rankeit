@@ -27,18 +27,18 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
         {
             var nextDay = day.AddDays(1);
 
-            // Ranked strictly by claim amount within the day (mirrors the per-category leaderboard rule).
+            // Ranked strictly by claim amount paid within the day (mirrors the per-category leaderboard rule).
             var entries = await dbContext.Listings
                 .AsNoTracking()
                 .Where(l => l.FirstClaimAt >= day && l.FirstClaimAt < nextDay)
-                .OrderByDescending(l => l.CurrentClaimAmount)
-                .ThenBy(l => l.FirstClaimAt)
                 .Select(l => new
                 {
                     l.Id,
                     l.Name,
                     l.Url,
-                    l.CurrentClaimAmount,
+                    PaidOnDay = l.Claims
+                        .Where(c => c.CreatedAt >= day && c.CreatedAt < nextDay)
+                        .Sum(c => (decimal?)(c.PaymentAmount > 0m ? c.PaymentAmount : c.Amount)) ?? l.CurrentClaimAmount,
                     l.FirstClaimAt,
                     l.ClickCount,
                     l.SiteName,
@@ -47,6 +47,8 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
                     CategoryName = l.Category!.Name,
                     CategorySlug = l.Category!.Slug,
                 })
+                .OrderByDescending(l => l.PaidOnDay)
+                .ThenBy(l => l.FirstClaimAt)
                 .ToListAsync(ct);
 
             var rankedEntries = entries
@@ -57,7 +59,7 @@ public class GetDailyListingsQueryHandler(RankerDbContext dbContext)
                     e.Url,
                     e.CategoryName,
                     e.CategorySlug,
-                    e.CurrentClaimAmount,
+                    e.PaidOnDay,
                     e.FirstClaimAt,
                     e.ClickCount,
                     e.SiteName,

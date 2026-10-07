@@ -28,15 +28,26 @@ public class GetSpotRankQueryHandler(RankerDbContext dbContext, ICategoryReposit
             query = query.Where(l => l.Id != request.ListingId.Value);
         }
 
+        var targetAmount = Math.Max(0m, request.Amount);
+        int higherOrEqualCount;
+
         if (timeMode == "today")
         {
             var todayUtc = DateTime.UtcNow.Date;
             query = query.Where(l => l.LastClaimAt >= todayUtc);
+            // By rules A1/A2, an existing listing with today's actual paid amount >= targetAmount ranks ahead of the new claim
+            higherOrEqualCount = await query.CountAsync(
+                l => (l.Claims
+                    .Where(c => c.CreatedAt >= todayUtc)
+                    .Sum(c => (decimal?)(c.PaymentAmount > 0m ? c.PaymentAmount : c.Amount)) ?? 0m) >= targetAmount,
+                ct);
+        }
+        else
+        {
+            // By rules A1/A2, an existing listing with CurrentClaimAmount >= targetAmount ranks ahead of the new claim
+            higherOrEqualCount = await query.CountAsync(l => l.CurrentClaimAmount >= targetAmount, ct);
         }
 
-        var targetAmount = Math.Max(0m, request.Amount);
-        // By rules A1/A2, an existing listing with CurrentClaimAmount >= targetAmount ranks ahead of the new claim
-        var higherOrEqualCount = await query.CountAsync(l => l.CurrentClaimAmount >= targetAmount, ct);
         var rank = higherOrEqualCount + 1;
 
         return new SpotRankDto(rank, request.Amount, timeMode, request.CategorySlug);
