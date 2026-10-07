@@ -141,8 +141,8 @@
             </div>
 
             <h3 class="hot-card__title">
-              <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="hot-card__title-link"
-                [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
+              <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }"
+                class="hot-card__title-link" [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
                 {{ categoryIcon(card.category.id) }} {{ card.category.name }}
               </a>
             </h3>
@@ -182,7 +182,8 @@
               </div>
             </div>
             <div class="sector-king-banner__right">
-              <span class="king-claim text-primary" [title]="timeMode() === 'today' ? 'Amount paid today' : 'All-time cumulative claim'">
+              <span class="king-claim text-primary"
+                [title]="timeMode() === 'today' ? 'Amount paid today' : 'All-time cumulative claim'">
                 ₹{{ card.topEntries[0].currentClaimAmount | number: '1.0-0' }}
               </span>
               @if (card.topEntries[0].clickCount) {
@@ -210,14 +211,6 @@
             </div>
           </div>
           }
-
-          <!-- Action Buttons -->
-          <div class="hot-card__actions">
-            <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="btn-claim-hot">
-              <span class="material-symbols-outlined icon-xs">gavel</span>
-              <span>Claim #1 in {{ card.category.name }}</span>
-            </a>
-          </div>
         </div>
         }
       </div>
@@ -257,14 +250,14 @@
         <article class="arena-card">
           <div class="arena-card__header">
             <div class="arena-card__icon-name">
-              <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="arena-icon-link"
-                [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
+              <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }"
+                class="arena-icon-link" [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
                 <span class="arena-icon">{{ categoryIcon(card.category.id) }}</span>
               </a>
               <div class="arena-title-wrap">
                 <h3 class="arena-name">
-                  <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="arena-name-link"
-                    [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
+                  <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }"
+                    class="arena-name-link" [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
                     {{ card.category.name }}
                   </a>
                 </h3>
@@ -297,7 +290,9 @@
                 <span class="arena-leader-name">{{ entry.siteName || entry.listingName }}</span>
                 <span class="material-symbols-outlined arena-leader-ext-icon">open_in_new</span>
               </div>
-              <span class="arena-leader-claim" [title]="timeMode() === 'today' ? 'Amount paid today' : 'All-time cumulative claim'">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
+              <span class="arena-leader-claim"
+                [title]="timeMode() === 'today' ? 'Amount paid today' : 'All-time cumulative claim'">₹{{
+                entry.currentClaimAmount | number: '1.0-0' }}</span>
             </a>
             }
             } @else {
