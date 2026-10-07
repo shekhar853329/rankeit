@@ -546,7 +546,7 @@
           <div class="trending-list">
             @for (cat of trendingCategories(); track cat.slug) {
             @if (cat.slug !== categorySlug()) {
-            <a [routerLink]="['/leaderboard', cat.slug]" class="trending-row">
+            <a [routerLink]="['/leaderboard', cat.slug]" queryParamsHandling="preserve" class="trending-row">
               <span class="trending-name">{{ cat.name }}</span>
               <span class="trending-count">₹{{ cat.minStartingClaim }} floor</span>
             </a>

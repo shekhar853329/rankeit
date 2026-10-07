@@ -16,7 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DecimalPipe, isPlatformBrowser } from '@angular/common';
 import type * as echarts from 'echarts';
-import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
+import { catchError, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
 import { CategoryLeaderboardResponseDto, LeaderboardEntryDto, PlatformStatsDto } from '../../core/models/leaderboard.model';
 import { CategoryDto } from '../../core/models/category.model';
@@ -61,7 +61,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   readonly categoryStats = signal<PlatformStatsDto | null>(null);
   readonly chartViewMode = signal<'timeline' | 'hourly' | 'weekly'>('timeline');
   readonly chartMetric = signal<'both' | 'volume' | 'count'>('both');
-  readonly chartTimePreset = signal<'1h' | '6h' | 'today' | 'all'>('today');
+  readonly chartTimePreset = signal<'1h' | '6h' | 'today' | 'all'>('all');
+  private currentLoadedState = { slug: '', mode: '' };
 
   /* ── Selection-Aware Filtered Claims Computed Signal ── */
   readonly currentFilteredClaims = computed(() => {
@@ -293,17 +294,34 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Watch route param changes
-    this.route.paramMap
+    // Watch route param & query param changes to check whether all-time or today ranking is selected
+    combineLatest([this.route.paramMap, this.route.queryParamMap])
       .pipe(
-        switchMap((params) => {
+        map(([params, queryParams]) => {
           const slug = params.get('categorySlug') ?? '';
+          const rawTime = (queryParams.get('timeMode') || queryParams.get('time') || '').toLowerCase();
+          const mode: 'alltime' | 'today' =
+            rawTime === 'today' ? 'today' : rawTime === 'alltime' ? 'alltime' : this.timeMode();
+          return { slug, mode };
+        }),
+        filter(({ slug, mode }) => {
+          if (!slug) return false;
+          // Avoid duplicate data loading if already processed (e.g. by setTimeMode)
+          if (this.currentLoadedState.slug === slug && this.currentLoadedState.mode === mode) {
+            return false;
+          }
+          return true;
+        }),
+        switchMap(({ slug, mode }) => {
+          this.currentLoadedState = { slug, mode };
           this.categorySlug.set(slug);
+          this.timeMode.set(mode);
+          this.chartTimePreset.set(mode === 'today' ? 'today' : 'all');
           this.loading.set(true);
           this.targetRank.set(1);
           void this.joinGroup(slug);
-          this.loadCategoryStats(slug);
-          return this.leaderboardService.getCategoryLeaderboard(slug, this.page(), this.pageSize(), this.timeMode()).pipe(
+          this.loadCategoryStats(slug, mode);
+          return this.leaderboardService.getCategoryLeaderboard(slug, this.page(), this.pageSize(), mode).pipe(
             catchError(() => of(null as CategoryLeaderboardResponseDto | null)),
           );
         }),
@@ -434,11 +452,18 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   setTimeMode(mode: 'alltime' | 'today'): void {
     if (this.timeMode() === mode) return;
+    this.currentLoadedState = { slug: this.categorySlug(), mode };
     this.timeMode.set(mode);
     this.chartTimePreset.set(mode === 'today' ? 'today' : 'all');
     this.page.set(1);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { timeMode: mode },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
     this.refresh();
-    this.loadCategoryStats(this.categorySlug());
+    this.loadCategoryStats(this.categorySlug(), mode);
     this.updateChart();
   }
 
@@ -728,12 +753,18 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   setChartTimePreset(preset: '1h' | '6h' | 'today' | 'all'): void {
     this.chartTimePreset.set(preset);
-    this.updateChart();
+    // If the user requests 'all' preset on the chart while in 'today' ranking mode,
+    // fetch 'alltime' stats from backend so the full historical timeline points are loaded
+    if (preset === 'all' && this.timeMode() === 'today') {
+      this.loadCategoryStats(this.categorySlug(), 'alltime');
+    } else {
+      this.updateChart();
+    }
   }
 
-  loadCategoryStats(slug: string): void {
+  loadCategoryStats(slug: string, mode: 'alltime' | 'today' = this.timeMode()): void {
     if (!slug) return;
-    this.leaderboardService.getPlatformStats(slug, this.timeMode()).subscribe({
+    this.leaderboardService.getPlatformStats(slug, mode).subscribe({
       next: (stats) => {
         this.categoryStats.set(stats);
         if (isPlatformBrowser(this.platformId)) {

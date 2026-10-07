@@ -141,7 +141,7 @@
             </div>
 
             <h3 class="hot-card__title">
-              <a [routerLink]="['/leaderboard', card.category.slug]" class="hot-card__title-link"
+              <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="hot-card__title-link"
                 [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
                 {{ categoryIcon(card.category.id) }} {{ card.category.name }}
               </a>
@@ -213,7 +213,7 @@
 
           <!-- Action Buttons -->
           <div class="hot-card__actions">
-            <a [routerLink]="['/leaderboard', card.category.slug]" class="btn-claim-hot">
+            <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="btn-claim-hot">
               <span class="material-symbols-outlined icon-xs">gavel</span>
               <span>Claim #1 in {{ card.category.name }}</span>
             </a>
@@ -257,13 +257,13 @@
         <article class="arena-card">
           <div class="arena-card__header">
             <div class="arena-card__icon-name">
-              <a [routerLink]="['/leaderboard', card.category.slug]" class="arena-icon-link"
+              <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="arena-icon-link"
                 [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
                 <span class="arena-icon">{{ categoryIcon(card.category.id) }}</span>
               </a>
               <div class="arena-title-wrap">
                 <h3 class="arena-name">
-                  <a [routerLink]="['/leaderboard', card.category.slug]" class="arena-name-link"
+                  <a [routerLink]="['/leaderboard', card.category.slug]" [queryParams]="{ timeMode: timeMode() }" class="arena-name-link"
                     [attr.aria-label]="'Go to ' + card.category.name + ' arena'">
                     {{ card.category.name }}
                   </a>
