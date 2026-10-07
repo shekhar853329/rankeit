@@ -547,7 +547,7 @@
             @if (cat.slug !== categorySlug()) {
             <a [routerLink]="['/leaderboard', cat.slug]" queryParamsHandling="preserve" class="trending-row">
               <span class="trending-name">{{ cat.name }}</span>
-              <span class="trending-count">₹{{ cat.minStartingClaim }} floor</span>
+              <span class="trending-count">₹{{ (cat.maxClaimAmount || 0) | number: '1.0-0' }} max</span>
             </a>
             }
             }

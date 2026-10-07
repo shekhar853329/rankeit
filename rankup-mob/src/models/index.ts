@@ -20,6 +20,7 @@ export interface CategoryDto {
   recentClaimCount: number;
   listingCount: number;
   todayListingCount?: number;
+  maxClaimAmount?: number;
 }
 
 export interface CategoryTreeNodeDto {

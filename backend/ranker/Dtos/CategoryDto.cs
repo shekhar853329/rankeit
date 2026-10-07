@@ -11,7 +11,8 @@ public sealed record CategoryDto(
     double ActivityScore,
     int RecentClaimCount,
     int ListingCount,
-    int TodayListingCount = 0);
+    int TodayListingCount = 0,
+    decimal MaxClaimAmount = 0m);
 
 public sealed record CategoryTreeNodeDto(
     int Id,
