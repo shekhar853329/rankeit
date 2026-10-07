@@ -42,14 +42,16 @@ public class LeaderboardController(ISender sender) : ControllerBase
     [HttpGet("stats")]
     public async Task<ActionResult<PlatformStatsDto>> GetPlatformStats(
         [FromQuery] string? categorySlug = null,
+        [FromQuery] string? timeMode = null,
         CancellationToken ct = default) =>
-        Ok(await sender.Send(new GetPlatformStatsQuery(categorySlug), ct));
+        Ok(await sender.Send(new GetPlatformStatsQuery(categorySlug, timeMode), ct));
 
     [HttpGet("category/{categorySlug}/stats")]
     public async Task<ActionResult<PlatformStatsDto>> GetCategoryStats(
         string categorySlug,
+        [FromQuery] string? timeMode = null,
         CancellationToken ct = default) =>
-        Ok(await sender.Send(new GetPlatformStatsQuery(categorySlug), ct));
+        Ok(await sender.Send(new GetPlatformStatsQuery(categorySlug, timeMode), ct));
 
     [HttpGet("live-stream")]
     public async Task<ActionResult<IReadOnlyList<LiveClaimEventDto>>> GetLiveStream(

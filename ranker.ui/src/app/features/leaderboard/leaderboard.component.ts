@@ -63,55 +63,116 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   readonly chartMetric = signal<'both' | 'volume' | 'count'>('both');
   readonly chartTimePreset = signal<'1h' | '6h' | 'today' | 'all'>('today');
 
-  readonly todayTotalVolume = computed(() => {
+  /* ── Selection-Aware Filtered Claims Computed Signal ── */
+  readonly currentFilteredClaims = computed(() => {
     const stats = this.categoryStats();
-    if (!stats) return 0;
-    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
-      return stats.recentClaimsTimeline.reduce((acc, b) => acc + Number(b.amount || 0), 0);
+    if (!stats?.recentClaimsTimeline) return [];
+    const claims = stats.recentClaimsTimeline;
+    const preset = this.chartTimePreset();
+    const mode = this.timeMode();
+    const now = Date.now();
+
+    if (preset === '1h') {
+      const oneHourAgo = now - 60 * 60 * 1000;
+      return claims.filter((b) => new Date(b.createdAt).getTime() >= oneHourAgo);
     }
-    return stats.hourlyClaimPressures.reduce((acc, h) => acc + Number(h.volume || 0), 0);
+    if (preset === '6h') {
+      const sixHoursAgo = now - 6 * 60 * 60 * 1000;
+      return claims.filter((b) => new Date(b.createdAt).getTime() >= sixHoursAgo);
+    }
+    if (preset === 'today') {
+      const startOfTodayUtc = new Date();
+      startOfTodayUtc.setUTCHours(0, 0, 0, 0);
+      return claims.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
+    }
+    if (preset === 'all') {
+      return claims;
+    }
+    if (mode === 'today') {
+      const startOfTodayUtc = new Date();
+      startOfTodayUtc.setUTCHours(0, 0, 0, 0);
+      return claims.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
+    }
+    return claims;
   });
 
-  readonly todayTotalClaims = computed(() => {
-    const stats = this.categoryStats();
-    if (!stats) return 0;
-    if (stats.recentClaimsTimeline && stats.recentClaimsTimeline.length > 0) {
-      return stats.recentClaimsTimeline.length;
+  readonly kpiVolumeLabel = computed(() => {
+    if (this.chartViewMode() === 'timeline') {
+      const preset = this.chartTimePreset();
+      if (preset === '1h') return '1H Vol';
+      if (preset === '6h') return '6H Vol';
+      if (preset === 'all') return 'All-Time Vol';
+      return "Today's Vol";
     }
-    return stats.hourlyClaimPressures.reduce((acc, h) => acc + h.claimCount, 0);
+    return this.timeMode() === 'today' ? "Today's Vol" : "All-Time Vol";
   });
+
+  readonly displayedTotalVolume = computed(() => {
+    const claims = this.currentFilteredClaims();
+    if (claims.length > 0) {
+      return claims.reduce((acc, b) => acc + Number(b.amount || 0), 0);
+    }
+    if ((this.chartTimePreset() === 'today' || this.timeMode() === 'today') && this.chartTimePreset() !== 'all') {
+      const stats = this.categoryStats();
+      if (stats?.hourlyClaimPressures && stats.hourlyClaimPressures.length > 0) {
+        return stats.hourlyClaimPressures.reduce((acc, h) => acc + Number(h.volume || 0), 0);
+      }
+    }
+    return 0;
+  });
+
+  readonly todayTotalVolume = computed(() => this.displayedTotalVolume());
+
+  readonly displayedTotalClaims = computed(() => {
+    const claims = this.currentFilteredClaims();
+    if (claims.length > 0) {
+      return claims.length;
+    }
+    if ((this.chartTimePreset() === 'today' || this.timeMode() === 'today') && this.chartTimePreset() !== 'all') {
+      const stats = this.categoryStats();
+      if (stats?.hourlyClaimPressures && stats.hourlyClaimPressures.length > 0) {
+        return stats.hourlyClaimPressures.reduce((acc, h) => acc + h.claimCount, 0);
+      }
+    }
+    return 0;
+  });
+
+  readonly todayTotalClaims = computed(() => this.displayedTotalClaims());
 
   readonly peakClaimInfo = computed(() => {
-    const stats = this.categoryStats();
-    if (!stats) return null;
-    const timeline = stats.recentClaimsTimeline ?? [];
-    if (timeline.length > 0) {
-      const highest = [...timeline].sort((a, b) => Number(b.amount) - Number(a.amount))[0];
-      return {
-        amount: highest.amount,
-        label: highest.listingName,
-        category: highest.categoryName,
-        paymentRef: highest.paymentReference,
-        time: highest.createdAt,
-      };
+    const claims = this.currentFilteredClaims();
+    if (claims.length > 0) {
+      const highest = [...claims].sort((a, b) => Number(b.amount) - Number(a.amount))[0];
+      if (Number(highest.amount) > 0) {
+        return {
+          amount: highest.amount,
+          label: highest.listingName,
+          category: highest.categoryName,
+          paymentRef: highest.paymentReference,
+          time: highest.createdAt,
+        };
+      }
     }
-    const hourly = stats.hourlyClaimPressures;
-    const peakHour = [...hourly].sort((a, b) => Number(b.volume) - Number(a.volume))[0];
-    if (peakHour && peakHour.volume > 0) {
-      return {
-        amount: peakHour.volume,
-        label: `${String(peakHour.hour).padStart(2, '0')}:00 UTC`,
-        category: 'Hourly Peak',
-        paymentRef: null,
-        time: null,
-      };
+    if ((this.chartTimePreset() === 'today' || this.timeMode() === 'today') && this.chartTimePreset() !== 'all') {
+      const stats = this.categoryStats();
+      const hourly = stats?.hourlyClaimPressures ?? [];
+      const peakHour = [...hourly].sort((a, b) => Number(b.volume) - Number(a.volume))[0];
+      if (peakHour && peakHour.volume > 0) {
+        return {
+          amount: peakHour.volume,
+          label: `${String(peakHour.hour).padStart(2, '0')}:00 UTC`,
+          category: 'Hourly Peak',
+          paymentRef: null,
+          time: null,
+        };
+      }
     }
     return null;
   });
 
   readonly avgClaimAmount = computed(() => {
-    const count = this.todayTotalClaims();
-    const vol = this.todayTotalVolume();
+    const count = this.displayedTotalClaims();
+    const vol = this.displayedTotalVolume();
     return count > 0 ? vol / count : 0;
   });
 
@@ -374,8 +435,11 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   setTimeMode(mode: 'alltime' | 'today'): void {
     if (this.timeMode() === mode) return;
     this.timeMode.set(mode);
+    this.chartTimePreset.set(mode === 'today' ? 'today' : 'all');
     this.page.set(1);
     this.refresh();
+    this.loadCategoryStats(this.categorySlug());
+    this.updateChart();
   }
 
   refresh(): void {
@@ -669,7 +733,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   loadCategoryStats(slug: string): void {
     if (!slug) return;
-    this.leaderboardService.getPlatformStats(slug).subscribe({
+    this.leaderboardService.getPlatformStats(slug, this.timeMode()).subscribe({
       next: (stats) => {
         this.categoryStats.set(stats);
         if (isPlatformBrowser(this.platformId)) {
@@ -728,24 +792,11 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     let option: echarts.EChartsOption;
 
     if (mode === 'timeline') {
-      let claims = stats.recentClaimsTimeline ?? [];
+      const claims = this.currentFilteredClaims();
       const preset = this.chartTimePreset();
       const now = Date.now();
-
-      if (preset === '1h') {
-        const oneHourAgo = now - 60 * 60 * 1000;
-        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= oneHourAgo);
-        if (filtered.length > 0) claims = filtered;
-      } else if (preset === '6h') {
-        const sixHoursAgo = now - 6 * 60 * 60 * 1000;
-        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= sixHoursAgo);
-        if (filtered.length > 0) claims = filtered;
-      } else if (preset === 'today') {
-        const startOfTodayUtc = new Date();
-        startOfTodayUtc.setUTCHours(0, 0, 0, 0);
-        const filtered = claims.filter((b) => new Date(b.createdAt).getTime() >= startOfTodayUtc.getTime());
-        if (filtered.length > 0) claims = filtered;
-      }
+      const startOfTodayUtc = new Date();
+      startOfTodayUtc.setUTCHours(0, 0, 0, 0);
 
       // Sort claims chronologically
       const sortedClaims = [...claims].sort(
@@ -761,6 +812,26 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         };
       });
 
+      let xAxisMin: number | undefined;
+      let xAxisMax: number | undefined;
+
+      if (preset === '1h') {
+        xAxisMin = now - 60 * 60 * 1000;
+        xAxisMax = now;
+      } else if (preset === '6h') {
+        xAxisMin = now - 6 * 60 * 60 * 1000;
+        xAxisMax = now;
+      } else if (preset === 'today' || (this.timeMode() === 'today' && preset !== 'all')) {
+        xAxisMin = startOfTodayUtc.getTime();
+        xAxisMax = Math.max(now, startOfTodayUtc.getTime() + 60 * 60 * 1000);
+      } else if (seriesData.length > 0) {
+        xAxisMin = seriesData[0].value[0] - 30 * 60 * 1000;
+        xAxisMax = seriesData[seriesData.length - 1].value[0] + 30 * 60 * 1000;
+      } else {
+        xAxisMin = startOfTodayUtc.getTime();
+        xAxisMax = now;
+      }
+
       option = {
         backgroundColor: 'transparent',
         grid: {
@@ -770,6 +841,25 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           bottom: '22%',
           containLabel: true,
         },
+        title: seriesData.length === 0 ? {
+          show: true,
+          text: (preset === 'today' || (this.timeMode() === 'today' && preset !== 'all'))
+            ? 'No claim payments registered today'
+            : 'No claim payments registered for this period',
+          subtext: 'Live payments will stream here in real-time as claims are placed',
+          left: 'center',
+          top: '38%',
+          textStyle: {
+            color: textColor,
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+          },
+          subtextStyle: {
+            color: isDark ? '#64748b' : '#94a3b8',
+            fontSize: 11,
+          },
+        } : undefined,
         tooltip: {
           trigger: 'item',
           backgroundColor: tooltipBg,
@@ -821,12 +911,19 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         },
         xAxis: {
           type: 'time',
+          min: xAxisMin,
+          max: xAxisMax,
           axisLine: { lineStyle: { color: gridLineColor } },
           axisLabel: {
             color: textColor,
             fontSize: 10,
             formatter: (val: number) => {
               const d = new Date(val);
+              if (preset === 'all') {
+                return `${d.getUTCMonth() + 1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2, '0')}:${String(
+                  d.getUTCMinutes()
+                ).padStart(2, '0')}`;
+              }
               return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(
                 2,
                 '0'
@@ -837,6 +934,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         },
         yAxis: {
           type: 'value',
+          min: seriesData.length === 0 ? 0 : undefined,
+          max: seriesData.length === 0 ? 10 : undefined,
           name: `Payment (${currency})`,
           nameTextStyle: { color: textColor, fontSize: 10 },
           axisLine: { show: false },
@@ -847,7 +946,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           },
           splitLine: { lineStyle: { color: gridLineColor } },
         },
-        dataZoom: [
+        dataZoom: seriesData.length > 0 ? [
           {
             type: 'inside',
             start: 0,
@@ -865,7 +964,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
             handleStyle: { color: '#f95738' },
             textStyle: { color: textColor, fontSize: 9 },
           },
-        ],
+        ] : [],
         series: [
           {
             name: 'Placement Volume',
@@ -888,7 +987,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
                 { offset: 1, color: 'rgba(249, 87, 56, 0.01)' },
               ]),
             },
-            markPoint: {
+            markPoint: seriesData.length > 0 ? {
               data: [{ type: 'max', name: 'Peak Placement' }],
               symbolSize: 40,
               symbolOffset: [0, '-5%'],
@@ -899,8 +998,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
                 color: '#fff',
               },
               itemStyle: { color: '#f95738' },
-            },
-            markLine: {
+            } : undefined,
+            markLine: seriesData.length > 0 ? {
               data: [{ type: 'average', name: 'Avg' }],
               lineStyle: { color: '#10b981', type: 'dotted', width: 2 },
               label: {
@@ -910,7 +1009,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
                 color: '#10b981',
                 fontWeight: 600,
               },
-            },
+            } : undefined,
             data: seriesData,
           },
         ],
@@ -920,11 +1019,16 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       const categories = hours.map((h) => `${String(h.hour).padStart(2, '0')}:00`);
       const volumes = hours.map((h) => Number(h.volume));
       const counts = hours.map((h) => h.claimCount);
+      const hasAnyVolume = volumes.some((v) => v > 0);
+      const hasAnyCount = counts.some((c) => c > 0);
+      const hasActivity = hasAnyVolume || hasAnyCount;
 
       const series: any[] = [];
       const yAxes: any[] = [
         {
           type: 'value',
+          min: hasAnyVolume ? undefined : 0,
+          max: hasAnyVolume ? undefined : 10,
           name: `Volume (${currency})`,
           nameTextStyle: { color: textColor, fontSize: 10 },
           axisLabel: {
@@ -939,6 +1043,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       if (metric === 'both' || metric === 'count') {
         yAxes.push({
           type: 'value',
+          min: hasAnyCount ? undefined : 0,
+          max: hasAnyCount ? undefined : 5,
           name: 'Placements (#)',
           nameTextStyle: { color: textColor, fontSize: 10 },
           minInterval: 1,
@@ -963,13 +1069,13 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
             ]),
           },
           data: volumes,
-          markPoint: {
+          markPoint: hasAnyVolume ? {
             data: [{ type: 'max', name: 'Peak Hour' }],
             symbolSize: 40,
             symbolOffset: [0, '-40%'],
             itemStyle: { color: '#f95738' },
             label: { color: '#fff', fontSize: 10, fontWeight: 700 },
-          },
+          } : undefined,
         });
       }
 
@@ -996,6 +1102,23 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           bottom: '12%',
           containLabel: true,
         },
+        title: !hasActivity ? {
+          show: true,
+          text: 'No hourly payment activity registered today',
+          subtext: '24-hour distribution will populate as claims are made throughout the day',
+          left: 'center',
+          top: '38%',
+          textStyle: {
+            color: textColor,
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+          },
+          subtextStyle: {
+            color: isDark ? '#64748b' : '#94a3b8',
+            fontSize: 11,
+          },
+        } : undefined,
         tooltip: {
           trigger: 'axis',
           axisPointer: { type: 'cross', label: { backgroundColor: '#334155' } },
@@ -1046,6 +1169,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       const days = stats.dailyClaimPressures ?? [];
       const categories = days.map((d) => d.date);
       const volumes = days.map((d) => Number(d.volume));
+      const hasAnyDailyVolume = volumes.some((v) => v > 0);
 
       option = {
         backgroundColor: 'transparent',
@@ -1056,6 +1180,23 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           bottom: '12%',
           containLabel: true,
         },
+        title: !hasAnyDailyVolume ? {
+          show: true,
+          text: 'No placement volume recorded over the past 7 days',
+          subtext: 'Daily volume aggregation will appear as listings are claimed',
+          left: 'center',
+          top: '38%',
+          textStyle: {
+            color: textColor,
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+          },
+          subtextStyle: {
+            color: isDark ? '#64748b' : '#94a3b8',
+            fontSize: 11,
+          },
+        } : undefined,
         tooltip: {
           trigger: 'axis',
           backgroundColor: tooltipBg,
@@ -1087,6 +1228,8 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
         yAxis: [
           {
             type: 'value',
+            min: hasAnyDailyVolume ? undefined : 0,
+            max: hasAnyDailyVolume ? undefined : 10,
             name: `Volume (${currency})`,
             nameTextStyle: { color: textColor, fontSize: 10 },
             axisLabel: {

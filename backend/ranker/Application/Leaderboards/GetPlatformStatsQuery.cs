@@ -6,7 +6,7 @@ using Ranker.Dtos;
 
 namespace Ranker.Application.Leaderboards;
 
-public sealed record GetPlatformStatsQuery(string? CategorySlug = null) : IRequest<PlatformStatsDto>;
+public sealed record GetPlatformStatsQuery(string? CategorySlug = null, string? TimeMode = null) : IRequest<PlatformStatsDto>;
 
 public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
     : IRequestHandler<GetPlatformStatsQuery, PlatformStatsDto>
@@ -182,7 +182,8 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         }
 
         // 7. Recent Claims Timeline (Individual claim payments with actual charged amount and resulting claim level)
-        var timelineSource = todayProcessedClaims.Count > 0 ? todayProcessedClaims : processedClaims;
+        var isToday = string.Equals(request.TimeMode, "today", StringComparison.OrdinalIgnoreCase);
+        var timelineSource = isToday ? todayProcessedClaims : processedClaims;
         var recentTimeline = timelineSource
             .OrderBy(x => x.Claim.CreatedAt)
             .Take(150)

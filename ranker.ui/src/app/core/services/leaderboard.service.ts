@@ -38,13 +38,16 @@ export class LeaderboardService {
     });
   }
 
-  getPlatformStats(categorySlug?: string | null): Observable<PlatformStatsDto> {
+  getPlatformStats(categorySlug?: string | null, timeMode?: string): Observable<PlatformStatsDto> {
+    const params: Record<string, string> = {};
+    if (timeMode) params['timeMode'] = timeMode;
     if (categorySlug?.trim()) {
       return this.http.get<PlatformStatsDto>(
-        `${API_BASE_URL}/api/leaderboard/category/${encodeURIComponent(categorySlug.trim())}/stats`
+        `${API_BASE_URL}/api/leaderboard/category/${encodeURIComponent(categorySlug.trim())}/stats`,
+        { params }
       );
     }
-    return this.http.get<PlatformStatsDto>(`${API_BASE_URL}/api/leaderboard/stats`);
+    return this.http.get<PlatformStatsDto>(`${API_BASE_URL}/api/leaderboard/stats`, { params });
   }
 
   getLiveStream(limit = 10): Observable<LiveClaimEventDto[]> {

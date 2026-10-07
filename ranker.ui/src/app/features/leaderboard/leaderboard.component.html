@@ -390,16 +390,16 @@
 
             <!-- Quick KPIs in Header -->
             <div class="liquidity-stats-row">
-              <div class="liquidity-stat-pill" title="Total category placement volume today">
-                <span class="stat-pill-label">Today's Vol</span>
-                <span class="stat-pill-val">₹{{ todayTotalVolume() | number: '1.2-2' }}</span>
+              <div class="liquidity-stat-pill" [title]="timeMode() === 'today' ? 'Total category placement volume today' : 'Total all-time category placement volume'">
+                <span class="stat-pill-label">{{ kpiVolumeLabel() }}</span>
+                <span class="stat-pill-val">₹{{ displayedTotalVolume() | number: '1.2-2' }}</span>
               </div>
-              <div class="liquidity-stat-pill" title="Total category payments registered today">
+              <div class="liquidity-stat-pill" [title]="timeMode() === 'today' ? 'Total category payments registered today' : 'Total all-time category payments registered'">
                 <span class="stat-pill-label">Count</span>
-                <span class="stat-pill-val">{{ todayTotalClaims() }}</span>
+                <span class="stat-pill-val">{{ displayedTotalClaims() }}</span>
               </div>
               @if (peakClaimInfo(); as peak) {
-              <div class="liquidity-stat-pill liquidity-stat-pill--highlight" title="Peak category payment today">
+              <div class="liquidity-stat-pill liquidity-stat-pill--highlight" [title]="timeMode() === 'today' ? 'Peak category payment today' : 'Peak all-time category payment'">
                 <span class="stat-pill-label">Peak</span>
                 <span class="stat-pill-val">₹{{ peak.amount | number: '1.0-2' }}</span>
               </div>
@@ -417,7 +417,7 @@
                 title="Show each payment as its own distinct spike on a continuous timeline">
                 <span class="material-symbols-outlined icon-xs">bolt</span>
                 <span>Live Timeline</span>
-                <span class="tab-chip">{{ (categoryStats()?.recentClaimsTimeline?.length ?? 0) }}</span>
+                <span class="tab-chip">{{ currentFilteredClaims().length }}</span>
               </button>
               <button type="button" class="chart-tab-btn" role="tab" [attr.aria-selected]="chartViewMode() === 'hourly'"
                 [class.chart-tab-btn--active]="chartViewMode() === 'hourly'" (click)="setChartViewMode('hourly')"
