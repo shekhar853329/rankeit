@@ -1,0 +1,7 @@
+{
+  "task_id": "task-payment-transaction-tracking",
+  "task_description": "Implement comprehensive payment transaction tracking: enrich PaymentAuditLog entity with TransactionStatus/CustomerEmail/SessionId fields, record every payment lifecycle event (session creation, verification, webhooks), add GET /api/payments/transactions?email={email} endpoint, and build Angular /my-transactions page showing failed/pending/cancelled attempts with links from contact and daily-listings pages.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
