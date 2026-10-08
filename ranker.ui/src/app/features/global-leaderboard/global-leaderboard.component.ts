@@ -508,12 +508,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     toObservable(this.effectiveClaimAmount).pipe(
       combineLatestWith(
         toObservable(this.timeMode),
-        toObservable(this.selectedSlug),
+        toObservable(this.claimSlug),
       ),
-      map(([amount, timeMode, selectedSlug]) => ({
+      map(([amount, timeMode, claimSlug]) => ({
         amount: amount ?? 0,
         timeMode,
-        categorySlug: selectedSlug,
+        categorySlug: timeMode === 'alltime' ? null : claimSlug,
       })),
       debounceTime(300),
       distinctUntilChanged((a, b) =>

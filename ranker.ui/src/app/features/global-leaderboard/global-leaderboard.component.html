@@ -14,7 +14,7 @@
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
-            Claim <span class="headline-rank-tag">{{ spotRank() !== null ? '#' + spotRank() : '#…' }}</span> Spot for
+            {{ timeMode() === 'today' ? "Today's" : "Global" }} Claim <span class="headline-rank-tag">{{ spotRank() !== null ? '#' + spotRank() : '#…' }}</span> for
           </h1>
           <div class="placement-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
