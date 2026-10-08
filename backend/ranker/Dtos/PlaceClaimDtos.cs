@@ -12,7 +12,8 @@ public sealed record PlaceClaimRequestDto(
     string? SiteName,
     string? LogoUrl,
     string? Description,
-    string? FaviconUrl);
+    string? FaviconUrl,
+    bool IsAllTimeMode = false);
 
 public sealed record PlaceClaimResultDto(
     bool Success,
@@ -27,7 +28,8 @@ public sealed record CalculateClaimQuoteRequestDto(
     int? ListingId,
     string? ListingUrl,
     string? OwnerContactEmail,
-    decimal TargetClaimAmount);
+    decimal TargetClaimAmount,
+    bool IsAllTimeMode = false);
 
 public sealed record CalculateClaimQuoteResponseDto(
     bool Success,

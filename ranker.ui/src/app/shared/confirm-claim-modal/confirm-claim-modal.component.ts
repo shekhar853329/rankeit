@@ -431,6 +431,7 @@ export class ConfirmClaimModalComponent implements OnInit {
           listingUrl: domain,
           ownerContactEmail: email,
           targetClaimAmount: target,
+          isAllTimeMode: payload?.isAllTimeMode ?? false,
         }),
       );
 
@@ -571,6 +572,7 @@ export class ConfirmClaimModalComponent implements OnInit {
         logoUrl: resolvedLogoUrl ?? null,
         description: resolvedDescription ?? null,
         faviconUrl: resolvedFaviconUrl ?? null,
+        isAllTimeMode: this.modal.claimModal()?.isAllTimeMode ?? false,
       })
       .subscribe({
         next: (result) => {

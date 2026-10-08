@@ -22,6 +22,8 @@ export interface ClaimModalPayload {
   currentTopClaim?: number | null;
   /** Category slug for routing or listings lookup. */
   categorySlug?: string;
+  /** Whether the leaderboard is in all-time mode — drives the all-time cumulative validation. */
+  isAllTimeMode?: boolean;
   /** Called after a successful claim so the leaderboard can refresh. */
   onSuccess: () => void;
 }

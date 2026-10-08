@@ -27,6 +27,7 @@ import { ListingService } from '../../core/services/listing.service';
 import { ModalService } from '../../core/services/modal.service';
 import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { SeoService } from '../../core/services/seo.service';
+import { ClaimService } from '../../core/services/claim.service';
 
 @Component({
   selector: 'app-leaderboard',
@@ -48,6 +49,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   private readonly urlMetadataService = inject(UrlMetadataService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly seo = inject(SeoService);
+  private readonly claimService = inject(ClaimService);
 
   @ViewChild('claimChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
   private echartsModule: typeof import('echarts') | null = null;
@@ -224,6 +226,47 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   });
 
   readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
+
+  /** Whether the all-time validation API call is in-flight. */
+  readonly allTimeValidating = signal(false);
+  /** Validation error message from the calculate endpoint, or null when valid. */
+  readonly allTimeValidationError = signal<string | null>(null);
+
+  /** Observable driving the all-time cumulative validation — subscribed imperatively in ngOnInit. */
+  private readonly allTimeValidation$ = toObservable(this.effectiveClaimAmount).pipe(
+    combineLatestWith(
+      toObservable(this.timeMode),
+      toObservable(this.categorySlug),
+      toObservable(this.sidebarUrl),
+    ),
+    debounceTime(400),
+    distinctUntilChanged((a, b) =>
+      a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3]
+    ),
+    switchMap(([amount, timeMode, categorySlug, url]) => {
+      // Only validate in all-time mode when URL and category are both present
+      if (timeMode !== 'alltime' || !categorySlug || !this.isSidebarUrlValid() || (amount ?? 0) <= 0) {
+        return of({ status: 'clear' } as const);
+      }
+
+      const categoryId = this.categoryId();
+      if (!categoryId) {
+        return of({ status: 'clear' } as const);
+      }
+
+      this.allTimeValidating.set(true);
+
+      return this.claimService.calculateClaimQuote({
+        categoryId,
+        listingUrl: url.trim(),
+        targetClaimAmount: amount ?? 0,
+        isAllTimeMode: true,
+      }).pipe(
+        map((res) => ({ status: 'done', res } as const)),
+        catchError(() => of({ status: 'clear' } as const)),
+      );
+    }),
+  );
 
   readonly spotRank = toSignal(
     toObservable(this.effectiveClaimAmount).pipe(
@@ -404,6 +447,25 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           this.productTitle.set(this.sidebarUrl().trim());
         }
         this.metadataLoading.set(false);
+      });
+
+    // All-time cumulative validation — plain subscription so signal writes don't create reactive loops
+    this.allTimeValidation$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        if (result.status === 'clear') {
+          this.allTimeValidating.set(false);
+          this.allTimeValidationError.set(null);
+        } else {
+          this.allTimeValidating.set(false);
+          if (!result.res.success && result.res.errorCode === 'AllTimeCumulativeTooLow') {
+            this.allTimeValidationError.set(
+              result.res.errorMessage ?? 'Amount must exceed all-time total already paid for this listing.'
+            );
+          } else {
+            this.allTimeValidationError.set(null);
+          }
+        }
       });
   }
 
@@ -688,7 +750,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   canClaimRank(): boolean {
-    return this.isSidebarUrlValid() && this.categoryId() !== null;
+    return this.isSidebarUrlValid() && this.categoryId() !== null && this.allTimeValidationError() === null;
   }
 
   /* ── Interactive Claim Pressure Chart Methods ── */

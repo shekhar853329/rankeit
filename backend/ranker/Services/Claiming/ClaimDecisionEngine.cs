@@ -10,6 +10,10 @@ public enum ClaimFailureReason
     NewListingMissingDetails,
     ClaimTooLow,
     PaymentAmountMismatch,
+    /// <summary>
+    /// All-time mode only: the target amount does not exceed the listing's all-time cumulative total paid.
+    /// </summary>
+    AllTimeCumulativeTooLow,
 }
 
 public sealed record ClaimDecision(
@@ -39,7 +43,8 @@ public static class ClaimDecisionEngine
         int? existingListingId,
         decimal existingListingCurrentClaim,
         decimal targetClaimAmount,
-        decimal confirmedPaymentAmount)
+        decimal confirmedPaymentAmount,
+        bool isAllTimeMode = false)
     {
         // Amount required to take or maintain Rank #1: uses categoryMinClaimIncrement from database
         var rank1Minimum = currentTopClaimInCategory.HasValue
@@ -50,6 +55,14 @@ public static class ClaimDecisionEngine
         if (targetClaimAmount < absoluteFloor)
         {
             return ClaimDecision.Fail(ClaimFailureReason.ClaimTooLow, absoluteFloor);
+        }
+
+        // All-time mode: a listing's new target must be strictly greater than its all-time cumulative total
+        // paid. Because CurrentClaimAmount is maintained as a running total (each reclaim raises it by the
+        // delta charged), it IS the all-time cumulative paid — no separate column is needed.
+        if (isAllTimeMode && existingListingId.HasValue && targetClaimAmount <= existingListingCurrentClaim)
+        {
+            return ClaimDecision.Fail(ClaimFailureReason.AllTimeCumulativeTooLow, existingListingCurrentClaim + categoryMinClaimIncrement);
         }
 
         // A listing cannot lower its active claim

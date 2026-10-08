@@ -11,6 +11,7 @@ export interface PlaceClaimRequestDto {
   logoUrl: string | null;
   description: string | null;
   faviconUrl: string | null;
+  isAllTimeMode?: boolean;
 }
 
 export interface PlaceClaimResultDto {
@@ -28,6 +29,7 @@ export interface CalculateClaimQuoteRequestDto {
   listingUrl?: string | null;
   ownerContactEmail?: string | null;
   targetClaimAmount: number;
+  isAllTimeMode?: boolean;
 }
 
 export interface CalculateClaimQuoteResponseDto {

@@ -89,6 +89,19 @@
             </button>
           </div>
         </form>
+
+        <!-- All-Time Cumulative Validation Error -->
+        @if (allTimeValidating()) {
+        <div class="claim-validation-notice claim-validation-notice--checking" role="status" aria-live="polite">
+          <span class="material-symbols-outlined claim-validation-notice__icon">hourglass_top</span>
+          <span>Checking all-time placement history…</span>
+        </div>
+        } @else if (allTimeValidationError(); as err) {
+        <div class="claim-validation-notice claim-validation-notice--error" role="alert" aria-live="assertive">
+          <span class="material-symbols-outlined claim-validation-notice__icon">error</span>
+          <span>{{ err }}</span>
+        </div>
+        }
       </div>
     </div>
   </section>

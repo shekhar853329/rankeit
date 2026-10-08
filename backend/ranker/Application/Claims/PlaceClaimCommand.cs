@@ -19,4 +19,5 @@ public sealed record PlaceClaimCommand(
     string? SiteName,
     string? LogoUrl,
     string? Description,
-    string? FaviconUrl) : IRequest<PlaceClaimResultDto>;
+    string? FaviconUrl,
+    bool IsAllTimeMode = false) : IRequest<PlaceClaimResultDto>;

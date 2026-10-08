@@ -24,7 +24,8 @@ public class ClaimsController(ISender sender) : ControllerBase
             request.SiteName,
             request.LogoUrl,
             request.Description,
-            request.FaviconUrl), ct);
+            request.FaviconUrl,
+            request.IsAllTimeMode), ct);
 
         return result.Success ? Ok(result) : BadRequest(result);
     }
@@ -37,8 +38,9 @@ public class ClaimsController(ISender sender) : ControllerBase
             request.ListingId,
             request.ListingUrl,
             request.OwnerContactEmail,
-            request.TargetClaimAmount), ct);
+            request.TargetClaimAmount,
+            request.IsAllTimeMode), ct);
 
-        return result.Success ? Ok(result) : BadRequest(result);
+        return Ok(result);
     }
 }

@@ -113,7 +113,8 @@ public class PlaceClaimCommandHandler(
                 existingListing?.Id,
                 existingListingCurrentClaim,
                 command.TargetClaimAmount,
-                command.ConfirmedPaymentAmount);
+                command.ConfirmedPaymentAmount,
+                command.IsAllTimeMode);
 
             if (!decision.Success)
             {
@@ -273,6 +274,8 @@ public class PlaceClaimCommandHandler(
     {
         ClaimFailureReason.ClaimTooLow =>
             $"Target claim must be at least {decision.RequiredMinimumClaim:0.00}.",
+        ClaimFailureReason.AllTimeCumulativeTooLow =>
+            $"In all-time mode, your claim must be greater than the listing's all-time cumulative total. The minimum accepted amount is {decision.RequiredMinimumClaim:0.00}.",
         ClaimFailureReason.PaymentAmountMismatch =>
             $"Confirmed payment amount does not match the expected charge of {decision.ExpectedChargeAmount:0.00}.",
         _ => decision.FailureReason.ToString(),

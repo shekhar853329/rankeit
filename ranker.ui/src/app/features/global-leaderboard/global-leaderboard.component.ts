@@ -29,6 +29,7 @@ import { UrlMetadataService } from '../../core/services/url-metadata.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ModalService } from '../../core/services/modal.service';
 import { SeoService } from '../../core/services/seo.service';
+import { ClaimService } from '../../core/services/claim.service';
 
 export interface FeedRow {
   rank: number;
@@ -87,6 +88,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   private readonly modalService = inject(ModalService);
   private readonly elementRef = inject(ElementRef);
   private readonly seo = inject(SeoService);
+  private readonly claimService = inject(ClaimService);
 
   @ViewChild('claimChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
   private echartsModule: typeof import('echarts') | null = null;
@@ -316,6 +318,15 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   private readonly claimPositionSlug = signal<string | null>(null);
   private readonly claimPositionData = signal<CategoryLeaderboardResponseDto | null>(null);
 
+  /* ── All-Time Cumulative Validation ── */
+  /** Signals whether the backend all-time validation call is in-flight. */
+  readonly allTimeValidating = signal(false);
+  /**
+   * Non-null when the backend rejects the current amount in all-time mode because it is ≤ the
+   * listing's all-time cumulative total. Shown inline in the claim-rank section.
+   */
+  readonly allTimeValidationError = signal<string | null>(null);
+
   /* ── Toast Notification ── */
   readonly toastVisible = signal(false);
   readonly toastMessage = signal('');
@@ -521,6 +532,43 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     { initialValue: null },
   );
 
+  /** Observable driving the all-time cumulative validation — subscribed imperatively in ngOnInit. */
+  private readonly allTimeValidation$ = toObservable(this.effectiveClaimAmount).pipe(
+    combineLatestWith(
+      toObservable(this.timeMode),
+      toObservable(this.claimSlug),
+      toObservable(this.heroUrl),
+    ),
+    debounceTime(400),
+    distinctUntilChanged((a, b) =>
+      a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3]
+    ),
+    switchMap(([amount, timeMode, claimSlug, heroUrl]) => {
+      // Only validate in all-time mode when URL and category are both present
+      if (timeMode !== 'alltime' || !claimSlug || !this.isHeroUrlValid() || (amount ?? 0) <= 0) {
+        return of({ status: 'clear' } as const);
+      }
+
+      // Resolve categoryId from slug
+      const cat =
+        this.allCategories().find((c) => c.slug === claimSlug) ??
+        this.tabs().find((c) => c.slug === claimSlug);
+      if (!cat) {
+        return of({ status: 'clear' } as const);
+      }
+
+      return this.claimService.calculateClaimQuote({
+        categoryId: cat.id,
+        listingUrl: heroUrl.trim(),
+        targetClaimAmount: amount ?? 0,
+        isAllTimeMode: true,
+      }).pipe(
+        map((res) => ({ status: 'done', res } as const)),
+        catchError(() => of({ status: 'clear' } as const)),
+      );
+    }),
+  );
+
   /** Minimum price to show in empty-state CTAs — uses the selected category's minStartingClaim,
    *  or the first available category's, so the number is always real and never hardcoded. */
   readonly emptyStateClaimPrice = computed<number>(() => {
@@ -554,7 +602,9 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   readonly canClaimRank = computed(() => {
     const hasCategory = !!this.claimSlug();
-    return !!(hasCategory && this.isHeroUrlValid());
+    const hasValidUrl = this.isHeroUrlValid();
+    const hasAllTimeError = this.allTimeValidationError() !== null;
+    return !!(hasCategory && hasValidUrl && !hasAllTimeError);
   });
 
   readonly faviconDisplayUrl = computed<string | null>(() => {
@@ -666,6 +716,25 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         this.metadataLoading.set(false);
       });
 
+    // All-time cumulative validation — plain subscription so signal writes don't create reactive loops
+    this.allTimeValidation$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        if (result.status === 'clear') {
+          this.allTimeValidating.set(false);
+          this.allTimeValidationError.set(null);
+        } else {
+          this.allTimeValidating.set(false);
+          if (!result.res.success && result.res.errorCode === 'AllTimeCumulativeTooLow') {
+            this.allTimeValidationError.set(
+              result.res.errorMessage ?? 'Amount must exceed all-time total already paid for this listing.'
+            );
+          } else {
+            this.allTimeValidationError.set(null);
+          }
+        }
+      });
+
     this.destroyRef.onDestroy(() => {
       this.chartIntersectionObserver?.disconnect();
       this.chartIntersectionObserver = null;
@@ -742,6 +811,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   setTimeMode(mode: 'today' | 'alltime'): void {
     this.timeMode.set(mode);
+    this.allTimeValidationError.set(null);
     this.chartTimePreset.set(mode === 'today' ? 'today' : 'all');
     this.visibleCount.set(10);
     this.hasMoreProducts.set(true);
@@ -805,6 +875,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   onHeroUrlChange(value: string): void {
     this.heroUrl.set(value);
     this.heroUrlDirty.set(true);
+    this.allTimeValidationError.set(null);
     const v = value.trim();
     if (this.isHeroUrlValid()) {
       this.urlChange$.next(v);
@@ -912,6 +983,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   clearCategorySelection(event?: Event): void {
     event?.stopPropagation();
+    this.allTimeValidationError.set(null);
     this.selectClaimCategory(null);
   }
 
@@ -1021,6 +1093,12 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    // Block submission if the all-time cumulative check already returned an error
+    if (this.allTimeValidationError()) {
+      this.showToastNotification(this.allTimeValidationError()!);
+      return;
+    }
+
     const launchModal = (data: CategoryLeaderboardResponseDto) => {
       const minInc = data.minClaimIncrement || 1;
       const currentTop = data.leaderboard.items[0]?.currentClaimAmount ?? null;
@@ -1061,6 +1139,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         description: (existing?.description || meta?.description) ?? null,
         faviconUrl: (existing?.faviconUrl || meta?.faviconUrl) ?? null,
         categorySlug: slug,
+        isAllTimeMode: this.timeMode() === 'alltime',
         onSuccess: () => {
           void this.router.navigate(['/leaderboard', slug]);
         },
