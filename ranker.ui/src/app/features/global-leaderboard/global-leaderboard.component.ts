@@ -513,7 +513,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       map(([amount, timeMode, claimSlug]) => ({
         amount: amount ?? 0,
         timeMode,
-        categorySlug: timeMode === 'alltime' ? null : claimSlug,
+        categorySlug: null,
       })),
       debounceTime(300),
       distinctUntilChanged((a, b) =>
