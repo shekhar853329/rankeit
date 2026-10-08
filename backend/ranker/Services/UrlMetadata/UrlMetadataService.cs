@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Caching.Memory;
 using Ranker.Dtos;
 
 namespace Ranker.Services.UrlMetadata;
@@ -10,7 +11,8 @@ public interface IUrlMetadataService
 
 public sealed partial class UrlMetadataService(
     IHttpClientFactory httpClientFactory,
-    ILogger<UrlMetadataService> logger) : IUrlMetadataService
+    ILogger<UrlMetadataService> logger,
+    IMemoryCache cache) : IUrlMetadataService
 {
     // ── Compiled regexes (used by direct-scrape fallback) ─────────────────
 
@@ -66,10 +68,18 @@ public sealed partial class UrlMetadataService(
         if (canonicalUrl is null)
             return new UrlMetadataDto(null, null, null, null);
 
+        var cacheKey = $"url-metadata:{canonicalUrl.Trim().ToLowerInvariant()}";
+        if (cache.TryGetValue(cacheKey, out UrlMetadataDto? cached))
+            return cached!;
+
         // Try direct HTTP scrape with multiple strategies
         var result = await TryFetchDirectAsync(canonicalUrl, ct);
         if (result is not null)
+        {
+            if (result.SiteName is not null)
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
             return result;
+        }
 
         // If all strategies fail, return basic metadata with extracted domain
         logger.LogWarning("All fetch strategies failed for {Url}", canonicalUrl);
@@ -80,30 +90,34 @@ public sealed partial class UrlMetadataService(
 
     private async Task<UrlMetadataDto?> TryFetchDirectAsync(string url, CancellationToken ct)
     {
-        // Strategy 1: Use the pre-configured UrlMetadataDirect client
-        var result = await TryFetchWithClient("UrlMetadataDirect", url, null, ct);
-        if (result is not null)
-        {
-            logger.LogDebug("Successfully fetched metadata for {Url} using default client", url);
-            return result;
-        }
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromSeconds(3));
+        var linkedCt = cts.Token;
 
-        // Strategy 2: Try with additional browser-like headers
-        logger.LogDebug("Retrying {Url} with enhanced headers", url);
-        result = await TryFetchWithClient("UrlMetadataDirect", url, AddEnhancedHeaders, ct);
-        if (result is not null)
-        {
-            logger.LogDebug("Successfully fetched metadata for {Url} with enhanced headers", url);
-            return result;
-        }
+        logger.LogDebug("Firing all fetch strategies in parallel for {Url}", url);
 
-        // Strategy 3: Try with mobile user agent (some sites are less strict with mobile)
-        logger.LogDebug("Retrying {Url} with mobile user agent", url);
-        result = await TryFetchWithClient("UrlMetadataDirect", url, AddMobileHeaders, ct);
-        if (result is not null)
+        var tasks = new List<Task<UrlMetadataDto?>>
         {
-            logger.LogDebug("Successfully fetched metadata for {Url} with mobile headers", url);
-            return result;
+            TryFetchWithClient("UrlMetadataDirect", url, null, linkedCt),
+            TryFetchWithClient("UrlMetadataDirect", url, AddEnhancedHeaders, linkedCt),
+            TryFetchWithClient("UrlMetadataDirect", url, AddMobileHeaders, linkedCt),
+        };
+
+        while (tasks.Count > 0)
+        {
+            var completed = await Task.WhenAny(tasks);
+            tasks.Remove(completed);
+            try
+            {
+                var result = await completed;
+                if (result is not null)
+                    return result;
+            }
+            catch (OperationCanceledException) { /* 5s cap hit or caller cancelled */ }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "Strategy failed for {Url}", url);
+            }
         }
 
         logger.LogDebug("All direct fetch strategies failed for {Url}", url);
