@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, Subject, switchMap } from 'rxjs';
 import { ModalService } from '../../core/services/modal.service';
@@ -53,13 +53,8 @@ export class ConfirmClaimModalComponent implements OnInit {
   private readonly urlMetadataService = inject(UrlMetadataService);
   private readonly toast = inject(ToastService);
   private readonly dodoPayments = inject(DodoPaymentsService);
+  private readonly location = inject(Location);
   private readonly destroyRef = inject(DestroyRef);
-
-  // ── Step State: 1 = Confirmation / Breakup, 2 = Payments Screen ────
-  protected readonly currentStep = signal<1 | 2>(1);
-  protected readonly terminalLoading = signal<boolean>(false);
-  protected readonly activeSessionId = signal<string | null>(null);
-  protected readonly activeCheckoutUrl = signal<string | null>(null);
 
   // ── Form State ─────────────────────────────────────────────
   protected readonly agreed = signal(false);
@@ -97,6 +92,9 @@ export class ConfirmClaimModalComponent implements OnInit {
   protected readonly submitting = signal(false);
   protected readonly quoteValidating = signal(false);
   protected readonly quoteError = signal<string | null>(null);
+
+  // Checkout stage for dynamic button label
+  protected readonly checkoutStage = signal<'idle' | 'quoting' | 'creating' | 'redirecting'>('idle');
 
   // Transaction completion states
   protected readonly transactionStatus = signal<'idle' | 'processing' | 'success' | 'failed'>('idle');
@@ -195,8 +193,7 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.transactionStatus.set('idle');
       this.transactionDetails.set(null);
       this.copied.set(false);
-      this.currentStep.set(1);
-      this.terminalLoading.set(false);
+      this.checkoutStage.set('idle');
 
       // Refresh benchmark & verify domain if URL already provided
       if (payload.listingUrl) {
@@ -355,34 +352,29 @@ export class ConfirmClaimModalComponent implements OnInit {
     this.quoteError.set(null);
   }
 
+  protected onTargetAmountInput(val: string): void {
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed) && parsed > 0) {
+      const floor = this.absoluteMinimumClaim();
+      const inc = this.minClaimIncrement();
+      // Snap to nearest valid increment above floor
+      const snapped = Math.max(floor, Math.round(parsed / inc) * inc);
+      this.targetAmount.set(Math.round(snapped * 100) / 100);
+    }
+    this.quoteError.set(null);
+  }
+
   protected close(): void {
     if (this.submitting() && this.transactionStatus() === 'processing') return;
-    this.dodoPayments.closeTerminal();
     this.modal.closeClaimModal();
   }
 
   protected finishSuccess(): void {
     const payload = this.modal.claimModal();
-    this.dodoPayments.closeTerminal();
     this.modal.closeClaimModal();
     if (payload?.onSuccess) {
       payload.onSuccess();
     }
-  }
-
-  protected goToStep1(): void {
-    this.dodoPayments.closeTerminal();
-    this.currentStep.set(1);
-    this.transactionStatus.set('idle');
-  }
-
-  protected retryPayment(): void {
-    this.transactionStatus.set('idle');
-    this.transactionDetails.set(null);
-    this.submitting.set(false);
-    this.quoteValidating.set(false);
-    this.quoteError.set(null);
-    this.currentStep.set(1);
   }
 
   protected copyPaymentId(id: string): void {
@@ -414,11 +406,20 @@ export class ConfirmClaimModalComponent implements OnInit {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.quoteError.set('Please enter a valid email address.');
+      this.toast.show('Please enter a valid email address.', 'error');
+      return;
+    }
+
     if (!this.isFormValid()) {
       return;
     }
 
     this.submitting.set(true);
+    this.checkoutStage.set('quoting');
     this.quoteValidating.set(true);
     this.quoteError.set(null);
 
@@ -439,6 +440,7 @@ export class ConfirmClaimModalComponent implements OnInit {
 
       if (!quote.success) {
         this.submitting.set(false);
+        this.checkoutStage.set('idle');
         const errMessage = quote.errorMessage || 'Placement calculation failed.';
         this.quoteError.set(errMessage);
         this.toast.show(errMessage, 'error');
@@ -448,6 +450,7 @@ export class ConfirmClaimModalComponent implements OnInit {
       const chargeAmount = quote.expectedChargeAmount;
       if (chargeAmount < 1) {
         this.submitting.set(false);
+        this.checkoutStage.set('idle');
         this.quoteError.set('Payable amount must be at least ₹1.00.');
         this.toast.show('Payable amount must be at least ₹1.00.', 'error');
         return;
@@ -461,6 +464,7 @@ export class ConfirmClaimModalComponent implements OnInit {
       const resolvedListingId = quote.listingId ?? this.listingId();
 
       // Step 2: Request Dodo Payments Checkout Session
+      this.checkoutStage.set('creating');
       let session: { sessionId: string; checkoutUrl: string };
       try {
         const metadata: Record<string, string> = {
@@ -477,9 +481,12 @@ export class ConfirmClaimModalComponent implements OnInit {
           faviconUrl: resolvedFaviconUrl || '',
         };
 
+        // Include current path as 'from' context for the return URL
+        const currentPath = this.location.path();
+        const safePath = currentPath && currentPath.startsWith('/') ? currentPath : '/';
         const returnUrl = typeof window !== 'undefined'
-          ? `${window.location.origin}/payment-success`
-          : 'http://localhost:4200/payment-success';
+          ? `${window.location.origin}/payment-success?from=${encodeURIComponent(safePath)}`
+          : `http://localhost:4200/payment-success?from=${encodeURIComponent(safePath)}`;
 
         session = await firstValueFrom(
           this.dodoPayments.createSession({
@@ -494,21 +501,20 @@ export class ConfirmClaimModalComponent implements OnInit {
             metadata: metadata,
           }),
         );
-
-        this.activeSessionId.set(session.sessionId);
-        this.activeCheckoutUrl.set(session.checkoutUrl);
       } catch (e) {
         this.submitting.set(false);
+        this.checkoutStage.set('idle');
         const errMessage = this.dodoPayments.describeHttpError(e, 'Could not initiate Dodo Payments session.');
         this.quoteError.set(errMessage);
         this.toast.show(errMessage, 'error');
         return;
       }
 
-      this.submitting.set(false);
-
       // Step 3: Redirect directly to the official Dodo Payments checkout detail page
       if (typeof window !== 'undefined' && session.checkoutUrl) {
+        this.checkoutStage.set('redirecting');
+        // Brief delay so the user sees the "Redirecting you now..." label
+        await new Promise((r) => setTimeout(r, 300));
         this.modal.closeClaimModal();
         window.location.href = session.checkoutUrl;
       } else {
@@ -517,122 +523,10 @@ export class ConfirmClaimModalComponent implements OnInit {
     } catch (err: unknown) {
       this.submitting.set(false);
       this.quoteValidating.set(false);
+      this.checkoutStage.set('idle');
       const message = err instanceof Error ? err.message : 'Calculation error occurred.';
       this.quoteError.set(message);
       this.toast.show(message, 'error');
     }
-  }
-
-
-  private async handleDodoPaymentSuccess(
-    sessionId: string,
-    paymentId?: string,
-    chargeAmount?: number,
-    target?: number,
-    resolvedTitle?: string,
-    domain?: string,
-    resolvedSiteName?: string,
-    resolvedLogoUrl?: string | null,
-    resolvedDescription?: string | null,
-    resolvedFaviconUrl?: string | null,
-  ): Promise<void> {
-    this.transactionStatus.set('processing');
-    this.submitting.set(true);
-
-    let verifiedPaymentId = paymentId;
-    if (!verifiedPaymentId) {
-      try {
-        const status = await this.dodoPayments.pollUntilPaid(sessionId, 6, 1500);
-        verifiedPaymentId = status.paymentId || sessionId;
-      } catch {
-        verifiedPaymentId = sessionId;
-      }
-    }
-
-    const payable = chargeAmount ?? this.payableAmount();
-    const targetVal = target ?? this.targetAmount() ?? payable;
-    const title = resolvedTitle ?? this.listingName() ?? this.domainUrl();
-    const dom = domain ?? this.domainUrl();
-    const catId = this.selectedCategoryId();
-    const resolvedListingId = this.listingId();
-
-    this.dodoPayments.closeTerminal();
-
-    this.claimService
-      .placeClaim({
-        categoryId: catId,
-        listingId: resolvedListingId,
-        listingName: title,
-        listingUrl: dom,
-        ownerContactEmail: this.ownerEmail().trim(),
-        targetClaimAmount: targetVal,
-        paymentReference: verifiedPaymentId,
-        confirmedPaymentAmount: payable,
-        siteName: resolvedSiteName || title,
-        logoUrl: resolvedLogoUrl ?? null,
-        description: resolvedDescription ?? null,
-        faviconUrl: resolvedFaviconUrl ?? null,
-        isAllTimeMode: this.modal.claimModal()?.isAllTimeMode ?? false,
-      })
-      .subscribe({
-        next: (result) => {
-          this.submitting.set(false);
-
-          if (result.success) {
-            this.transactionStatus.set('success');
-            this.transactionDetails.set({
-              success: true,
-              paymentId: verifiedPaymentId,
-              orderId: sessionId,
-              amountPaid: result.amountCharged ?? payable,
-              newClaimAmount: result.newCurrentClaimAmount ?? targetVal,
-              targetClaimAmount: targetVal,
-              categoryName: this.selectedCategoryName(),
-              listingName: title,
-              listingUrl: dom,
-              timestamp: new Date(),
-            });
-
-            this.toast.show(
-              `🎉 Payment Confirmed! New placement: ₹${result.newCurrentClaimAmount} (Paid: ₹${result.amountCharged})`,
-              'success',
-            );
-          } else {
-            const errMsg = result.errorMessage ?? 'Placement was rejected by server.';
-            this.handlePaymentFailure(errMsg, payable, targetVal, title, dom, verifiedPaymentId, sessionId);
-          }
-        },
-        error: (err) => {
-          this.submitting.set(false);
-          const msg = err.error?.errorMessage || err.message || 'Something went wrong processing your placement.';
-          this.handlePaymentFailure(msg, payable, targetVal, title, dom, verifiedPaymentId, sessionId);
-        },
-      });
-  }
-
-  private handlePaymentFailure(
-    errMsg: string,
-    amountPaid: number,
-    target: number,
-    listingName: string,
-    listingUrl: string,
-    paymentId?: string,
-    orderId?: string,
-  ): void {
-    this.submitting.set(false);
-    this.transactionStatus.set('failed');
-    this.transactionDetails.set({
-      success: false,
-      paymentId,
-      orderId,
-      amountPaid,
-      targetClaimAmount: target,
-      categoryName: this.selectedCategoryName(),
-      listingName,
-      listingUrl,
-      errorMessage: errMsg,
-      timestamp: new Date(),
-    });
-    this.toast.show(errMsg, 'error');
   }
 }

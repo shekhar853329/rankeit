@@ -7,6 +7,33 @@
       <h2>Verifying Your Payment...</h2>
       <p class="text-muted">Confirming your transaction with Dodo Payments and updating the leaderboard.</p>
     </div>
+
+    } @else if (status() === 'cancelled') {
+    <div class="success-card__cancelled">
+      <div class="icon-circle icon-circle--warning">
+        <span class="material-symbols-outlined icon-xl">cancel</span>
+      </div>
+      <h2>Payment Cancelled</h2>
+      <p class="text-muted">You cancelled the payment. No charge was made.</p>
+      <div class="actions">
+        <a [routerLink]="fromUrl()" class="btn btn-primary">Try Again</a>
+        <a routerLink="/" class="btn btn-ghost">Go to Home</a>
+      </div>
+    </div>
+
+    } @else if (status() === 'failed') {
+    <div class="success-card__failed">
+      <div class="icon-circle icon-circle--error">
+        <span class="material-symbols-outlined icon-xl">error</span>
+      </div>
+      <h2>Payment Failed</h2>
+      <p class="text-muted">Your payment could not be processed. Please try again or contact support.</p>
+      <div class="actions">
+        <a [routerLink]="fromUrl()" class="btn btn-primary">Try Again</a>
+        <a routerLink="/" class="btn btn-ghost">Go to Home</a>
+      </div>
+    </div>
+
     } @else if (error()) {
     <div class="success-card__error">
       <div class="icon-circle icon-circle--error">
@@ -25,6 +52,7 @@
         <a routerLink="/" class="btn btn-primary">Go to Home</a>
       </div>
     </div>
+
     } @else {
     <div class="success-card__content">
       <div class="badge-row">
@@ -92,7 +120,7 @@
       </div>
 
       <div class="actions">
-        <a routerLink="/" class="btn btn-primary btn--block">
+        <a [routerLink]="leaderboardLink()" class="btn btn-primary btn--block">
           <span>View on Leaderboard 🚀</span>
         </a>
       </div>

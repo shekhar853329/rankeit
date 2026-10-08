@@ -164,10 +164,7 @@
 
     <div class="modal-panel__actions">
       <button type="button" class="btn btn-ghost" (click)="close()">
-        Close
-      </button>
-      <button type="button" class="btn btn-primary" (click)="retryPayment()">
-        <span>🔄 Try Again</span>
+        Close & Try Again
       </button>
     </div>
     }
@@ -258,26 +255,44 @@
         <span>PAYMENT BREAKDOWN</span>
       </div>
 
+      <!-- ── Target amount with ± controls and numeric input ── -->
       <div class="calc-ledger__row">
         <div class="calc-ledger__row-left">
           <span class="calc-ledger__item-title">Target Placement Amount</span>
           <span class="calc-ledger__item-desc">Your total leaderboard score</span>
         </div>
-        <span class="calc-ledger__item-val font-numeric">
-          ₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}
-        </span>
+        <div class="amount-control">
+          <button type="button" class="amount-control__btn"
+            (click)="subtractIncrement(minClaimIncrement())"
+            [disabled]="submitting() || isBelowMinimum()"
+            aria-label="Decrease amount">−</button>
+          <input
+            type="number"
+            class="amount-input"
+            [ngModel]="targetAmount()"
+            (ngModelChange)="onTargetAmountInput($event)"
+            [min]="absoluteMinimumClaim()"
+            [step]="minClaimIncrement()"
+            [disabled]="submitting()"
+            aria-label="Target placement amount in rupees"
+          />
+          <button type="button" class="amount-control__btn"
+            (click)="addIncrement(minClaimIncrement())"
+            [disabled]="submitting()"
+            aria-label="Increase amount">+</button>
+        </div>
       </div>
 
       <div class="calc-ledger__row calc-ledger__row--credit">
         <div class="calc-ledger__row-left">
           <span class="calc-ledger__item-title">
-            Previous Payment Credited
+            Credit from your active placement
             @if (isReclaim()) {
             <span class="credit-pill">Credited</span>
             }
           </span>
           <span class="calc-ledger__item-desc">
-            {{ isReclaim() ? 'Paid previously on this domain' : 'New listing — no prior credit' }}
+            {{ isReclaim() ? 'Your existing rank score carries forward' : 'New listing — no prior credit' }}
           </span>
         </div>
         <span class="calc-ledger__item-val font-numeric text-success">
@@ -340,10 +355,14 @@
       <button type="button" class="btn btn-primary" [disabled]="!isFormValid() || submitting()"
         (click)="proceedToCheckout()">
         @if (submitting()) {
-          @if (quoteValidating()) {
+          @if (checkoutStage() === 'quoting') {
             <span>Validating Quote...</span>
+          } @else if (checkoutStage() === 'creating') {
+            <span>Creating secure checkout...</span>
+          } @else if (checkoutStage() === 'redirecting') {
+            <span>Redirecting you now...</span>
           } @else {
-            <span>Redirecting to Dodo Payments...</span>
+            <span>Processing...</span>
           }
         } @else {
           <span>💳 Checkout with Dodo Payments • ₹{{ payableAmount() | number: '1.2-2' }}</span>

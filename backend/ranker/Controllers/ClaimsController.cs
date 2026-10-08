@@ -10,24 +10,14 @@ namespace Ranker.Controllers;
 public class ClaimsController(ISender sender) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<PlaceClaimResultDto>> PlaceClaim([FromBody] PlaceClaimRequestDto request, CancellationToken ct)
+    [Obsolete("Use POST /api/payments/dodo/verify instead. This endpoint is no longer supported.")]
+    public IActionResult PlaceClaim([FromBody] PlaceClaimRequestDto request)
     {
-        var result = await sender.Send(new PlaceClaimCommand(
-            request.CategoryId,
-            request.ListingId,
-            request.ListingName,
-            request.ListingUrl,
-            request.OwnerContactEmail,
-            request.TargetClaimAmount,
-            request.PaymentReference,
-            request.ConfirmedPaymentAmount,
-            request.SiteName,
-            request.LogoUrl,
-            request.Description,
-            request.FaviconUrl,
-            request.IsAllTimeMode), ct);
-
-        return result.Success ? Ok(result) : BadRequest(result);
+        return StatusCode(410, new
+        {
+            error = "This endpoint is no longer supported.",
+            detail = "Use POST /api/payments/dodo/verify to complete a claim after a Dodo Payments checkout."
+        });
     }
 
     [HttpPost("calculate")]

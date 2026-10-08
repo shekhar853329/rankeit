@@ -1,5 +1,8 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Ranker.Data;
 using Ranker.Domain.Entities;
@@ -10,7 +13,8 @@ namespace Ranker.Application.Payments;
 public class ProcessDodoWebhookCommandHandler(
     ISender sender,
     RankerDbContext dbContext,
-    ILogger<ProcessDodoWebhookCommandHandler> logger)
+    ILogger<ProcessDodoWebhookCommandHandler> logger,
+    IConfiguration configuration)
     : IRequestHandler<ProcessDodoWebhookCommand, bool>
 {
     public async Task<bool> Handle(
@@ -19,6 +23,26 @@ public class ProcessDodoWebhookCommandHandler(
     {
         logger.LogInformation("Received Dodo webhook event. WebhookId={WebhookId}, Timestamp={Timestamp}",
             command.WebhookId, command.Timestamp);
+
+        // ── Signature verification ────────────────────────────────────────────
+        var webhookKey = configuration["DodoPayments:WebhookKey"];
+        if (string.IsNullOrWhiteSpace(webhookKey) || webhookKey == "dev-skip")
+        {
+            logger.LogWarning("WebhookKey not configured — skipping signature verification (dev mode)");
+        }
+        else
+        {
+            if (!VerifyWebhookSignature(
+                    command.WebhookId,
+                    command.Timestamp,
+                    command.Signature,
+                    command.RawBody,
+                    webhookKey))
+            {
+                logger.LogWarning("Webhook signature verification FAILED for WebhookId={WebhookId}", command.WebhookId);
+                return false;
+            }
+        }
 
         try
         {
@@ -30,14 +54,7 @@ public class ProcessDodoWebhookCommandHandler(
 
             if (string.Equals(eventType, "payment.succeeded", StringComparison.OrdinalIgnoreCase))
             {
-                string? paymentId = null;
-                if (root.TryGetProperty("data", out var dataProp))
-                {
-                    if (dataProp.TryGetProperty("payment_id", out var pidProp))
-                        paymentId = pidProp.GetString();
-                    else if (dataProp.TryGetProperty("id", out var idProp))
-                        paymentId = idProp.GetString();
-                }
+                var paymentId = ExtractPaymentId(root);
 
                 if (!string.IsNullOrWhiteSpace(paymentId))
                 {
@@ -47,10 +64,20 @@ public class ProcessDodoWebhookCommandHandler(
                         verifyResult.Verified, verifyResult.Error);
                 }
             }
+            else if (string.Equals(eventType, "payment.failed", StringComparison.OrdinalIgnoreCase))
+            {
+                var paymentId = ExtractPaymentId(root);
+                logger.LogWarning("Webhook payment.failed received. PaymentId={PaymentId}. No action taken — claim not reversed.", paymentId);
+            }
+            else if (string.Equals(eventType, "payment.cancelled", StringComparison.OrdinalIgnoreCase))
+            {
+                var paymentId = ExtractPaymentId(root);
+                logger.LogInformation("Webhook payment.cancelled received. PaymentId={PaymentId}. No action taken.", paymentId);
+            }
 
             var audit = new PaymentAuditLog
             {
-                Action = "Webhook",
+                Action = eventType ?? "Webhook",
                 Gateway = "DodoPayments",
                 PaymentId = command.WebhookId,
                 RequestPayloadJson = command.RawBody,
@@ -68,5 +95,76 @@ public class ProcessDodoWebhookCommandHandler(
             logger.LogError(ex, "Failed to process Dodo webhook");
             return false;
         }
+    }
+
+    // ── Standard Webhooks HMAC-SHA256 verification ───────────────────────────
+
+    private static bool VerifyWebhookSignature(
+        string? webhookId,
+        string? webhookTimestamp,
+        string? webhookSignature,
+        string rawBody,
+        string webhookKey)
+    {
+        // 1. Parse and validate timestamp
+        if (string.IsNullOrWhiteSpace(webhookTimestamp) || !long.TryParse(webhookTimestamp, out var tsSeconds))
+            return false;
+
+        var nowSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (Math.Abs(nowSeconds - tsSeconds) > 300)
+            return false; // Replay attack: timestamp older than 5 minutes
+
+        // 2. Build signed content
+        var signedContent = $"{webhookId}.{webhookTimestamp}.{rawBody}";
+        var signedContentBytes = Encoding.UTF8.GetBytes(signedContent);
+
+        // 3. Decode webhook key from base64
+        byte[] keyBytes;
+        try
+        {
+            keyBytes = Convert.FromBase64String(webhookKey);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        // 4. Compute HMAC-SHA256
+        using var hmac = new HMACSHA256(keyBytes);
+        var hashBytes = hmac.ComputeHash(signedContentBytes);
+        var computedSignature = Convert.ToBase64String(hashBytes);
+
+        // 5. Compare against each signature in the header (comma-separated)
+        if (string.IsNullOrWhiteSpace(webhookSignature))
+            return false;
+
+        var parts = webhookSignature.Split(',');
+        foreach (var part in parts)
+        {
+            var trimmed = part.Trim();
+            // Strip "v1," prefix per Standard Webhooks spec
+            var candidate = trimmed.StartsWith("v1,", StringComparison.OrdinalIgnoreCase)
+                ? trimmed["v1,".Length..]
+                : trimmed;
+
+            if (candidate == computedSignature)
+                return true;
+        }
+
+        return false;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static string? ExtractPaymentId(JsonElement root)
+    {
+        if (root.TryGetProperty("data", out var dataProp))
+        {
+            if (dataProp.TryGetProperty("payment_id", out var pidProp))
+                return pidProp.GetString();
+            if (dataProp.TryGetProperty("id", out var idProp))
+                return idProp.GetString();
+        }
+        return null;
     }
 }

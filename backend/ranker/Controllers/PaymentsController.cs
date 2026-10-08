@@ -9,7 +9,8 @@ namespace Ranker.Controllers;
 [Route("api/payments")]
 public class PaymentsController(
     ISender sender,
-    ILogger<PaymentsController> logger) : ControllerBase
+    ILogger<PaymentsController> logger,
+    IConfiguration configuration) : ControllerBase
 {
     // ── Dodo Payments ─────────────────────────────────────────────────────────
 
@@ -31,8 +32,11 @@ public class PaymentsController(
             var returnUrl = request.ReturnUrl;
             if (string.IsNullOrWhiteSpace(returnUrl))
             {
-                var origin = Request.Headers.Origin.FirstOrDefault() ?? Request.Headers.Referer.FirstOrDefault() ?? "http://localhost:4200";
-                returnUrl = $"{origin.TrimEnd('/')}/payment-success";
+                var frontendBase = configuration["DodoPayments:FrontendBaseUrl"]
+                    ?? Request.Headers.Origin.FirstOrDefault()
+                    ?? Request.Headers.Referer.FirstOrDefault()
+                    ?? "http://localhost:4200";
+                returnUrl = $"{frontendBase.TrimEnd('/')}/payment-success";
             }
 
             var command = new CreateDodoSessionCommand(
