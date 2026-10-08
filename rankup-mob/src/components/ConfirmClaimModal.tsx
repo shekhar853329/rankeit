@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -165,11 +165,11 @@ export const ConfirmClaimModal: React.FC = () => {
       return;
     }
     if (targetAmount < minStartingClaim) {
-      setStatusMessage(`Placement amount must be at least ₹${minStartingClaim}.`);
+      setStatusMessage(`Placement amount must be at least $${minStartingClaim}.`);
       return;
     }
     if (isReclaim && targetAmount <= existingClaim) {
-      setStatusMessage(`Target placement must be higher than current placement of ₹${existingClaim}.`);
+      setStatusMessage(`Target placement must be higher than current placement of $${existingClaim}.`);
       return;
     }
 
@@ -263,7 +263,7 @@ export const ConfirmClaimModal: React.FC = () => {
 
                 <View style={[styles.successAmountBox, { backgroundColor: colors.surfaceSubtle }]}>
                   <Text style={[styles.successAmountVal, { color: colors.primary }]}>
-                    ₹{receiptDetails.amountPaid?.toFixed(2)}
+                    ${receiptDetails.amountPaid?.toFixed(2)}
                   </Text>
                   <Text style={[styles.successAmountSub, { color: colors.textMuted }]}>
                     Amount Settled
@@ -297,7 +297,7 @@ export const ConfirmClaimModal: React.FC = () => {
                         styles.receiptVal,
                         { color: colors.primary, fontWeight: '800' },
                       ]}>
-                      ₹{receiptDetails.newClaimAmount?.toFixed(2)}
+                      ${receiptDetails.newClaimAmount?.toFixed(2)}
                     </Text>
                   </View>
                   <View style={styles.receiptRow}>
@@ -334,7 +334,7 @@ export const ConfirmClaimModal: React.FC = () => {
                   <View style={styles.summaryCol}>
                     <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Target Placement</Text>
                     <Text style={[styles.summaryVal, { color: colors.primary, fontWeight: '800' }]}>
-                      ₹{targetAmount}
+                      ${targetAmount}
                     </Text>
                   </View>
                 </View>
@@ -398,7 +398,7 @@ export const ConfirmClaimModal: React.FC = () => {
                       </Text>
                       <Text style={[styles.reclaimAlertDesc, { color: colors.text }]}>
                         Previous payment of{' '}
-                        <Text style={{ fontWeight: '700' }}>₹{existingClaim.toFixed(2)}</Text> will be
+                        <Text style={{ fontWeight: '700' }}>${existingClaim.toFixed(2)}</Text> will be
                         credited 100% toward this placement.
                       </Text>
                     </View>
@@ -410,7 +410,7 @@ export const ConfirmClaimModal: React.FC = () => {
                   <View style={styles.claimHeaderRow}>
                     <Text style={[styles.inputLabel, { color: colors.text }]}>Target Placement Amount</Text>
                     <Text style={[styles.minClaimLabel, { color: colors.textMuted }]}>
-                      Min: ₹{minStartingClaim}
+                      Min: ${minStartingClaim}
                     </Text>
                   </View>
                   <View style={styles.stepperRow}>
@@ -425,7 +425,7 @@ export const ConfirmClaimModal: React.FC = () => {
                         styles.stepperInputWrap,
                         { backgroundColor: colors.surfaceSubtle, borderColor: colors.border },
                       ]}>
-                      <Text style={[styles.stepperCurrency, { color: colors.primary }]}>₹</Text>
+                      <Text style={[styles.stepperCurrency, { color: colors.primary }]}>$</Text>
                       <TextInput
                         style={[styles.stepperInput, { color: colors.text }]}
                         keyboardType="numeric"
@@ -489,7 +489,7 @@ export const ConfirmClaimModal: React.FC = () => {
 
                   <View style={styles.ledgerRow}>
                     <Text style={[styles.ledgerItemTitle, { color: colors.text }]}>Target Placement Amount</Text>
-                    <Text style={[styles.ledgerItemVal, { color: colors.text }]}>₹{targetAmount.toFixed(2)}</Text>
+                    <Text style={[styles.ledgerItemVal, { color: colors.text }]}>${targetAmount.toFixed(2)}</Text>
                   </View>
 
                   {isReclaim && (
@@ -498,7 +498,7 @@ export const ConfirmClaimModal: React.FC = () => {
                         Previous Payment Credited (100%)
                       </Text>
                       <Text style={[styles.ledgerItemVal, { color: colors.success }]}>
-                        -₹{creditedAmount.toFixed(2)}
+                        -${creditedAmount.toFixed(2)}
                       </Text>
                     </View>
                   )}
@@ -515,7 +515,7 @@ export const ConfirmClaimModal: React.FC = () => {
                       </Text>
                     </View>
                     <Text style={[styles.ledgerTotalVal, { color: colors.primary }]}>
-                      ₹{payableAmount.toFixed(2)}
+                      ${payableAmount.toFixed(2)}
                     </Text>
                   </View>
                 </View>
@@ -576,7 +576,7 @@ export const ConfirmClaimModal: React.FC = () => {
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
                       <Text style={styles.primaryBtnText}>
-                        Claim & Pay ₹{payableAmount.toFixed(2)}
+                        Claim & Pay ${payableAmount.toFixed(2)}
                       </Text>
                     )}
                   </Pressable>

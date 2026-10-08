@@ -3,7 +3,7 @@
     <div class="claim-hero__headline">
       Claim&nbsp;<span class="claim-hero__rank">#{{ rank() }}</span>&nbsp;for
       <button type="button" class="claim-hero__step" (click)="decrement.emit()" aria-label="Decrease amount">−</button>
-      <span class="claim-hero__price">₹{{ (amount() ?? 0) | number: '1.0-2' }}</span>
+      <span class="claim-hero__price">${{ (amount() ?? 0) | number: '1.0-2' }}</span>
       <button type="button" class="claim-hero__step" (click)="increment.emit()" aria-label="Increase amount">+</button>
     </div>
 

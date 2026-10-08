@@ -327,7 +327,7 @@ export default function GlobalLeaderboardScreen() {
               <View style={styles.claimTitleRow}>
                 <Text style={[styles.headlineText, { color: colors.text }]}>Claim a Spot</Text>
                 <View style={[styles.amountPill, { backgroundColor: colors.surfaceSubtle }]}>
-                  <Text style={[styles.amountPillText, { color: colors.primary }]}>for ₹{heroClaimAmount}</Text>
+                  <Text style={[styles.amountPillText, { color: colors.primary }]}>for ${heroClaimAmount}</Text>
                 </View>
               </View>
             </View>
@@ -376,7 +376,7 @@ export default function GlobalLeaderboardScreen() {
                       <Text style={[styles.stepperActionText, { color: colors.text }]}>−</Text>
                     </Pressable>
                     <Text style={[styles.stepperDisplay, { color: colors.primary }]}>
-                      ₹{heroClaimAmount}
+                      ${heroClaimAmount}
                     </Text>
                     <Pressable
                       style={styles.stepperActionBtn}
@@ -577,7 +577,7 @@ export default function GlobalLeaderboardScreen() {
           <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Ionicons name="rocket-outline" size={40} color={colors.primary} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              Rank #1 is wide open — grab it for ₹{claimCategory?.minStartingClaim ?? 1}!
+              Rank #1 is wide open — grab it for ${claimCategory?.minStartingClaim ?? 1}!
             </Text>
             <Text style={[styles.emptySub, { color: colors.textMuted }]}>
               Today's leaderboard is a blank slate. Be the first name everyone sees.
@@ -592,7 +592,7 @@ export default function GlobalLeaderboardScreen() {
                 setTimeout(() => heroUrlInputRef.current?.focus(), 360);
               }}>
               <Text style={styles.emptyClaimBtnText}>
-                Claim #1 for ₹{claimCategory?.minStartingClaim ?? 1}
+                Claim #1 for ${claimCategory?.minStartingClaim ?? 1}
               </Text>
             </Pressable>
           </View>
@@ -686,7 +686,7 @@ export default function GlobalLeaderboardScreen() {
                             Active Placement
                           </Text>
                           <Text style={[styles.priceVal, { color: colors.primary }]}>
-                            ₹{row.currentClaimAmount.toFixed(0)}
+                            ${row.currentClaimAmount.toFixed(0)}
                           </Text>
                         </View>
 
@@ -780,7 +780,7 @@ export default function GlobalLeaderboardScreen() {
                         <View style={styles.priceStack}>
                           <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Placement</Text>
                           <Text style={[styles.priceVal, { color: colors.text }]}>
-                            ₹{row.currentClaimAmount.toFixed(0)}
+                            ${row.currentClaimAmount.toFixed(0)}
                           </Text>
                         </View>
 
@@ -841,7 +841,7 @@ export default function GlobalLeaderboardScreen() {
 
                   <View style={styles.compactRight}>
                     <Text style={[styles.compactPrice, { color: colors.text }]}>
-                      ₹{row.currentClaimAmount.toFixed(0)}
+                      ${row.currentClaimAmount.toFixed(0)}
                     </Text>
                     <Pressable
                       style={[styles.compactClaimBtn, { backgroundColor: colors.surfaceSubtle }]}
@@ -938,7 +938,7 @@ export default function GlobalLeaderboardScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.catModalItemName, { color: colors.text }]}>{c.name}</Text>
                     <Text style={[styles.catModalItemSub, { color: colors.textMuted }]}>
-                      Starting floor: ₹{c.minStartingClaim} • {c.listingCount} listings
+                      Starting floor: ${c.minStartingClaim} • {c.listingCount} listings
                     </Text>
                   </View>
                   {claimCategory?.slug === c.slug && (

@@ -77,7 +77,7 @@
         </div>
         <div class="stat-item stat-item--placement">
           <span class="stat-eyebrow">Active Placement</span>
-          <span class="stat-value stat-value--claim">₹{{ p.currentClaimAmount | number: '1.0-2' }}</span>
+          <span class="stat-value stat-value--claim">${{ p.currentClaimAmount | number: '1.0-2' }}</span>
         </div>
       </div>
     </div>
@@ -238,7 +238,7 @@
         <div class="related-stats">
           <span class="related-stat">
             <span class="material-symbols-outlined text-[14px]">payments</span>
-            ₹{{ related.currentClaimAmount | number: '1.0-2' }}
+            ${{ related.currentClaimAmount | number: '1.0-2' }}
           </span>
           <span class="related-stat">
             <span class="material-symbols-outlined text-[14px]">visibility</span>

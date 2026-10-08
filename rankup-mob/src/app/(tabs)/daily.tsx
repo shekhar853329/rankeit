@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -209,7 +209,7 @@ export default function DailyListingsScreen() {
 
                             <View style={styles.entryRight}>
                               <Text style={[styles.entryClaim, { color: colors.primary }]}>
-                                ₹{item.currentClaimAmount.toFixed(0)}
+                                ${item.currentClaimAmount.toFixed(0)}
                               </Text>
                               <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
                             </View>

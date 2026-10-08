@@ -530,7 +530,7 @@
 
           <div class="compact-rank-card__right">
             <span class="compact-price"
-              [title]="timeMode() === 'today' ? 'Paid today: ₹' + (row.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (row.currentClaimAmount | number: '1.0-0')">{{
+              [title]="timeMode() === 'today' ? 'Paid today: $' + (row.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: $' + (row.currentClaimAmount | number: '1.0-0')">{{
               currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0' }}</span>
             <button type="button" class="compact-claim-btn"
               (click)="claimThisPosition(row.currentClaimAmount + incrementForCategory(row.categorySlug), row.rank); $event.stopPropagation()">

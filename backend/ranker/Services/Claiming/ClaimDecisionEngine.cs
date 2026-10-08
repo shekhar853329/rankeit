@@ -65,15 +65,18 @@ public static class ClaimDecisionEngine
             return ClaimDecision.Fail(ClaimFailureReason.AllTimeCumulativeTooLow, existingListingCurrentClaim + categoryMinClaimIncrement);
         }
 
-        // A listing cannot lower its active claim
-        if (existingListingId.HasValue && targetClaimAmount < existingListingCurrentClaim)
+        // All-time mode only: a listing cannot lower its active claim.
+        // In today mode the user always pays the full target amount, so there is no concept of lowering.
+        if (isAllTimeMode && existingListingId.HasValue && targetClaimAmount < existingListingCurrentClaim)
         {
             return ClaimDecision.Fail(ClaimFailureReason.ClaimTooLow, existingListingCurrentClaim);
         }
 
-        // Rule B3: a listing reclaiming/raising its own position pays only the difference from its current claim;
-        // a brand-new listing pays its full target amount (its current claim starts at 0).
-        var expectedCharge = targetClaimAmount - existingListingCurrentClaim;
+        // Rule B3 (mode-aware):
+        //   All-time mode — pay only the delta above the all-time cumulative total already paid.
+        //   Today mode    — pay the full target amount; previous payments are NOT credited.
+        var credit = isAllTimeMode ? existingListingCurrentClaim : 0m;
+        var expectedCharge = targetClaimAmount - credit;
 
         if (confirmedPaymentAmount != expectedCharge)
         {

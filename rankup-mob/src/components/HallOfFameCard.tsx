@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -116,7 +116,7 @@ export const HallOfFameCard: React.FC = () => {
               </View>
 
               <Text style={[styles.itemClaim, { color: colors.primary }]}>
-                ₹{(item.claimAmount ?? 0).toFixed(0)}
+                ${(item.claimAmount ?? 0).toFixed(0)}
               </Text>
             </View>
           );

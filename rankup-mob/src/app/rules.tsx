@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -24,9 +24,9 @@ export default function RulesScreen() {
       num: '02',
       icon: 'cursor',
       title: 'Promote for #1 or Any Position',
-      desc: 'You do not have to pay for Rank #1 right away. You can place any placement amount starting from as low as ₹1.00 to enter the leaderboard.',
+      desc: 'You do not have to pay for Rank #1 right away. You can place any placement amount starting from as low as $1.00 to enter the leaderboard.',
       highlight:
-        'To claim Rank #1: Your placement must beat the current leader by at least the category increment (e.g. +₹1). If the category is brand new, simply match the starting price.',
+        'To claim Rank #1: Your placement must beat the current leader by at least the category increment (e.g. +$1). If the category is brand new, simply match the starting price.',
     },
     {
       num: '03',
@@ -34,7 +34,7 @@ export default function RulesScreen() {
       title: 'Rank Upgrades: Pay Only the Difference',
       desc: 'When raising your existing listing rank, 100% of your previous payment is automatically credited. You only pay the net difference!',
       highlight:
-        'Example: If you previously paid ₹10 and want to raise your rank to ₹25, you only pay ₹15.',
+        'Example: If you previously paid $10 and want to raise your rank to $25, you only pay $15.',
     },
     {
       num: '04',

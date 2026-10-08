@@ -82,7 +82,7 @@
     <div class="hero-price-panel">
       <div class="price-header">
         <span class="price-eyebrow">Active Placement</span>
-        <span class="price-display">₹{{ l.currentClaimAmount | number: '1.0-2' }}</span>
+        <span class="price-display">${{ l.currentClaimAmount | number: '1.0-2' }}</span>
       </div>
 
       <button type="button" class="btn-claim-cta" (click)="claimThisPosition()">
@@ -186,13 +186,13 @@
               <span class="date-rel">{{ timeAgo(claim.createdAt) }}</span>
             </td>
             <td class="col-amount">
-              <span class="amount-val">₹{{ claim.amount | number: '1.0-2' }}</span>
+              <span class="amount-val">${{ claim.amount | number: '1.0-2' }}</span>
               @if (idx === 0) {
               <span class="tag-peak">Top Rank</span>
               }
             </td>
             <td class="col-paid">
-              <span class="paid-badge font-mono">+₹{{ (claim.paymentAmount > 0 ? claim.paymentAmount : claim.amount) |
+              <span class="paid-badge font-mono">+${{ (claim.paymentAmount > 0 ? claim.paymentAmount : claim.amount) |
                 number:
                 '1.2-2' }}</span>
             </td>

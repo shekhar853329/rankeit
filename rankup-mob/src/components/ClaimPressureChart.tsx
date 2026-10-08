@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, Line, LinearGradient, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
@@ -136,7 +136,7 @@ export const ClaimPressureChart: React.FC<ClaimPressureChartProps> = ({ stats })
         <View style={styles.kpiRow}>
           <View style={[styles.kpiPill, { backgroundColor: colors.surfaceSubtle }]}>
             <Text style={[styles.kpiLabel, { color: colors.textMuted }]}>Today's Vol</Text>
-            <Text style={[styles.kpiVal, { color: colors.text }]}>₹{todayVolume.toFixed(0)}</Text>
+            <Text style={[styles.kpiVal, { color: colors.text }]}>${todayVolume.toFixed(0)}</Text>
           </View>
           <View style={[styles.kpiPill, { backgroundColor: colors.surfaceSubtle }]}>
             <Text style={[styles.kpiLabel, { color: colors.textMuted }]}>Count</Text>
@@ -145,7 +145,7 @@ export const ClaimPressureChart: React.FC<ClaimPressureChartProps> = ({ stats })
           {peakClaim > 0 && (
             <View style={[styles.kpiPill, { backgroundColor: colors.primaryLight }]}>
               <Text style={[styles.kpiLabel, { color: colors.primary }]}>Peak</Text>
-              <Text style={[styles.kpiVal, { color: colors.primary }]}>₹{peakClaim.toFixed(0)}</Text>
+              <Text style={[styles.kpiVal, { color: colors.primary }]}>${peakClaim.toFixed(0)}</Text>
             </View>
           )}
         </View>
@@ -335,7 +335,7 @@ export const ClaimPressureChart: React.FC<ClaimPressureChartProps> = ({ stats })
             {chartPoints[selectedIndex].label}:
           </Text>
           <Text style={[styles.tooltipVal, { color: colors.primary }]}>
-            ₹{chartPoints[selectedIndex].value}
+            ${chartPoints[selectedIndex].value}
           </Text>
         </View>
       )}

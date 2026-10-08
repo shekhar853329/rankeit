@@ -69,7 +69,7 @@
         </p>
         @if (verification()?.amount; as amt) {
         <div class="hero-amount font-numeric">
-          ₹{{ amt | number: '1.2-2' }}
+          ${{ amt | number: '1.2-2' }}
         </div>
         <span class="hero-amount-sub">Processed via Dodo Payments</span>
         }
@@ -84,7 +84,7 @@
         @if (verification()?.newClaimAmount; as totalPlacement) {
         <div class="details-card__row">
           <span class="details-card__label">Total Leaderboard Score</span>
-          <span class="details-card__value font-numeric text-primary">₹{{ totalPlacement | number: '1.2-2' }}</span>
+          <span class="details-card__value font-numeric text-primary">${{ totalPlacement | number: '1.2-2' }}</span>
         </div>
         }
 

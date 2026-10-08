@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -102,7 +102,7 @@ export const ReigningSpotlightCard: React.FC<ReigningSpotlightCardProps> = ({ ch
 
         <View style={[styles.defenseBox, { backgroundColor: colors.surfaceSubtle }]}>
           <Text style={[styles.defenseVal, { color: colors.primary }]}>
-            ₹{(champion?.currentClaimAmount ?? 0).toFixed(0)}
+            ${(champion?.currentClaimAmount ?? 0).toFixed(0)}
           </Text>
           <Text style={[styles.defenseLabel, { color: colors.textMuted }]}>Capital Spent</Text>
         </View>

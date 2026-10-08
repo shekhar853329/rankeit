@@ -1,4 +1,4 @@
-<div class="category-arena-page">
+﻿<div class="category-arena-page">
   <!-- ═══════════════════════════════════════════════════════════
        CATEGORY COMMAND & URGENCY HERO STATION
        ═══════════════════════════════════════════════════════════ -->
@@ -32,7 +32,7 @@
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
               id="placement-decrement">−</button>
             <div class="stepper-display-wrap">
-              <span class="stepper-currency">₹</span>
+              <span class="stepper-currency">$</span>
               <input id="target-placement-display" type="number" class="stepper-input" aria-label="Claim Amount"
                 [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? minStartingClaim())"
                 (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
@@ -43,7 +43,7 @@
           </div>
           @if (claimPrice(); as minRank1) {
           <span class="headline-badge-rank1" title="Amount required to claim Rank #1 in this category">
-            Cat-#1: ₹{{ minRank1 }}
+            Cat-#1: ${{ minRank1 }}
           </span>
           }
         </div>
@@ -225,7 +225,7 @@
               <div class="podium-card__right">
                 <div class="price-box">
                   <span class="price-label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
-                  <span class="price-val text-primary">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
+                  <span class="price-val text-primary">${{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="claim-action-btn claim-action-btn--primary"
                   (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), 1); $event.stopPropagation()">
@@ -274,7 +274,7 @@
               <div class="podium-card__right">
                 <div class="price-box">
                   <span class="price-label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
-                  <span class="price-val">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
+                  <span class="price-val">${{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="claim-action-btn claim-action-btn--secondary"
                   (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), 2); $event.stopPropagation()">
@@ -323,7 +323,7 @@
               <div class="podium-card__right">
                 <div class="price-box">
                   <span class="price-label">{{ timeMode() === 'today' ? 'Paid Today' : 'All-Time Placed' }}</span>
-                  <span class="price-val">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
+                  <span class="price-val">${{ entry.currentClaimAmount | number: '1.0-0' }}</span>
                 </div>
                 <button type="button" class="claim-action-btn claim-action-btn--secondary"
                   (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), 3); $event.stopPropagation()">
@@ -358,7 +358,7 @@
 
             <div class="compact-entry-right">
               <span class="compact-price"
-                [title]="timeMode() === 'today' ? 'Paid today: ₹' + (entry.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (entry.currentClaimAmount | number: '1.0-0')">₹{{
+                [title]="timeMode() === 'today' ? 'Paid today: $' + (entry.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: $' + (entry.currentClaimAmount | number: '1.0-0')">${{
                 entry.currentClaimAmount | number: '1.0-0' }}</span>
               <button type="button" class="compact-btn"
                 (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), entry.rank); $event.stopPropagation()">
@@ -408,7 +408,7 @@
               <div class="liquidity-stat-pill"
                 [title]="timeMode() === 'today' ? 'Total category placement volume today' : 'Total all-time category placement volume'">
                 <span class="stat-pill-label">{{ kpiVolumeLabel() }}</span>
-                <span class="stat-pill-val">₹{{ displayedTotalVolume() | number: '1.2-2' }}</span>
+                <span class="stat-pill-val">${{ displayedTotalVolume() | number: '1.2-2' }}</span>
               </div>
               <div class="liquidity-stat-pill"
                 [title]="timeMode() === 'today' ? 'Total category payments registered today' : 'Total all-time category payments registered'">
@@ -419,7 +419,7 @@
               <div class="liquidity-stat-pill liquidity-stat-pill--highlight"
                 [title]="timeMode() === 'today' ? 'Peak category payment today' : 'Peak all-time category payment'">
                 <span class="stat-pill-label">Peak</span>
-                <span class="stat-pill-val">₹{{ peak.amount | number: '1.0-2' }}</span>
+                <span class="stat-pill-val">${{ peak.amount | number: '1.0-2' }}</span>
               </div>
               }
             </div>
@@ -566,7 +566,7 @@
             @if (cat.slug !== categorySlug()) {
             <a [routerLink]="['/leaderboard', cat.slug]" queryParamsHandling="preserve" class="trending-row">
               <span class="trending-name">{{ cat.name }}</span>
-              <span class="trending-count">₹{{ (cat.maxClaimAmount || 0) | number: '1.0-0' }} max</span>
+              <span class="trending-count">${{ (cat.maxClaimAmount || 0) | number: '1.0-0' }} max</span>
             </a>
             }
             }

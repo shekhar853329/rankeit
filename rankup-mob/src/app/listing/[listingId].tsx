@@ -1,10 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+﻿import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,244 +12,234 @@ import {
 } from 'react-native';
 import { AppFooter } from '../../components/AppFooter';
 import { AppHeader } from '../../components/AppHeader';
-import { ProductAvatar } from '../../components/ProductAvatar';
+import { SmoothChevron, SmoothCollapsible } from '../../components/SmoothCollapsible';
 import { getCategoryIcon } from '../../constants/icons';
 import { Radius, Spacing } from '../../constants/theme';
-import { useClaimModal } from '../../context/ModalContext';
 import { useSignalR } from '../../context/SignalRContext';
 import { useAppTheme } from '../../context/ThemeContext';
-import { ListingDetailDto } from '../../models';
-import { getListingDetail, recordListingClick } from '../../services/api';
-import { signalRService } from '../../services/signalr.service';
+import { DailyListingGroupDto } from '../../models';
+import { getDailyListings, recordListingClick } from '../../services/api';
 
-export default function ListingDetailScreen() {
+export default function DailyListingsScreen() {
   const { colors, isDark } = useAppTheme();
   const router = useRouter();
-  const { listingId } = useLocalSearchParams<{ listingId: string }>();
-  const { openClaimModal } = useClaimModal();
   const { clickCounts: liveClickCounts } = useSignalR();
 
-  const [listing, setListing] = useState<ListingDetailDto | null>(null);
+  const [groups, setGroups] = useState<DailyListingGroupDto[]>([]);
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
-  const [notFound, setNotFound] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
-  const numId = Number(listingId);
-
-  const loadListing = async () => {
-    if (!numId) return;
-    setLoading(true);
+  const loadData = async (pageNum = 1, append = false) => {
     try {
-      const res = await getListingDetail(numId);
-      if (res) {
-        setListing(res);
-        setNotFound(false);
-      } else {
-        setNotFound(true);
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const res = await getDailyListings(pageNum, 5);
+      if (res && res.items) {
+        setTotalCount(res.totalCount);
+        if (append) {
+          setGroups((prev) => [...prev, ...res.items]);
+        } else {
+          setGroups(res.items);
+          // Expand the first day by default
+          if (res.items.length > 0) {
+            setExpandedDays(new Set([res.items[0].day]));
+          }
+        }
+        setPage(pageNum);
       }
     } catch {
-      setNotFound(true);
+      // Ignore
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    loadListing();
-  }, [numId]);
+    loadData(1, false);
+  }, []);
 
-  useEffect(() => {
-    if (listing?.categorySlug) {
-      signalRService.joinCategoryGroup(listing.categorySlug);
-      return () => {
-        signalRService.leaveCategoryGroup(listing.categorySlug);
-      };
-    }
-  }, [listing?.categorySlug]);
-
-  const handleVisit = () => {
-    if (!listing) return;
-    recordListingClick(listing.listingId).catch(() => {});
-    const target = listing.listingUrl.startsWith('http')
-      ? listing.listingUrl
-      : `https://${listing.listingUrl}`;
-    Linking.openURL(target).catch(() => {});
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData(1, false);
   };
 
-  const handleRaisePosition = () => {
-    if (!listing) return;
-    openClaimModal({
-      rank: listing.currentRankInCategory,
-      categoryName: listing.categoryName,
-      categorySlug: listing.categorySlug,
-      listingId: listing.listingId,
-      listingName: listing.listingName,
-      listingUrl: listing.listingUrl,
-      currentClaimAmount: listing.currentClaimAmount,
-      amount: listing.currentClaimAmount + 1,
-      onSuccess: () => loadListing(),
+  const toggleDay = (day: string) => {
+    setExpandedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(day)) next.delete(day);
+      else next.add(day);
+      return next;
     });
   };
 
-  const clicks = (listing && liveClickCounts[listing.listingId]) ?? listing?.clickCount ?? 0;
+  const handleOpenListing = (listingId: number) => {
+    recordListingClick(listingId).catch(() => {});
+    router.push(`/listing/${listingId}` as any);
+  };
+
+  const hasMore = groups.length < totalCount;
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <AppHeader />
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {/* Breadcrumb Navigation */}
-        <Pressable style={styles.breadcrumb} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={16} color={colors.primary} />
-          <Text style={[styles.breadcrumbText, { color: colors.primary }]}>Back to Leaderboard</Text>
-        </Pressable>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }>
+        {/* Header Hero */}
+        <View style={styles.headerHero}>
+          <Text style={[styles.title, { color: colors.text }]}>Daily Listings Archive</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+            Chronological audit of winning products &amp; traffic generated day by day
+          </Text>
+        </View>
 
         {loading ? (
           <View style={styles.loadingWrap}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={[styles.loadingText, { color: colors.textMuted }]}>
-              Loading listing details &amp; audit history...
+              Loading daily historical archives...
             </Text>
           </View>
-        ) : notFound || !listing ? (
-          <View style={[styles.notFoundCard, { backgroundColor: colors.surface }]}>
-            <Ionicons name="alert-circle-outline" size={40} color={colors.warning} />
-            <Text style={[styles.notFoundTitle, { color: colors.text }]}>Listing Not Found</Text>
-            <Text style={[styles.notFoundSub, { color: colors.textMuted }]}>
-              The product you requested does not exist or has expired.
+        ) : groups.length === 0 ? (
+          <View style={[styles.emptyWrap, { backgroundColor: colors.surface }]}>
+            <Ionicons name="calendar-outline" size={36} color={colors.textMuted} />
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No daily records yet</Text>
+            <Text style={[styles.emptySub, { color: colors.textMuted }]}>
+              Records will appear as daily placement windows complete.
             </Text>
           </View>
         ) : (
-          <View style={styles.detailBody}>
-            {/* Main Product Hero Card */}
-            <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={styles.heroTop}>
-                <ProductAvatar
-                  logoUrl={listing.logoUrl}
-                  faviconUrl={listing.faviconUrl}
-                  websiteUrl={listing.listingUrl}
-                  name={listing.siteName || listing.listingName}
-                  size={54}
-                  borderRadius={Radius.md}
-                />
+          <View style={styles.groupsList}>
+            {groups.map((group) => {
+              const isExpanded = expandedDays.has(group.day);
 
-                <View style={styles.heroMeta}>
-                  <View style={styles.titleRow}>
-                    <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>
-                      {listing.siteName || listing.listingName}
-                    </Text>
-                    <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
-                  </View>
-                  <Text style={[styles.domainText, { color: colors.textMuted }]}>
-                    {listing.listingUrl}
-                  </Text>
-                  <View style={styles.categoryChipRow}>
-                    <View style={[styles.categoryChip, { backgroundColor: colors.surfaceSubtle }]}>
-                      <Text style={[styles.categoryChipText, { color: colors.text }]}>
-                        {getCategoryIcon(listing.categorySlug)} {listing.categoryName}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-
-              {listing.description ? (
-                <Text style={[styles.description, { color: colors.textMuted }]}>
-                  {listing.description}
-                </Text>
-              ) : null}
-
-              {/* Status & Stats Grid */}
-              <View style={styles.statsGrid}>
-                <View style={[styles.statBox, { backgroundColor: colors.surfaceSubtle }]}>
-                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Rank</Text>
-                  <Text style={[styles.statVal, { color: colors.text }]}>
-                    #{listing.currentRankInCategory}
-                  </Text>
-                </View>
-                <View style={[styles.statBox, { backgroundColor: colors.surfaceSubtle }]}>
-                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Active Placement</Text>
-                  <Text style={[styles.statVal, { color: colors.primary }]}>
-                    ₹{listing.currentClaimAmount.toFixed(0)}
-                  </Text>
-                </View>
-                <View style={[styles.statBox, { backgroundColor: colors.surfaceSubtle }]}>
-                  <Text style={[styles.statLabel, { color: colors.textMuted }]}>Clicks</Text>
-                  <Text style={[styles.statVal, { color: colors.secondaryGreen }]}>
-                    {clicks}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Action Buttons */}
-              <View style={styles.actionBtnRow}>
-                <Pressable
-                  style={[styles.visitBtn, { backgroundColor: colors.surfaceSubtle, borderColor: colors.border }]}
-                  onPress={handleVisit}>
-                  <Ionicons name="open-outline" size={13} color={colors.text} />
-                  <Text style={[styles.visitBtnText, { color: colors.text }]}>Visit Link</Text>
-                </Pressable>
-
-                <Pressable
-                  style={[styles.raiseBtn, { backgroundColor: colors.primary }]}
-                  onPress={handleRaisePosition}>
-                  <Ionicons name="flash" size={13} color="#fff" />
-                  <Text style={styles.raiseBtnText}>Raise Position</Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {/* Claims & Payments Audit Timeline */}
-            <View style={[styles.timelineCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={styles.timelineHeader}>
-                <Ionicons name="receipt-outline" size={18} color={colors.primary} />
-                <Text style={[styles.timelineTitle, { color: colors.text }]}>
-                  Placement &amp; Payment History
-                </Text>
-              </View>
-
-              <View style={styles.timelineList}>
-                {(listing.claims || []).map((claim, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.timelineItem,
-                      {
-                        borderBottomColor: colors.border,
-                        borderBottomWidth: i === listing.claims.length - 1 ? 0 : StyleSheet.hairlineWidth,
-                      },
-                    ]}>
-                    <View style={styles.timelineLeft}>
-                      <View style={[styles.timelineDot, { backgroundColor: colors.primary }]} />
-                      <View>
-                        <Text style={[styles.timelineItemAmount, { color: colors.text }]}>
-                          Placement level ₹{claim.amount.toFixed(2)}
-                        </Text>
-                        <Text style={[styles.timelineItemDate, { color: colors.textMuted }]}>
-                          {new Date(claim.createdAt).toLocaleString()}
+              return (
+                <View
+                  key={group.day}
+                  style={[
+                    styles.dayCard,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ]}>
+                  {/* Card Accordion Header */}
+                  <Pressable
+                    style={styles.dayCardHeader}
+                    onPress={() => toggleDay(group.day)}>
+                    <View style={styles.dayTitleWrap}>
+                      <Ionicons name="calendar" size={16} color={colors.primary} />
+                      <Text style={[styles.dayTitle, { color: colors.text }]}>{group.day}</Text>
+                      <View style={[styles.countPill, { backgroundColor: colors.surfaceSubtle }]}>
+                        <Text style={[styles.countPillText, { color: colors.textMuted }]}>
+                          {group.totalCount} {group.totalCount === 1 ? 'product' : 'products'}
                         </Text>
                       </View>
                     </View>
 
-                    <View style={styles.timelineRight}>
-                      <Text style={[styles.timelinePayment, { color: colors.primary }]}>
-                        +₹{claim.paymentAmount.toFixed(2)} paid
-                      </Text>
-                      <Text style={[styles.timelineRef, { color: colors.textMuted }]}>
-                        {claim.paymentReferenceMasked || 'Settled'}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
+                    <SmoothChevron
+                      expanded={isExpanded}
+                      size={18}
+                      color={colors.textMuted}
+                    />
+                  </Pressable>
 
-                {(!listing.claims || listing.claims.length === 0) && (
-                  <View style={styles.emptyTimeline}>
-                    <Text style={[styles.emptyTimelineText, { color: colors.textMuted }]}>
-                      Initial placement sponsored at listing creation.
+                  {/* Expanded Rows with Smooth Transition */}
+                  <SmoothCollapsible collapsed={!isExpanded} duration={340}>
+                    <View
+                      style={[
+                        styles.entriesList,
+                        { borderTopColor: colors.border, borderTopWidth: 1 },
+                      ]}>
+                      {group.entries.map((item) => {
+                        const isGold = item.rank === 1;
+                        const isSilver = item.rank === 2;
+                        const isBronze = item.rank === 3;
+
+                        let rankBg: string = colors.surfaceSubtle;
+                        let rankColor: string = colors.textMuted;
+                        if (isGold) {
+                          rankBg = colors.goldBg;
+                          rankColor = colors.gold;
+                        } else if (isSilver) {
+                          rankBg = colors.silverBg;
+                          rankColor = colors.silver;
+                        } else if (isBronze) {
+                          rankBg = colors.bronzeBg;
+                          rankColor = colors.bronze;
+                        }
+
+                        const clicks = liveClickCounts[item.listingId] ?? item.clickCount;
+
+                        return (
+                          <Pressable
+                            key={item.listingId}
+                            style={[
+                              styles.entryRow,
+                              { borderBottomColor: colors.border },
+                            ]}
+                            onPress={() => handleOpenListing(item.listingId)}>
+                            <View style={[styles.rankBox, { backgroundColor: rankBg }]}>
+                              <Text style={[styles.rankText, { color: rankColor }]}>
+                                #{item.rank}
+                              </Text>
+                            </View>
+
+                            <View style={styles.entryInfo}>
+                              <Text numberOfLines={1} style={[styles.entryName, { color: colors.text }]}>
+                                {item.listingName}
+                              </Text>
+                              <Text style={[styles.entryMeta, { color: colors.textMuted }]}>
+                                {getCategoryIcon(item.categorySlug)} {item.categoryName} • {clicks} clicks
+                              </Text>
+                            </View>
+
+                            <View style={styles.entryRight}>
+                              <Text style={[styles.entryClaim, { color: colors.primary }]}>
+                                ${item.currentClaimAmount.toFixed(0)}
+                              </Text>
+                              <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </SmoothCollapsible>
+                </View>
+              );
+            })}
+
+            {/* Load more button */}
+            {hasMore && (
+              <Pressable
+                style={[styles.loadMoreBtn, { backgroundColor: colors.surfaceSubtle }]}
+                disabled={loadingMore}
+                onPress={() => loadData(page + 1, true)}>
+                {loadingMore ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <>
+                    <Text style={[styles.loadMoreText, { color: colors.text }]}>
+                      Load Older Days
                     </Text>
-                  </View>
+                    <Ionicons name="arrow-down" size={14} color={colors.text} />
+                  </>
                 )}
-              </View>
-            </View>
+              </Pressable>
+            )}
           </View>
         )}
 
@@ -270,15 +260,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.seven,
   },
-  breadcrumb: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: Spacing.two,
+  headerHero: {
+    marginVertical: Spacing.two,
+    gap: 4,
   },
-  breadcrumbText: {
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  subtitle: {
     fontSize: 13,
-    fontWeight: '700',
   },
   loadingWrap: {
     paddingVertical: Spacing.six,
@@ -288,198 +279,107 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 12,
   },
-  notFoundCard: {
+  emptyWrap: {
     padding: Spacing.five,
     borderRadius: Radius.lg,
     alignItems: 'center',
     gap: Spacing.two,
-    marginVertical: Spacing.four,
+    marginVertical: Spacing.three,
   },
-  notFoundTitle: {
+  emptyTitle: {
     fontSize: 16,
     fontWeight: '800',
   },
-  notFoundSub: {
+  emptySub: {
     fontSize: 12,
     textAlign: 'center',
   },
-  detailBody: {
+  groupsList: {
     gap: Spacing.two,
+    marginTop: Spacing.two,
   },
-  heroCard: {
+  dayCard: {
     borderRadius: Radius.lg,
     borderWidth: 1,
-    padding: Spacing.three,
-    gap: Spacing.two,
+    overflow: 'hidden',
   },
-  heroTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  logoImg: {
-    width: 54,
-    height: 54,
-    borderRadius: Radius.md,
-  },
-  logoPlaceholder: {
-    width: 54,
-    height: 54,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoLetter: {
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  heroMeta: {
-    flex: 1,
-    gap: 2,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '800',
-    flex: 1,
-  },
-  domainText: {
-    fontSize: 12,
-  },
-  categoryChipRow: {
-    flexDirection: 'row',
-    marginTop: 2,
-  },
-  categoryChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: Radius.sm,
-  },
-  categoryChipText: {
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  description: {
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 4,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-    marginVertical: Spacing.one,
-  },
-  statBox: {
-    flex: 1,
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.two,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    gap: 2,
-  },
-  statLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  statVal: {
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  actionBtnRow: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-    marginTop: Spacing.one,
-  },
-  visitBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    height: 34,
-    borderRadius: Radius.pill,
-    borderWidth: 1,
-  },
-  visitBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  raiseBtn: {
-    flex: 1.5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    height: 34,
-    borderRadius: Radius.pill,
-  },
-  raiseBtnText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  timelineCard: {
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  timelineHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  timelineTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  timelineList: {
-    gap: 2,
-  },
-  timelineItem: {
+  dayCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.two,
+    padding: Spacing.three,
   },
-  timelineLeft: {
+  dayTitleWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
+    gap: 8,
   },
-  timelineDot: {
-    width: 8,
-    height: 8,
+  dayTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  countPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     borderRadius: Radius.pill,
   },
-  timelineItemAmount: {
-    fontSize: 13,
+  countPillText: {
+    fontSize: 10,
     fontWeight: '700',
   },
-  timelineItemDate: {
-    fontSize: 11,
+  entriesList: {
+    paddingHorizontal: Spacing.three,
   },
-  timelineRight: {
-    alignItems: 'flex-end',
-    gap: 2,
+  entryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.two,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: Spacing.two,
   },
-  timelinePayment: {
+  rankBox: {
+    width: 28,
+    height: 28,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankText: {
     fontSize: 12,
     fontWeight: '800',
   },
-  timelineRef: {
-    fontSize: 10,
+  entryInfo: {
+    flex: 1,
+    gap: 2,
   },
-  emptyTimeline: {
+  entryName: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  entryMeta: {
+    fontSize: 11,
+  },
+  entryRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  entryClaim: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  loadMoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
     paddingVertical: Spacing.two,
+    borderRadius: Radius.pill,
+    marginVertical: Spacing.two,
   },
-  emptyTimelineText: {
-    fontSize: 12,
-    fontStyle: 'italic',
+  loadMoreText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

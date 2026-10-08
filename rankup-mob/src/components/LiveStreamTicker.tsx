@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Radius, Spacing } from '../constants/theme';
@@ -66,7 +66,7 @@ export const LiveStreamTicker: React.FC = () => {
                 {ev.actionText || 'promoted their listing'}
               </Text>
               <Text style={[styles.itemMeta, { color: colors.textMuted }]}>
-                {ev.timeAgo || 'Just now'} • {ev.highlightText || `₹${ev.amount}`}
+                {ev.timeAgo || 'Just now'} • {ev.highlightText || `$${ev.amount}`}
               </Text>
             </View>
           </View>

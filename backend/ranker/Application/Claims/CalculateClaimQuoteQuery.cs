@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Ranker.Data;
 using Ranker.Domain.Entities;
@@ -80,7 +80,9 @@ public class CalculateClaimQuoteQueryHandler(
             ? topListing.CurrentClaimAmount + category.MinClaimIncrement
             : category.MinStartingClaim;
 
-        var expectedCharge = Math.Max(0m, request.TargetClaimAmount - existingListingCurrentClaim);
+        // Mode-aware credit: all-time mode credits the listing's cumulative total; today mode does not.
+        var existingCredit = request.IsAllTimeMode ? existingListingCurrentClaim : 0m;
+        var expectedCharge = Math.Max(0m, request.TargetClaimAmount - existingCredit);
 
         var becameTop = topListing is null ||
                         request.TargetClaimAmount > topListing.CurrentClaimAmount ||
@@ -91,7 +93,7 @@ public class CalculateClaimQuoteQueryHandler(
             return new CalculateClaimQuoteResponseDto(
                 Success: false,
                 ErrorCode: "ClaimTooLow",
-                ErrorMessage: "Target claim must be at least ₹1.00.",
+                ErrorMessage: "Target claim must be at least $1.00.",
                 CategoryId: category.Id,
                 CategoryName: category.Name,
                 CategoryMinStartingClaim: category.MinStartingClaim,
@@ -108,45 +110,16 @@ public class CalculateClaimQuoteQueryHandler(
                 BecameCategoryTop: becameTop);
         }
 
-        if (existingListing != null && request.TargetClaimAmount <= existingListingCurrentClaim)
-        {
-            // In all-time mode use a distinct error code so the frontend can surface a specific message.
-            var errorCode = request.IsAllTimeMode ? "AllTimeCumulativeTooLow" : "ClaimNotHigher";
-            var minRequired = existingListingCurrentClaim + category.MinClaimIncrement;
-            var errorMessage = request.IsAllTimeMode
-                ? $"In all-time mode, your new claim must exceed the listing's all-time total of ₹{existingListingCurrentClaim:0.00}. Minimum accepted: ₹{minRequired:0.00}."
-                : $"Target claim must be greater than your existing claim of ₹{existingListingCurrentClaim:0.00}.";
-
-            return new CalculateClaimQuoteResponseDto(
-                Success: false,
-                ErrorCode: errorCode,
-                ErrorMessage: errorMessage,
-                CategoryId: category.Id,
-                CategoryName: category.Name,
-                CategoryMinStartingClaim: category.MinStartingClaim,
-                CategoryMinClaimIncrement: category.MinClaimIncrement,
-                CurrentTopClaimInCategory: topListing?.CurrentClaimAmount,
-                CurrentTopListingId: topListing?.Id,
-                CurrentTopListingName: topListing?.Name,
-                ListingId: existingListing.Id,
-                ListingName: existingListing.Name,
-                ExistingListingCurrentClaim: existingListingCurrentClaim,
-                TargetClaimAmount: request.TargetClaimAmount,
-                RequiredMinimumClaim: request.IsAllTimeMode ? minRequired : rank1Minimum,
-                ExpectedChargeAmount: expectedCharge,
-                BecameCategoryTop: becameTop);
-        }
-
-        // All-time mode: the new claim must be strictly greater than the listing's all-time cumulative total.
-        // Listing.CurrentClaimAmount equals the all-time cumulative paid by construction (each reclaim raises
-        // it by exactly the payment delta, so the sum of all PaymentAmounts == CurrentClaimAmount).
+        // All-time mode only: a listing's new target must exceed the all-time cumulative total already paid.
+        // In today mode the user always pays the full target amount, so no lower-bound check against the
+        // existing claim applies — the score resets to the amount paid today.
         if (request.IsAllTimeMode && existingListing != null && request.TargetClaimAmount <= existingListingCurrentClaim)
         {
             var minRequired = existingListingCurrentClaim + category.MinClaimIncrement;
             return new CalculateClaimQuoteResponseDto(
                 Success: false,
                 ErrorCode: "AllTimeCumulativeTooLow",
-                ErrorMessage: $"In all-time mode, your new claim must exceed the listing's all-time total of ₹{existingListingCurrentClaim:0.00}. Minimum accepted: ₹{minRequired:0.00}.",
+                ErrorMessage: $"In all-time mode, your new claim must exceed the listing's all-time total of ${existingListingCurrentClaim:0.00}. Minimum accepted: ${minRequired:0.00}.",
                 CategoryId: category.Id,
                 CategoryName: category.Name,
                 CategoryMinStartingClaim: category.MinStartingClaim,

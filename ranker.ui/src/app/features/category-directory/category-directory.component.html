@@ -184,7 +184,7 @@
             <div class="sector-king-banner__right">
               <span class="king-claim text-primary"
                 [title]="timeMode() === 'today' ? 'Amount paid today' : 'All-time cumulative claim'">
-                ₹{{ card.topEntries[0].currentClaimAmount | number: '1.0-0' }}
+                ${{ card.topEntries[0].currentClaimAmount | number: '1.0-0' }}
               </span>
               @if (card.topEntries[0].clickCount) {
               <span class="king-clicks text-secondary">+{{ card.topEntries[0].clickCount }} clicks</span>
@@ -206,7 +206,7 @@
             </div>
             <div class="sector-king-banner__right">
               <span class="king-claim text-primary">
-                ₹{{ card.category.minStartingClaim | number: '1.0-0' }}
+              ${{ card.category.minStartingClaim | number: '1.0-0' }}
               </span>
             </div>
           </div>
@@ -287,7 +287,7 @@
                 <span class="material-symbols-outlined arena-leader-ext-icon">open_in_new</span>
               </div>
               <span class="arena-leader-claim"
-                [title]="timeMode() === 'today' ? 'Amount paid today' : 'All-time cumulative claim'">₹{{
+                [title]="timeMode() === 'today' ? 'Amount paid today' : 'All-time cumulative claim'">${{
                 entry.currentClaimAmount | number: '1.0-0' }}</span>
             </a>
             }

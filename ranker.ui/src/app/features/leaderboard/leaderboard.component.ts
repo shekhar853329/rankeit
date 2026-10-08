@@ -296,7 +296,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     { initialValue: null },
   );
 
-  readonly currencySymbol = '₹';
+  readonly currencySymbol = '$';
 
   readonly reigningChampion = computed<LeaderboardEntryDto | null>(() => {
     const items = this.entries();
@@ -668,6 +668,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       categoryName: this.categoryName(),
       amount,
       categoryId,
+      isAllTimeMode: this.timeMode() === 'alltime',
       minStartingClaim: this.minStartingClaim(),
       minClaimIncrement: minInc,
       currentTopClaim: currentTop,
@@ -843,7 +844,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
     if (!stats) return;
 
     const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-    const currency = '₹';
+    const currency = '$';
     const mode = this.chartViewMode();
     const metric = this.chartMetric();
 

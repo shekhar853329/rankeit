@@ -27,7 +27,7 @@
         leaderboard.
       </p>
       <div class="txn-hero__amount font-numeric">
-        ₹{{ (details.amountPaid ?? 0) | number: '1.2-2' }}
+        ${{ (details.amountPaid ?? 0) | number: '1.2-2' }}
       </div>
       <span class="txn-hero__amount-sub">Amount Paid via Dodo Payments</span>
     </div>
@@ -50,7 +50,7 @@
 
       <div class="txn-card__row">
         <span class="txn-card__label">Current Total Placement</span>
-        <span class="txn-card__value font-numeric text-primary">₹{{ (details.newClaimAmount ?? 0) | number: '1.2-2' }}</span>
+        <span class="txn-card__value font-numeric text-primary">${{ (details.newClaimAmount ?? 0) | number: '1.2-2' }}</span>
       </div>
 
       <div class="txn-card__row">
@@ -142,7 +142,7 @@
       @if (details.amountPaid) {
       <div class="txn-card__row">
         <span class="txn-card__label">Attempted Amount</span>
-        <span class="txn-card__value font-numeric">₹{{ details.amountPaid | number: '1.2-2' }}</span>
+        <span class="txn-card__value font-numeric">${{ details.amountPaid | number: '1.2-2' }}</span>
       </div>
       }
 
@@ -197,7 +197,7 @@
       </div>
       <div class="summary-item">
         <span class="summary-label">Target Placement</span>
-        <span class="summary-value font-numeric text-primary">₹{{ (targetAmount() ?? 0) | number: '1.2-2' }}</span>
+        <span class="summary-value font-numeric text-primary">${{ (targetAmount() ?? 0) | number: '1.2-2' }}</span>
       </div>
     </div>
 
@@ -211,8 +211,8 @@
         <span class="readonly-url__value">{{ domainUrl() || '—' }}</span>
       </div>
 
-      <!-- Reclaim credit notice -->
-      @if (isReclaim()) {
+      <!-- Reclaim credit notice (all-time mode only) -->
+      @if (isReclaim() && modal.claimModal()?.isAllTimeMode) {
       <div class="domain-alert domain-alert--found">
         <div class="domain-alert__icon">
           <span class="material-symbols-outlined icon-md text-success">verified</span>
@@ -225,7 +225,7 @@
             }
           </div>
           <div class="domain-alert__desc">
-            Your previous payment of <strong>₹{{ existingClaimAmount() | number: '1.2-2' }}</strong> will be
+            Your previous payment of <strong>${{ existingClaimAmount() | number: '1.2-2' }}</strong> will be
             <strong>credited 100%</strong> toward your new placement.
           </div>
         </div>
@@ -274,7 +274,7 @@
             [min]="absoluteMinimumClaim()"
             [step]="minClaimIncrement()"
             [disabled]="submitting()"
-            aria-label="Target placement amount in rupees"
+            aria-label="Target placement amount in dollars"
           />
           <button type="button" class="amount-control__btn"
             (click)="addIncrement(minClaimIncrement())"
@@ -296,7 +296,7 @@
           </span>
         </div>
         <span class="calc-ledger__item-val font-numeric text-success">
-          -₹{{ creditedAmount() | number: '1.2-2' }}
+          -${{ creditedAmount() | number: '1.2-2' }}
         </span>
       </div>
 
@@ -308,7 +308,7 @@
           <span class="calc-ledger__total-desc">Charged via Dodo Payments today</span>
         </div>
         <span class="calc-ledger__total-val font-numeric text-primary">
-          ₹{{ payableAmount() | number: '1.2-2' }}
+          ${{ payableAmount() | number: '1.2-2' }}
         </span>
       </div>
     </div>
@@ -317,14 +317,14 @@
     @if (isBelowMinimum()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>
-      <span>Target placement must be at least ₹{{ absoluteMinimumClaim() | number: '1.2-2' }}.</span>
+      <span>Target placement must be at least ${{ absoluteMinimumClaim() | number: '1.2-2' }}.</span>
     </div>
     }
 
     @if (isNotHigherThanExisting()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>
-      <span>Target placement must be higher than your current placement of ₹{{ existingClaimAmount() | number: '1.2-2' }}.</span>
+      <span>Target placement must be higher than your current placement of ${{ existingClaimAmount() | number: '1.2-2' }}.</span>
     </div>
     }
 
@@ -365,7 +365,7 @@
             <span>Processing...</span>
           }
         } @else {
-          <span>💳 Checkout with Dodo Payments • ₹{{ payableAmount() | number: '1.2-2' }}</span>
+          <span>💳 Checkout with Dodo Payments • ${{ payableAmount() | number: '1.2-2' }}</span>
         }
       </button>
     </div>

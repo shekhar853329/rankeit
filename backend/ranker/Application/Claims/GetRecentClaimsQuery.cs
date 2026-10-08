@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Ranker.Data;
 using Ranker.Dtos;
@@ -42,8 +42,8 @@ public class GetRecentClaimsQueryHandler(RankerDbContext dbContext)
             var category = c.Listing.Category;
             var isTop = c.Listing.CurrentClaimAmount == c.Amount;
             var actionText = isTop
-                ? $"recaptured #1 for ₹{c.Amount:0}"
-                : $"updated claim to ₹{c.Amount:0}";
+                ? $"recaptured #1 for ${c.Amount:0}"
+                : $"updated claim to ${c.Amount:0}";
             var highlightText = isTop ? "Took Top Spot" : $"{category?.Name ?? "Active Claim"}";
 
             result.Add(new LiveClaimEventDto(

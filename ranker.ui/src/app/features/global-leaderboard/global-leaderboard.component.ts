@@ -228,7 +228,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   readonly currencySymbol = computed(() => {
     switch (this.selectedCurrency()) {
       case 'EUR': return '€';
-      case 'INR': return '₹';
+      case 'USD': return '$';
       default: return '$';
     }
   });

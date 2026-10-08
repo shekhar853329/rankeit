@@ -32,8 +32,8 @@ export const LEGAL_CONFIG: LegalConfig = {
   registeredAddress: 'Bhagwanpur, District - Muzaffarpur, Bihar, PIN: 842001, India',
   supportEmail: 'shekhar3355@hotmail.com',
   websiteUrl: 'https://rankup.cyou',
-  currency: 'INR',
-  currencySymbol: '₹',
+  currency: 'USD',
+  currencySymbol: '$',
   shippingDuration: 'Instantaneous (within 0 to 15 minutes of payment confirmation)',
   estDate: 'September 2026',
 };

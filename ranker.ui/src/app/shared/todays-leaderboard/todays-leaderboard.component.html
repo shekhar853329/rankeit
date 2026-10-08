@@ -16,7 +16,7 @@
           <span class="sidebar__item-name">{{ leader.listingName }}</span>
           <span class="sidebar__item-category">{{ leader.categoryName }}</span>
         </div>
-        <span class="sidebar__score">₹{{ leader.currentClaimAmount | number: '1.0-2' }}</span>
+        <span class="sidebar__score">${{ leader.currentClaimAmount | number: '1.0-2' }}</span>
       </li>
     }
   </ol>

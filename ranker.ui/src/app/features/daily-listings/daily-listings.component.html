@@ -150,7 +150,7 @@
           <div class="feed-row__claim-col">
             <div class="price-box">
               <span class="price-label">Day Spend</span>
-              <span class="price-val">₹{{ entry.currentClaimAmount | number: '1.0-2' }}</span>
+              <span class="price-val">${{ entry.currentClaimAmount | number: '1.0-2' }}</span>
             </div>
 
             <a class="btn-details" [routerLink]="['/listings', entry.listingId]" (click)="$event.stopPropagation()"

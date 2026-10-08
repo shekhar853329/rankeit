@@ -104,9 +104,12 @@ export class ConfirmClaimModalComponent implements OnInit {
   private readonly domainChange$ = new Subject<{ categoryId: number; url: string }>();
 
   // ── Computeds ──────────────────────────────────────────────
-  protected readonly creditedAmount = computed(() =>
-    this.isReclaim() ? this.existingClaimAmount() : 0,
-  );
+  protected readonly creditedAmount = computed(() => {
+    if (!this.isReclaim()) return 0;
+    const payload = this.modal.claimModal();
+    if (!payload?.isAllTimeMode) return 0; // today mode: no credit deduction
+    return this.existingClaimAmount();
+  });
 
   // Minimum required to claim Rank #1
   protected readonly minRank1Claim = computed(() => {
@@ -118,10 +121,13 @@ export class ConfirmClaimModalComponent implements OnInit {
 
   // Minimum claim allowed to enter this arena or raise claim
   protected readonly absoluteMinimumClaim = computed(() => {
-    if (this.isReclaim()) {
+    const payload = this.modal.claimModal();
+    const isAllTimeMode = payload?.isAllTimeMode ?? false;
+    if (this.isReclaim() && isAllTimeMode) {
+      // All-time mode: must exceed the cumulative amount already paid
       return this.existingClaimAmount() + this.minClaimIncrement();
     }
-    return 1;
+    return this.minStartingClaim();
   });
 
   protected readonly payableAmount = computed(() => {
@@ -144,6 +150,9 @@ export class ConfirmClaimModalComponent implements OnInit {
 
   protected readonly isNotHigherThanExisting = computed(() => {
     if (!this.isReclaim()) return false;
+    const payload = this.modal.claimModal();
+    // In today mode there is no "existing" score to exceed — user always pays full amount
+    if (!payload?.isAllTimeMode) return false;
     const target = this.targetAmount();
     if (target === null || target === undefined) return false;
     return target <= this.existingClaimAmount();
@@ -448,8 +457,8 @@ export class ConfirmClaimModalComponent implements OnInit {
       if (chargeAmount < 1) {
         this.submitting.set(false);
         this.checkoutStage.set('idle');
-        this.quoteError.set('Payable amount must be at least ₹1.00.');
-        this.toast.show('Payable amount must be at least ₹1.00.', 'error');
+        this.quoteError.set('Payable amount must be at least $1.00.');
+        this.toast.show('Payable amount must be at least $1.00.', 'error');
         return;
       }
 

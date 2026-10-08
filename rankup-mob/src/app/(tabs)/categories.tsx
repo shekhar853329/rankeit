@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -232,7 +232,7 @@ export default function CategoriesScreen() {
                             {entry.siteName || entry.listingName}
                           </Text>
                           <Text style={[styles.previewClaim, { color: colors.primary }]}>
-                            ₹{entry.currentClaimAmount.toFixed(0)}
+                            ${entry.currentClaimAmount.toFixed(0)}
                           </Text>
                         </View>
                       ))}
@@ -240,7 +240,7 @@ export default function CategoriesScreen() {
                   ) : (
                     <View style={[styles.emptyPreview, { backgroundColor: colors.surfaceSubtle }]}>
                       <Text style={[styles.emptyPreviewText, { color: colors.textMuted }]}>
-                        Rank #1 open! Start this category at ₹{category.minStartingClaim}
+                        Rank #1 open! Start this category at ${category.minStartingClaim}
                       </Text>
                     </View>
                   )}
