@@ -15,7 +15,7 @@ import { Radius, Spacing } from '../constants/theme';
 import { useClaimModal } from '../context/ModalContext';
 import { useAppTheme } from '../context/ThemeContext';
 import { CategoryDto, ListingLookupResultDto } from '../models';
-import { calculateClaimQuote, fetchUrlMetadata, getCategories, lookupListing, placeClaim } from '../services/api';
+import { calculateClaimQuote, fetchUrlMetadata, getCategories, lookupListing } from '../services/api';
 
 export const ConfirmClaimModal: React.FC = () => {
   const { colors, isDark } = useAppTheme();
@@ -191,43 +191,9 @@ export const ConfirmClaimModal: React.FC = () => {
         return;
       }
 
-      setStatusMessage('Securing placement position...');
-
-      // 2. Place Claim
-      const paymentRef = `pay_${Date.now()}_sim`;
-      const placeRes = await placeClaim({
-        categoryId: selectedCatId,
-        listingId: activeListing?.listingId ?? modalPayload?.listingId ?? null,
-        listingName: listingName.trim() || siteName || url.trim(),
-        listingUrl: url.trim(),
-        ownerContactEmail: ownerEmail.trim(),
-        targetClaimAmount: targetAmount,
-        paymentReference: paymentRef,
-        confirmedPaymentAmount: payableAmount,
-        siteName: siteName ?? listingName,
-        logoUrl: logoUrl,
-        description: description,
-        faviconUrl: null,
-      });
-
-      if (placeRes.success) {
-        setReceiptDetails({
-          listingName: listingName || siteName || url,
-          listingUrl: url,
-          amountPaid: payableAmount,
-          newClaimAmount: targetAmount,
-          categoryName: selectedCatName,
-          paymentId: paymentRef,
-          orderId: `order_${Date.now()}`,
-          timestamp: new Date().toLocaleString(),
-        });
-        setTransactionSuccess(true);
-        if (modalPayload?.onSuccess) {
-          modalPayload.onSuccess();
-        }
-      } else {
-        setStatusMessage(placeRes.errorMessage || 'Placement request failed.');
-      }
+      // Mobile payment flow via Dodo Payments is not yet implemented.
+      // Payments must be completed via the web app at https://rankup.so
+      setStatusMessage('Mobile payments are coming soon. Please visit rankup.so to complete your claim.');
     } catch (err: any) {
       setStatusMessage(err?.message || 'Transaction could not be completed.');
     } finally {

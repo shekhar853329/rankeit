@@ -90,7 +90,6 @@ export class ConfirmClaimModalComponent implements OnInit {
 
   // Submission / Quote states
   protected readonly submitting = signal(false);
-  protected readonly quoteValidating = signal(false);
   protected readonly quoteError = signal<string | null>(null);
 
   // Checkout stage for dynamic button label
@@ -188,7 +187,6 @@ export class ConfirmClaimModalComponent implements OnInit {
       this.description.set(payload.description ?? null);
       this.faviconUrl.set(payload.faviconUrl ?? null);
       this.submitting.set(false);
-      this.quoteValidating.set(false);
       this.quoteError.set(null);
       this.transactionStatus.set('idle');
       this.transactionDetails.set(null);
@@ -420,7 +418,6 @@ export class ConfirmClaimModalComponent implements OnInit {
 
     this.submitting.set(true);
     this.checkoutStage.set('quoting');
-    this.quoteValidating.set(true);
     this.quoteError.set(null);
 
     try {
@@ -436,7 +433,7 @@ export class ConfirmClaimModalComponent implements OnInit {
         }),
       );
 
-      this.quoteValidating.set(false);
+      this.quoteError.set(null);
 
       if (!quote.success) {
         this.submitting.set(false);
@@ -522,7 +519,6 @@ export class ConfirmClaimModalComponent implements OnInit {
       }
     } catch (err: unknown) {
       this.submitting.set(false);
-      this.quoteValidating.set(false);
       this.checkoutStage.set('idle');
       const message = err instanceof Error ? err.message : 'Calculation error occurred.';
       this.quoteError.set(message);

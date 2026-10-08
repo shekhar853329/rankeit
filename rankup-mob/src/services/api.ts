@@ -286,10 +286,33 @@ export async function lookupListing(categoryId: number, url: string): Promise<Li
 
 // ── CLAIM & QUOTE APIS ────────────────────────────────────────
 
-export async function placeClaim(payload: PlaceClaimRequestDto): Promise<PlaceClaimResultDto> {
-  return request<PlaceClaimResultDto>('/api/claims', {
+/**
+ * @deprecated The /api/claims endpoint has been retired (returns 410).
+ * Use verifyDodoPayment() after a successful Dodo Payments checkout to fulfill a claim.
+ */
+export async function placeClaim(_payload: PlaceClaimRequestDto): Promise<PlaceClaimResultDto> {
+  throw new Error(
+    'placeClaim() is no longer supported. Use verifyDodoPayment() after a Dodo Payments checkout to fulfill a claim.',
+  );
+}
+
+/**
+ * Verifies a completed Dodo Payments checkout and fulfills the claim placement.
+ * Call this on the payment return page with the payment_id or session_id from Dodo's redirect.
+ */
+export async function verifyDodoPayment(payload: {
+  paymentId?: string;
+  sessionId?: string;
+}): Promise<PlaceClaimResultDto> {
+  if (!payload.paymentId && !payload.sessionId) {
+    throw new Error('verifyDodoPayment: paymentId or sessionId is required.');
+  }
+  return request<PlaceClaimResultDto>('/api/payments/dodo/verify', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      paymentId: payload.paymentId ?? null,
+      sessionId: payload.sessionId ?? null,
+    }),
   });
 }
 

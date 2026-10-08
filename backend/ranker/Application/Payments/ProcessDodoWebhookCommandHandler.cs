@@ -75,13 +75,14 @@ public class ProcessDodoWebhookCommandHandler(
                 logger.LogInformation("Webhook payment.cancelled received. PaymentId={PaymentId}. No action taken.", paymentId);
             }
 
+            var isSuccess = string.Equals(eventType, "payment.succeeded", StringComparison.OrdinalIgnoreCase);
             var audit = new PaymentAuditLog
             {
                 Action = eventType ?? "Webhook",
                 Gateway = "DodoPayments",
                 PaymentId = command.WebhookId,
                 RequestPayloadJson = command.RawBody,
-                IsSuccess = true,
+                IsSuccess = isSuccess,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -135,9 +136,11 @@ public class ProcessDodoWebhookCommandHandler(
         var computedSignature = Convert.ToBase64String(hashBytes);
 
         // 5. Compare against each signature in the header (comma-separated)
+        //    Use CryptographicOperations.FixedTimeEquals to prevent timing side-channel attacks.
         if (string.IsNullOrWhiteSpace(webhookSignature))
             return false;
 
+        var computedBytes = Encoding.UTF8.GetBytes(computedSignature);
         var parts = webhookSignature.Split(',');
         foreach (var part in parts)
         {
@@ -147,7 +150,8 @@ public class ProcessDodoWebhookCommandHandler(
                 ? trimmed["v1,".Length..]
                 : trimmed;
 
-            if (candidate == computedSignature)
+            var candidateBytes = Encoding.UTF8.GetBytes(candidate);
+            if (CryptographicOperations.FixedTimeEquals(candidateBytes, computedBytes))
                 return true;
         }
 
