@@ -42,3 +42,16 @@ export interface VerifyPaymentResponse {
   newClaimAmount?: number;
 }
 
+export interface PaymentTransactionItem {
+  id: number;
+  action: string;
+  transactionStatus: string | null;
+  paymentId: string | null;
+  sessionId: string | null;
+  orderId: string | null;
+  amount: number | null;
+  currency: string | null;
+  isSuccess: boolean;
+  errorMessage: string | null;
+  createdAt: string;
+}

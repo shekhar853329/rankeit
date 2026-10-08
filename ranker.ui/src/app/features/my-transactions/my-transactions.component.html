@@ -1,0 +1,124 @@
+<div class="transactions-page">
+  <div class="transactions-card">
+
+    <!-- Header -->
+    <div class="txn-header">
+      <div class="txn-header__icon-wrap">
+        <span class="material-symbols-outlined">receipt_long</span>
+      </div>
+      <div>
+        <h1 class="txn-header__title">My Payment Transactions</h1>
+        <p class="txn-header__subtitle">
+          Enter the email you used at checkout to view your pending, failed, or cancelled payment attempts.
+        </p>
+      </div>
+    </div>
+
+    <!-- Email Lookup Form -->
+    <div class="txn-lookup-form">
+      <div class="txn-lookup-form__row">
+        <input
+          type="email"
+          class="txn-email-input"
+          placeholder="you@example.com"
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+          (keyup.enter)="search()"
+          autocomplete="email"
+          aria-label="Email address"
+        />
+        <button
+          type="button"
+          class="txn-lookup-btn"
+          [disabled]="loading()"
+          (click)="search()"
+        >
+          @if (loading()) {
+            <div class="spinner"></div>
+            <span>Looking up...</span>
+          } @else {
+            <span class="material-symbols-outlined text-[16px]">manage_search</span>
+            <span>Look Up</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    @if (error()) {
+      <div class="txn-error" role="alert">
+        <span class="material-symbols-outlined text-[18px]">error_outline</span>
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (searched() && transactions().length === 0) {
+      <div class="txn-empty">
+        <span class="material-symbols-outlined txn-empty__icon">inbox</span>
+        <p class="txn-empty__message">No pending or failed transactions found for this email.</p>
+        <p class="txn-empty__hint">
+          If you believe this is an error, please
+          <a routerLink="/contact" class="txn-link">contact us</a> for assistance.
+        </p>
+      </div>
+    }
+
+    <!-- Transaction List -->
+    @if (transactions().length > 0) {
+      <div class="txn-list">
+        <div class="txn-list__heading">
+          <span>{{ transactions().length }} transaction{{ transactions().length === 1 ? '' : 's' }} found</span>
+        </div>
+        @for (txn of transactions(); track txn.id) {
+          <div class="txn-row">
+            <!-- Status chip -->
+            <div class="txn-row__status-col">
+              <span [class]="statusClass(txn.transactionStatus)">
+                {{ statusLabel(txn.transactionStatus) }}
+              </span>
+            </div>
+
+            <!-- Details -->
+            <div class="txn-row__details">
+              <div class="txn-row__amount-row">
+                @if (txn.amount !== null) {
+                  <span class="txn-row__amount">
+                    {{ txn.amount | number: '1.2-2' }} {{ txn.currency ?? 'USD' }}
+                  </span>
+                } @else {
+                  <span class="txn-row__amount txn-row__amount--na">—</span>
+                }
+                <span class="txn-row__action">{{ txn.action }}</span>
+              </div>
+
+              <div class="txn-row__meta">
+                @if (txn.paymentId) {
+                  <span class="txn-ref" title="{{ txn.paymentId }}">
+                    <span class="material-symbols-outlined text-[12px]">receipt</span>
+                    {{ truncateId(txn.paymentId) }}
+                  </span>
+                }
+                <span class="txn-row__date">
+                  <span class="material-symbols-outlined text-[12px]">schedule</span>
+                  {{ txn.createdAt | date: 'medium' }}
+                </span>
+              </div>
+
+              @if (txn.errorMessage) {
+                <p class="txn-row__error-msg">{{ txn.errorMessage }}</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Footer -->
+    <div class="txn-footer">
+      <span class="material-symbols-outlined text-[16px]">support_agent</span>
+      <span>Need help? <a routerLink="/contact" class="txn-link">Contact us</a> and we'll sort it out.</span>
+    </div>
+
+  </div>
+</div>

@@ -84,4 +84,11 @@ export const routes: Routes = [
         (m) => m.PaymentSuccessComponent
       ),
   },
+  {
+    path: 'my-transactions',
+    loadComponent: () =>
+      import('./features/my-transactions/my-transactions.component').then(
+        (m) => m.MyTransactionsComponent
+      ),
+  },
 ];

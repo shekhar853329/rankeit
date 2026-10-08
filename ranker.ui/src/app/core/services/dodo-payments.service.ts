@@ -6,6 +6,7 @@ import {
   CreateDodoSessionRequest,
   CreateDodoSessionResponse,
   DodoSessionStatusResponse,
+  PaymentTransactionItem,
   VerifyPaymentResponse,
 } from '../models/payment.model';
 
@@ -38,6 +39,12 @@ export class DodoPaymentsService {
     return this.http.post<VerifyPaymentResponse>(
       `${API_BASE_URL}/api/payments/dodo/verify`,
       request,
+    );
+  }
+
+  getTransactions(email: string): Observable<PaymentTransactionItem[]> {
+    return this.http.get<PaymentTransactionItem[]>(
+      `${API_BASE_URL}/api/payments/transactions?email=${encodeURIComponent(email)}`,
     );
   }
 
