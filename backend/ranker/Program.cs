@@ -157,6 +157,26 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// ── Startup config guard: warn loudly if WebhookKey is missing in production ──
+{
+    var appLogger = app.Services.GetRequiredService<ILogger<Program>>();
+    var webhookKey = builder.Configuration["DodoPayments:WebhookKey"];
+    if (!app.Environment.IsDevelopment())
+    {
+        if (string.IsNullOrWhiteSpace(webhookKey) || webhookKey == "dev-skip")
+        {
+            appLogger.LogWarning(
+                "SECURITY WARNING: DodoPayments:WebhookKey is not configured in this environment. " +
+                "All incoming webhooks will be processed WITHOUT signature verification. " +
+                "Set the environment variable DodoPayments__WebhookKey before handling real traffic.");
+        }
+        else
+        {
+            appLogger.LogInformation("DodoPayments WebhookKey is configured — webhook signature verification is active.");
+        }
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

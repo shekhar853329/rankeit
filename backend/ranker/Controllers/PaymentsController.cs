@@ -136,6 +136,7 @@ public class PaymentsController(
 
     /// <summary>
     /// Webhook endpoint for Dodo Payments events via CQRS command.
+    /// Returns 400 if signature verification fails so Dodo knows to stop retrying a bad payload.
     /// </summary>
     [HttpPost("dodo/webhook")]
     public async Task<IActionResult> DodoWebhook(CancellationToken ct)
@@ -147,7 +148,13 @@ public class PaymentsController(
         var signature = Request.Headers["webhook-signature"].FirstOrDefault();
         var timestamp = Request.Headers["webhook-timestamp"].FirstOrDefault();
 
-        await sender.Send(new ProcessDodoWebhookCommand(rawBody, webhookId, signature, timestamp), ct);
+        var accepted = await sender.Send(new ProcessDodoWebhookCommand(rawBody, webhookId, signature, timestamp), ct);
+
+        if (!accepted)
+        {
+            logger.LogWarning("Webhook rejected (signature mismatch or parse error). WebhookId={WebhookId}", webhookId);
+            return BadRequest(new { received = false });
+        }
 
         // Acknowledge receipt
         return Ok(new { received = true });
