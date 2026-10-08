@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnInit,
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +29,7 @@ export class MyTransactionsComponent implements OnInit {
   private readonly dodoPayments = inject(DodoPaymentsService);
   private readonly seo = inject(SeoService);
   private readonly titleService = inject(Title);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly email = signal('');
   readonly transactions = signal<PaymentTransactionItem[]>([]);
@@ -42,7 +45,7 @@ export class MyTransactionsComponent implements OnInit {
       url: 'https://rankup.cyou/my-transactions',
     });
 
-    this.route.queryParamMap.subscribe((params) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const emailParam = params.get('email');
       if (emailParam) {
         this.email.set(emailParam);

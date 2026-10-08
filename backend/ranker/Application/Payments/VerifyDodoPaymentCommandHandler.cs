@@ -61,6 +61,7 @@ public class VerifyDodoPaymentCommandHandler(
                 PaymentId = paymentId,
                 SessionId = sessionId,
                 Amount = existingClaim.PaymentAmount,
+                CustomerEmail = existingClaim.Listing?.OwnerContactEmail,
                 TransactionStatus = "Succeeded",
                 IsSuccess = true,
                 CreatedAt = DateTime.UtcNow,
