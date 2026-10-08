@@ -128,6 +128,12 @@ public class VerifyDodoPaymentCommandHandler(
         metadata.TryGetValue("description", out var description);
         metadata.TryGetValue("faviconUrl", out var faviconUrl);
 
+        // Restore the time mode from session metadata so the engine applies the correct rules.
+        // Defaults to false (today mode) when absent — today-mode payments don't need the all-time guard.
+        var isAllTimeMode = false;
+        if (metadata.TryGetValue("isAllTimeMode", out var allTimeModeStr))
+            bool.TryParse(allTimeModeStr, out isAllTimeMode);
+
         if (categoryId <= 0)
         {
             logger.LogWarning("Missing categoryId in payment metadata for {PaymentId}", paymentId);
@@ -153,7 +159,8 @@ public class VerifyDodoPaymentCommandHandler(
             SiteName: siteName,
             LogoUrl: logoUrl,
             Description: description,
-            FaviconUrl: faviconUrl);
+            FaviconUrl: faviconUrl,
+            IsAllTimeMode: isAllTimeMode);
 
         var placeResult = await sender.Send(placeCommand, ct);
 

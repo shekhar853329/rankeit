@@ -486,6 +486,7 @@ export class ConfirmClaimModalComponent implements OnInit {
           ownerContactEmail: email,
           targetClaimAmount: target.toFixed(2),
           chargeAmount: chargeAmount.toFixed(2),
+          isAllTimeMode: (payload?.isAllTimeMode ?? false).toString(),
           siteName: resolvedSiteName,
           logoUrl: resolvedLogoUrl || '',
           description: resolvedDescription || '',

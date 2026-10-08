@@ -182,7 +182,13 @@ public class PlaceClaimCommandHandler(
             else
             {
                 listing = existingListing;
-                listing.CurrentClaimAmount = decision.NewCurrentClaimAmount;
+                // All-time mode: CurrentClaimAmount is the running cumulative total; always advance it.
+                // Today mode: CurrentClaimAmount must NOT be lowered — it stores the all-time high, and
+                // today-mode payments do not contribute to that column unless the user beats their own record.
+                if (command.IsAllTimeMode || decision.NewCurrentClaimAmount > existingListing.CurrentClaimAmount)
+                {
+                    listing.CurrentClaimAmount = decision.NewCurrentClaimAmount;
+                }
                 listing.LastClaimAt = now;
                 if (!string.IsNullOrWhiteSpace(command.ListingName))
                     listing.Name = command.ListingName.Trim();
