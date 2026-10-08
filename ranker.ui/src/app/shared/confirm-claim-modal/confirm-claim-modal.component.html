@@ -283,6 +283,7 @@
         </div>
       </div>
 
+      @if (modal.claimModal()?.isAllTimeMode) {
       <div class="calc-ledger__row calc-ledger__row--credit">
         <div class="calc-ledger__row-left">
           <span class="calc-ledger__item-title">
@@ -299,6 +300,7 @@
           -${{ creditedAmount() | number: '1.2-2' }}
         </span>
       </div>
+      }
 
       <div class="calc-ledger__divider"></div>
 

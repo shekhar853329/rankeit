@@ -161,6 +161,51 @@ public class ClaimDecisionEngineTests
         Assert.True(decision.BecameCategoryTop);
     }
 
+    // --- Today mode with an existing listing (isAllTimeMode = false) ---
+
+    [Fact]
+    public void Evaluate_TodayMode_ExistingListing_ChargesFullTargetAmount()
+    {
+        // In Today mode, prior payments are NOT credited. The user pays the full target amount
+        // regardless of their all-time cumulative total.
+        var decision = ClaimDecisionEngine.Evaluate(
+            categoryMinClaimIncrement: 10m,
+            categoryMinStartingClaim: 50m,
+            currentTopClaimInCategory: 200m,
+            currentTopListingId: 1,
+            existingListingId: 2,
+            existingListingCurrentClaim: 150m,
+            targetClaimAmount: 220m,
+            confirmedPaymentAmount: 220m, // full amount, not delta
+            isAllTimeMode: false);
+
+        Assert.True(decision.Success);
+        Assert.Equal(220m, decision.ExpectedChargeAmount);
+        Assert.Equal(220m, decision.NewCurrentClaimAmount);
+        Assert.True(decision.BecameCategoryTop);
+    }
+
+    [Fact]
+    public void Evaluate_TodayMode_ExistingListing_TargetBelowExistingClaim_Succeeds()
+    {
+        // In Today mode there is no "cannot lower" guard. A user may pay less than their all-time
+        // total — the AllTimeCumulativeTooLow guard must NOT fire.
+        var decision = ClaimDecisionEngine.Evaluate(
+            categoryMinClaimIncrement: 10m,
+            categoryMinStartingClaim: 50m,
+            currentTopClaimInCategory: 200m,
+            currentTopListingId: 1,
+            existingListingId: 2,
+            existingListingCurrentClaim: 150m,
+            targetClaimAmount: 100m,  // below the all-time cumulative of 150
+            confirmedPaymentAmount: 100m,
+            isAllTimeMode: false);
+
+        Assert.True(decision.Success);
+        Assert.Equal(100m, decision.ExpectedChargeAmount);
+        Assert.Equal(100m, decision.NewCurrentClaimAmount);
+    }
+
     // --- Race-condition safety: two concurrent claimants targeting the same #1 spot ---
 
     [Fact]

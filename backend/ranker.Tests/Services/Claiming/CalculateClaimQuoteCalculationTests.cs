@@ -77,4 +77,38 @@ public class CalculateClaimQuoteCalculationTests
 
         Assert.False(isHigher);
     }
+
+    [Fact]
+    public void Quote_TodayMode_ExistingListing_ExpectedChargeIsFullTargetAmount()
+    {
+        // In Today mode (IsAllTimeMode = false) the existing all-time total is NOT credited.
+        // expectedCharge must equal targetClaimAmount regardless of how much was paid before.
+        const decimal targetClaimAmount = 220m;
+        const decimal existingListingClaim = 150m; // non-zero all-time total
+        const bool isAllTimeMode = false;
+
+        var existingCredit = isAllTimeMode ? existingListingClaim : 0m;
+        var expectedCharge = Math.Max(0m, targetClaimAmount - existingCredit);
+
+        Assert.Equal(220m, expectedCharge);
+    }
+
+    [Fact]
+    public void Quote_TodayMode_ExistingListing_TargetBelowExistingClaim_StillChargesFullTarget()
+    {
+        // In Today mode, there is no "cannot lower" guard. The user may target an amount below
+        // their all-time total — the charge is simply the target (no credit deduction).
+        const decimal targetClaimAmount = 80m;
+        const decimal existingListingClaim = 150m;
+        const bool isAllTimeMode = false;
+
+        var existingCredit = isAllTimeMode ? existingListingClaim : 0m;
+        var expectedCharge = Math.Max(0m, targetClaimAmount - existingCredit);
+
+        // The "AllTimeCumulativeTooLow" guard must be skipped — only check it when isAllTimeMode is true
+        var allTimeGuardFired = isAllTimeMode && targetClaimAmount <= existingListingClaim;
+
+        Assert.Equal(80m, expectedCharge);
+        Assert.False(allTimeGuardFired);
+    }
 }

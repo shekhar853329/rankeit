@@ -262,8 +262,13 @@ export class ConfirmClaimModalComponent implements OnInit {
             if (lookup.description) this.description.set(lookup.description);
             if (lookup.faviconUrl) this.faviconUrl.set(lookup.faviconUrl);
 
-            // Ensure target is above current claim
-            const nextTarget = lookup.currentClaimAmount + this.minClaimIncrement();
+            // Ensure target is above the effective minimum for the current mode.
+            // All-time mode: must exceed the all-time cumulative total already paid.
+            // Today mode: the minimum is just absoluteMinimumClaim() (minStartingClaim), not the all-time total.
+            const isAllTimeMode = this.modal.claimModal()?.isAllTimeMode ?? false;
+            const nextTarget = isAllTimeMode
+              ? lookup.currentClaimAmount + this.minClaimIncrement()
+              : this.absoluteMinimumClaim();
             if ((this.targetAmount() ?? 0) < nextTarget) {
               this.targetAmount.set(nextTarget);
             }
