@@ -25,6 +25,12 @@ public class PaymentAuditLog
 
     public string? Currency { get; set; }
 
+    public string? TransactionStatus { get; set; }
+
+    public string? CustomerEmail { get; set; }
+
+    public string? SessionId { get; set; }
+
     public string? Receipt { get; set; }
 
     /// <summary>Full JSON or serialized request payload sent to the gateway or received from client.</summary>

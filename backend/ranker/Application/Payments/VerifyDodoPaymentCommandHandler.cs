@@ -54,6 +54,20 @@ public class VerifyDodoPaymentCommandHandler(
             logger.LogInformation("Claim already placed for payment {PaymentId}. ListingId={ListingId}",
                 paymentId, existingClaim.ListingId);
 
+            var existingAudit = new PaymentAuditLog
+            {
+                Action = "VerifyPayment",
+                Gateway = "DodoPayments",
+                PaymentId = paymentId,
+                SessionId = sessionId,
+                Amount = existingClaim.PaymentAmount,
+                TransactionStatus = "Succeeded",
+                IsSuccess = true,
+                CreatedAt = DateTime.UtcNow,
+            };
+            dbContext.PaymentAuditLogs.Add(existingAudit);
+            await dbContext.SaveChangesAsync(ct);
+
             return new VerifyDodoPaymentResponseDto(
                 Verified: true,
                 PaymentId: paymentId,
@@ -67,6 +81,20 @@ public class VerifyDodoPaymentCommandHandler(
         var payment = await dodoPaymentsService.GetPaymentAsync(paymentId, ct);
         if (payment == null)
         {
+            var notFoundAudit = new PaymentAuditLog
+            {
+                Action = "VerifyPayment",
+                Gateway = "DodoPayments",
+                PaymentId = paymentId,
+                SessionId = sessionId,
+                TransactionStatus = "Unknown",
+                IsSuccess = false,
+                ErrorMessage = "Payment not found in Dodo Payments gateway.",
+                CreatedAt = DateTime.UtcNow,
+            };
+            dbContext.PaymentAuditLogs.Add(notFoundAudit);
+            await dbContext.SaveChangesAsync(ct);
+
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
                 PaymentId: paymentId,
@@ -76,6 +104,24 @@ public class VerifyDodoPaymentCommandHandler(
         var isSucceeded = string.Equals(payment.Status, "succeeded", StringComparison.OrdinalIgnoreCase);
         if (!isSucceeded)
         {
+            var statusStr = MapPaymentStatus(payment.Status);
+            var nonSucceededAudit = new PaymentAuditLog
+            {
+                Action = "VerifyPayment",
+                Gateway = "DodoPayments",
+                PaymentId = paymentId,
+                SessionId = sessionId,
+                Amount = Math.Round((decimal)payment.TotalAmount / 100m, 2),
+                Currency = payment.Currency,
+                CustomerEmail = payment.CustomerEmail,
+                TransactionStatus = statusStr,
+                IsSuccess = false,
+                ErrorMessage = $"Payment status is '{payment.Status}', not 'succeeded'.",
+                CreatedAt = DateTime.UtcNow,
+            };
+            dbContext.PaymentAuditLogs.Add(nonSucceededAudit);
+            await dbContext.SaveChangesAsync(ct);
+
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
                 PaymentId: paymentId,
@@ -137,6 +183,24 @@ public class VerifyDodoPaymentCommandHandler(
         if (categoryId <= 0)
         {
             logger.LogWarning("Missing categoryId in payment metadata for {PaymentId}", paymentId);
+
+            var missingMetaAudit = new PaymentAuditLog
+            {
+                Action = "VerifyPayment",
+                Gateway = "DodoPayments",
+                PaymentId = paymentId,
+                SessionId = sessionId,
+                Amount = confirmedPaymentAmount,
+                Currency = payment.Currency,
+                CustomerEmail = ownerEmail,
+                TransactionStatus = "Succeeded",
+                IsSuccess = false,
+                ErrorMessage = "Payment metadata missing required categoryId.",
+                CreatedAt = DateTime.UtcNow,
+            };
+            dbContext.PaymentAuditLogs.Add(missingMetaAudit);
+            await dbContext.SaveChangesAsync(ct);
+
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
                 PaymentId: paymentId,
@@ -166,6 +230,22 @@ public class VerifyDodoPaymentCommandHandler(
 
         if (placeResult.Success)
         {
+            var succeededAudit = new PaymentAuditLog
+            {
+                Action = "VerifyPayment",
+                Gateway = "DodoPayments",
+                PaymentId = paymentId,
+                SessionId = sessionId,
+                Amount = placeResult.AmountCharged ?? confirmedPaymentAmount,
+                Currency = payment.Currency,
+                CustomerEmail = ownerEmail,
+                TransactionStatus = "Succeeded",
+                IsSuccess = true,
+                CreatedAt = DateTime.UtcNow,
+            };
+            dbContext.PaymentAuditLogs.Add(succeededAudit);
+            await dbContext.SaveChangesAsync(ct);
+
             return new VerifyDodoPaymentResponseDto(
                 Verified: true,
                 PaymentId: paymentId,
@@ -179,6 +259,23 @@ public class VerifyDodoPaymentCommandHandler(
             logger.LogWarning("PlaceClaim rejected during Dodo verification: {ErrorCode} - {ErrorMessage}",
                 placeResult.ErrorCode, placeResult.ErrorMessage);
 
+            var rejectedAudit = new PaymentAuditLog
+            {
+                Action = "VerifyPayment",
+                Gateway = "DodoPayments",
+                PaymentId = paymentId,
+                SessionId = sessionId,
+                Amount = confirmedPaymentAmount,
+                Currency = payment.Currency,
+                CustomerEmail = ownerEmail,
+                TransactionStatus = "Succeeded",
+                IsSuccess = false,
+                ErrorMessage = placeResult.ErrorMessage ?? "Claim placement rejected by server.",
+                CreatedAt = DateTime.UtcNow,
+            };
+            dbContext.PaymentAuditLogs.Add(rejectedAudit);
+            await dbContext.SaveChangesAsync(ct);
+
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
                 PaymentId: paymentId,
@@ -186,4 +283,13 @@ public class VerifyDodoPaymentCommandHandler(
                 Error: placeResult.ErrorMessage ?? "Claim placement rejected by server.");
         }
     }
+
+    private static string MapPaymentStatus(string? status) => status?.ToLowerInvariant() switch
+    {
+        "succeeded" => "Succeeded",
+        "failed"    => "Failed",
+        "pending"   => "Pending",
+        "cancelled" => "Cancelled",
+        _           => "Unknown",
+    };
 }

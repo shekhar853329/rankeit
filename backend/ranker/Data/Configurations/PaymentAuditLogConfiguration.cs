@@ -18,6 +18,9 @@ public class PaymentAuditLogConfiguration : IEntityTypeConfiguration<PaymentAudi
         builder.Property(l => l.PaymentId).HasMaxLength(150);
         builder.Property(l => l.PaymentReference).HasMaxLength(200);
         builder.Property(l => l.Currency).HasMaxLength(10);
+        builder.Property(l => l.TransactionStatus).HasMaxLength(20);
+        builder.Property(l => l.CustomerEmail).HasMaxLength(254);
+        builder.Property(l => l.SessionId).HasMaxLength(150);
         builder.Property(l => l.Receipt).HasMaxLength(200);
         builder.Property(l => l.Amount).HasColumnType("numeric(18,2)");
         builder.Property(l => l.ClientIp).HasMaxLength(60);
@@ -25,5 +28,7 @@ public class PaymentAuditLogConfiguration : IEntityTypeConfiguration<PaymentAudi
         builder.HasIndex(l => l.OrderId);
         builder.HasIndex(l => l.PaymentId);
         builder.HasIndex(l => l.CreatedAt);
+        builder.HasIndex(l => l.CustomerEmail);
+        builder.HasIndex(l => l.SessionId);
     }
 }

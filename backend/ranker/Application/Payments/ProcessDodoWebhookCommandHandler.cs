@@ -76,11 +76,23 @@ public class ProcessDodoWebhookCommandHandler(
             }
 
             var isSuccess = string.Equals(eventType, "payment.succeeded", StringComparison.OrdinalIgnoreCase);
+            var actualPaymentId = ExtractPaymentId(root);
+            var customerEmail = ExtractCustomerEmail(root);
+            var transactionStatus = eventType?.ToLowerInvariant() switch
+            {
+                "payment.succeeded" => "Succeeded",
+                "payment.failed"    => "Failed",
+                "payment.cancelled" => "Cancelled",
+                _                   => "Unknown",
+            };
+
             var audit = new PaymentAuditLog
             {
                 Action = eventType ?? "Webhook",
                 Gateway = "DodoPayments",
-                PaymentId = command.WebhookId,
+                PaymentId = actualPaymentId,
+                TransactionStatus = transactionStatus,
+                CustomerEmail = customerEmail,
                 RequestPayloadJson = command.RawBody,
                 IsSuccess = isSuccess,
                 CreatedAt = DateTime.UtcNow,
@@ -168,6 +180,17 @@ public class ProcessDodoWebhookCommandHandler(
                 return pidProp.GetString();
             if (dataProp.TryGetProperty("id", out var idProp))
                 return idProp.GetString();
+        }
+        return null;
+    }
+
+    private static string? ExtractCustomerEmail(JsonElement root)
+    {
+        if (root.TryGetProperty("data", out var dataProp) &&
+            dataProp.TryGetProperty("customer", out var customerProp) &&
+            customerProp.TryGetProperty("email", out var emailProp))
+        {
+            return emailProp.GetString();
         }
         return null;
     }

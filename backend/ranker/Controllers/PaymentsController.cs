@@ -172,4 +172,28 @@ public class PaymentsController(
         // Acknowledge receipt
         return Ok(new { received = true });
     }
+
+    /// <summary>
+    /// Returns all non-successful payment transactions for a given email address.
+    /// Useful for showing a user their failed or pending transaction attempts.
+    /// </summary>
+    [HttpGet("transactions")]
+    public async Task<ActionResult<IReadOnlyList<PaymentTransactionDto>>> GetTransactions(
+        [FromQuery] string email,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return BadRequest(new { error = "Email is required." });
+
+        try
+        {
+            var result = await sender.Send(new GetPaymentTransactionsQuery(email), ct);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve transactions for {Email}", email);
+            return StatusCode(500, new { error = "Failed to retrieve transactions.", detail = ex.Message });
+        }
+    }
 }

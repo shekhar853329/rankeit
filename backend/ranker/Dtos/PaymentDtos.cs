@@ -41,3 +41,16 @@ public sealed record VerifyDodoPaymentResponseDto(
     string? Error = null,
     int? ListingId = null,
     decimal? NewClaimAmount = null);
+
+public sealed record PaymentTransactionDto(
+    int Id,
+    string Action,
+    string? TransactionStatus,
+    string? PaymentId,
+    string? SessionId,
+    string? OrderId,
+    decimal? Amount,
+    string? Currency,
+    bool IsSuccess,
+    string? ErrorMessage,
+    DateTime CreatedAt);
