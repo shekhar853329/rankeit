@@ -39,12 +39,25 @@ public class PaymentsController(
                 returnUrl = $"{frontendBase.TrimEnd('/')}/payment-success";
             }
 
+            // cancelUrl: where Dodo redirects when the user clicks the back button.
+            // Fall back to the frontend base (e.g. the listing page) if not supplied.
+            var cancelUrl = request.CancelUrl;
+            if (string.IsNullOrWhiteSpace(cancelUrl))
+            {
+                var frontendBase = configuration["DodoPayments:FrontendBaseUrl"]
+                    ?? Request.Headers.Origin.FirstOrDefault()
+                    ?? Request.Headers.Referer.FirstOrDefault()
+                    ?? "http://localhost:4200";
+                cancelUrl = frontendBase.TrimEnd('/');
+            }
+
             var command = new CreateDodoSessionCommand(
                 AmountInMinorUnits: request.AmountInMinorUnits,
                 Currency: string.IsNullOrWhiteSpace(request.Currency) ? "INR" : request.Currency,
                 CustomerEmail: request.CustomerEmail,
                 CustomerName: request.CustomerName ?? request.ListingName,
                 ReturnUrl: returnUrl,
+                CancelUrl: cancelUrl,
                 ListingName: request.ListingName,
                 ListingId: request.ListingId,
                 CategoryId: request.CategoryId,

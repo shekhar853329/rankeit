@@ -69,6 +69,7 @@ public class CreateDodoSessionCommandHandler(
                 customerEmail: command.CustomerEmail,
                 customerName: command.CustomerName,
                 returnUrl: command.ReturnUrl,
+                cancelUrl: command.CancelUrl,
                 metadata: metadata,
                 billingStreet: command.BillingStreet,
                 billingCity: command.BillingCity,

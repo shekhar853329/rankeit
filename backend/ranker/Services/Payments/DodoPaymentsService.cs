@@ -23,6 +23,7 @@ public interface IDodoPaymentsService
         string? customerEmail,
         string? customerName,
         string? returnUrl,
+        string? cancelUrl = null,
         Dictionary<string, string>? metadata = null,
         string? billingStreet = null,
         string? billingCity = null,
@@ -64,6 +65,7 @@ public class DodoPaymentsService : IDodoPaymentsService
         string? customerEmail,
         string? customerName,
         string? returnUrl,
+        string? cancelUrl = null,
         Dictionary<string, string>? metadata = null,
         string? billingStreet = null,
         string? billingCity = null,
@@ -94,6 +96,7 @@ public class DodoPaymentsService : IDodoPaymentsService
             },
             billing_currency = string.IsNullOrWhiteSpace(currency) ? "INR" : currency,
             return_url = returnUrl,
+            cancel_url = cancelUrl,
             customer = !string.IsNullOrWhiteSpace(customerEmail)
                 ? new
                 {

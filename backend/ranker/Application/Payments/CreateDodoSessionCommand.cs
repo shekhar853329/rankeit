@@ -13,6 +13,7 @@ public sealed record CreateDodoSessionCommand(
     string? CustomerEmail,
     string? CustomerName,
     string? ReturnUrl,
+    string? CancelUrl = null,
     string? ListingName = null,
     string? ListingId = null,
     string? CategoryId = null,

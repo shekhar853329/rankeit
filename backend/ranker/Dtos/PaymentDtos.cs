@@ -8,6 +8,7 @@ public sealed record CreateDodoSessionRequestDto(
     string? CustomerEmail = null,
     string? CustomerName = null,
     string? ReturnUrl = null,
+    string? CancelUrl = null,
     string? ListingName = null,
     string? ListingId = null,
     string? CategoryId = null,
