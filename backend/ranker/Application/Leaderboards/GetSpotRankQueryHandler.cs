@@ -14,6 +14,9 @@ public class GetSpotRankQueryHandler(RankerDbContext dbContext, ICategoryReposit
         var timeMode = request.TimeMode?.ToLowerInvariant() == "alltime" ? "alltime" : "today";
         var query = dbContext.Listings.AsNoTracking();
 
+        // Apply category scoping when a slug is provided — this covers both today and all-time
+        // modes when the leaderboard is filtered to a specific category tab.
+        // When no slug is provided (viewing all categories), rank globally across all listings.
         if (!string.IsNullOrWhiteSpace(request.CategorySlug))
         {
             var category = await categoryRepository.GetBySlugAsync(request.CategorySlug.Trim(), ct);
@@ -44,7 +47,8 @@ public class GetSpotRankQueryHandler(RankerDbContext dbContext, ICategoryReposit
         }
         else
         {
-            // By rules A1/A2, an existing listing with CurrentClaimAmount >= targetAmount ranks ahead of the new claim
+            // All-time: count listings where CurrentClaimAmount >= targetAmount.
+            // Scoped to a category if categorySlug was provided, otherwise global.
             higherOrEqualCount = await query.CountAsync(l => l.CurrentClaimAmount >= targetAmount, ct);
         }
 
