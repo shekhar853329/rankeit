@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Ranker.Application.Claims;
 using Ranker.Data;
@@ -8,6 +9,7 @@ using Ranker.Services.Analytics;
 using Ranker.Services.Leaderboards;
 using Ranker.Services.Payments;
 using Ranker.Services.UrlMetadata;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,6 +107,20 @@ builder.Services.AddCors(options => options.AddPolicy(AngularDevCorsPolicy, poli
             .AllowCredentials();
     }
 }));
+
+// ── Rate limiting ─────────────────────────────────────────────────────────
+// Fixed-window: 10 requests per IP per minute for the public transactions lookup endpoint.
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("transactions", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 10;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 var app = builder.Build();
 
@@ -229,6 +245,8 @@ app.Use(async (context, next) =>
 });
 
 app.UseCors(AngularDevCorsPolicy);
+
+app.UseRateLimiter();
 
 app.MapControllers();
 app.MapHub<LeaderboardHub>("/hubs/leaderboard");

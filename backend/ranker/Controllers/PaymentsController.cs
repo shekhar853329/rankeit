@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Ranker.Application.Payments;
 using Ranker.Dtos;
 
@@ -176,8 +177,10 @@ public class PaymentsController(
     /// <summary>
     /// Returns all non-successful payment transactions for a given email address.
     /// Useful for showing a user their failed or pending transaction attempts.
+    /// Rate-limited to 10 requests per IP per minute.
     /// </summary>
     [HttpGet("transactions")]
+    [EnableRateLimiting("transactions")]
     public async Task<ActionResult<IReadOnlyList<PaymentTransactionDto>>> GetTransactions(
         [FromQuery] string email,
         CancellationToken ct)
