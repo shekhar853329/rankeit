@@ -80,7 +80,8 @@ public class ClaimDecisionEngineTests
             existingListingId: 2,
             existingListingCurrentClaim: 150m,
             targetClaimAmount: 220m,
-            confirmedPaymentAmount: 70m);
+            confirmedPaymentAmount: 70m,
+            isAllTimeMode: true);
 
         Assert.True(decision.Success);
         Assert.Equal(70m, decision.ExpectedChargeAmount);
@@ -99,7 +100,8 @@ public class ClaimDecisionEngineTests
             existingListingId: 2,
             existingListingCurrentClaim: 150m,
             targetClaimAmount: 220m,
-            confirmedPaymentAmount: 220m); // gateway charged the full amount instead of the difference
+            confirmedPaymentAmount: 220m, // gateway charged the full amount instead of the difference
+            isAllTimeMode: true);
 
         Assert.False(decision.Success);
         Assert.Equal(ClaimFailureReason.PaymentAmountMismatch, decision.FailureReason);
@@ -147,15 +149,21 @@ public class ClaimDecisionEngineTests
     [Fact]
     public void Evaluate_EqualClaim_ByTheCurrentTopListingItself_StaysTop()
     {
+        // The current #1 listing claims again at the same level.
+        // In Today mode there is no "cannot lower" guard; the payment is the full target (no credit deduction).
+        // existingListingCurrentClaim is 0 because this is the first time this listing has claimed today;
+        // it has no prior all-time total in this scenario.
+        // newCurrentClaimAmount = 0 + 100 = 100; since existingId == currentTopId and 100 >= 100, stays top.
         var decision = ClaimDecisionEngine.Evaluate(
             categoryMinClaimIncrement: 0m,
             categoryMinStartingClaim: 50m,
             currentTopClaimInCategory: 100m,
             currentTopListingId: 1,
             existingListingId: 1,
-            existingListingCurrentClaim: 100m,
+            existingListingCurrentClaim: 0m,
             targetClaimAmount: 100m,
-            confirmedPaymentAmount: 0m);
+            confirmedPaymentAmount: 100m,
+            isAllTimeMode: false);
 
         Assert.True(decision.Success);
         Assert.True(decision.BecameCategoryTop);
@@ -168,6 +176,7 @@ public class ClaimDecisionEngineTests
     {
         // In Today mode, prior payments are NOT credited. The user pays the full target amount
         // regardless of their all-time cumulative total.
+        // NewCurrentClaimAmount = existingListingCurrentClaim + targetClaimAmount (accumulation).
         var decision = ClaimDecisionEngine.Evaluate(
             categoryMinClaimIncrement: 10m,
             categoryMinStartingClaim: 50m,
@@ -181,8 +190,9 @@ public class ClaimDecisionEngineTests
 
         Assert.True(decision.Success);
         Assert.Equal(220m, decision.ExpectedChargeAmount);
-        Assert.Equal(220m, decision.NewCurrentClaimAmount);
-        Assert.True(decision.BecameCategoryTop);
+        // 150 (existing all-time) + 220 (today payment) = 370
+        Assert.Equal(370m, decision.NewCurrentClaimAmount);
+        Assert.True(decision.BecameCategoryTop); // 370 > 200 (current top)
     }
 
     [Fact]
@@ -190,6 +200,7 @@ public class ClaimDecisionEngineTests
     {
         // In Today mode there is no "cannot lower" guard. A user may pay less than their all-time
         // total — the AllTimeCumulativeTooLow guard must NOT fire.
+        // NewCurrentClaimAmount = existingListingCurrentClaim + targetClaimAmount (accumulation).
         var decision = ClaimDecisionEngine.Evaluate(
             categoryMinClaimIncrement: 10m,
             categoryMinStartingClaim: 50m,
@@ -197,13 +208,69 @@ public class ClaimDecisionEngineTests
             currentTopListingId: 1,
             existingListingId: 2,
             existingListingCurrentClaim: 150m,
-            targetClaimAmount: 100m,  // below the all-time cumulative of 150
+            targetClaimAmount: 100m,  // below the all-time cumulative of 150 — allowed in Today mode
             confirmedPaymentAmount: 100m,
             isAllTimeMode: false);
 
         Assert.True(decision.Success);
         Assert.Equal(100m, decision.ExpectedChargeAmount);
-        Assert.Equal(100m, decision.NewCurrentClaimAmount);
+        // 150 (existing all-time) + 100 (today payment) = 250; beats the current top of 200
+        Assert.Equal(250m, decision.NewCurrentClaimAmount);
+        Assert.True(decision.BecameCategoryTop); // 250 > 200
+    }
+
+    // --- Today mode: CurrentClaimAmount accumulation semantics ---
+    //
+    // In Today mode the engine charges the FULL targetClaimAmount (no credit deduction) and
+    // returns NewCurrentClaimAmount = existingListingCurrentClaim + targetClaimAmount.
+    // The handler sets listing.CurrentClaimAmount = decision.NewCurrentClaimAmount for both modes.
+
+    [Fact]
+    public void Evaluate_TodayMode_ExistingListing_BelowAllTimeHigh_ChargesFullTarget_AndAccumulates()
+    {
+        // Listing has all-time total of $100. User pays $50 in Today mode.
+        // Engine charges $50 (full target, no credit) and accumulates: 100 + 50 = 150.
+        var decision = ClaimDecisionEngine.Evaluate(
+            categoryMinClaimIncrement: 10m,
+            categoryMinStartingClaim: 50m,
+            currentTopClaimInCategory: 200m,
+            currentTopListingId: 1,
+            existingListingId: 2,
+            existingListingCurrentClaim: 100m,
+            targetClaimAmount: 50m,
+            confirmedPaymentAmount: 50m,
+            isAllTimeMode: false);
+
+        Assert.True(decision.Success);
+        Assert.Equal(50m, decision.ExpectedChargeAmount);
+        // NewCurrentClaimAmount = 100 (existing) + 50 (today payment) = 150
+        Assert.Equal(150m, decision.NewCurrentClaimAmount);
+        // 150 < 200 (current top), so does not become top
+        Assert.False(decision.BecameCategoryTop);
+    }
+
+    [Fact]
+    public void Evaluate_TodayMode_ExistingListing_AccumulationBeatsCurrentTop_BecomesTop()
+    {
+        // Listing has all-time total of $100. User pays $150 in Today mode (beats all-time high).
+        // Engine charges $150 and accumulates: 100 + 150 = 250 > current top 200 → becomes top.
+        var decision = ClaimDecisionEngine.Evaluate(
+            categoryMinClaimIncrement: 10m,
+            categoryMinStartingClaim: 50m,
+            currentTopClaimInCategory: 200m,
+            currentTopListingId: 1,
+            existingListingId: 2,
+            existingListingCurrentClaim: 100m,
+            targetClaimAmount: 150m,
+            confirmedPaymentAmount: 150m,
+            isAllTimeMode: false);
+
+        Assert.True(decision.Success);
+        Assert.Equal(150m, decision.ExpectedChargeAmount);
+        // NewCurrentClaimAmount = 100 (existing) + 150 (today payment) = 250
+        Assert.Equal(250m, decision.NewCurrentClaimAmount);
+        // 250 > 200 (current top) → becomes top
+        Assert.True(decision.BecameCategoryTop);
     }
 
     // --- Race-condition safety: two concurrent claimants targeting the same #1 spot ---

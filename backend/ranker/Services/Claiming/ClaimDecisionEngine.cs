@@ -60,16 +60,10 @@ public static class ClaimDecisionEngine
         // All-time mode: a listing's new target must be strictly greater than its all-time cumulative total
         // paid. Because CurrentClaimAmount is maintained as a running total (each reclaim raises it by the
         // delta charged), it IS the all-time cumulative paid — no separate column is needed.
+        // Today mode: no such guard — the user always pays the full target amount independently of history.
         if (isAllTimeMode && existingListingId.HasValue && targetClaimAmount <= existingListingCurrentClaim)
         {
             return ClaimDecision.Fail(ClaimFailureReason.AllTimeCumulativeTooLow, existingListingCurrentClaim + categoryMinClaimIncrement);
-        }
-
-        // All-time mode only: a listing cannot lower its active claim.
-        // In today mode the user always pays the full target amount, so there is no concept of lowering.
-        if (isAllTimeMode && existingListingId.HasValue && targetClaimAmount < existingListingCurrentClaim)
-        {
-            return ClaimDecision.Fail(ClaimFailureReason.ClaimTooLow, existingListingCurrentClaim);
         }
 
         // Rule B3 (mode-aware):
@@ -83,14 +77,21 @@ public static class ClaimDecisionEngine
             return ClaimDecision.Fail(ClaimFailureReason.PaymentAmountMismatch, rank1Minimum, expectedCharge);
         }
 
+        // The effective new CurrentClaimAmount after this payment:
+        //   All-time mode — targetClaimAmount IS the new cumulative total (delta-charge model).
+        //   Today mode    — the payment is stacked on top of the existing all-time total.
+        var newCurrentClaimAmount = isAllTimeMode
+            ? targetClaimAmount
+            : existingListingCurrentClaim + targetClaimAmount;
+
         // Mirrors the tie-break rule (CurrentClaimAmount DESC, FirstClaimAt ASC): a strictly higher claim always
         // takes #1; an equal claim only keeps/gains #1 if it belongs to the listing that already holds it
         // (whose FirstClaimAt is already the earliest), otherwise the earlier listing keeps the top spot.
         var becameTop =
             currentTopClaimInCategory is null ||
-            targetClaimAmount > currentTopClaimInCategory.Value ||
-            (existingListingId == currentTopListingId && targetClaimAmount >= currentTopClaimInCategory.Value);
+            newCurrentClaimAmount > currentTopClaimInCategory.Value ||
+            (existingListingId == currentTopListingId && newCurrentClaimAmount >= currentTopClaimInCategory.Value);
 
-        return new ClaimDecision(true, ClaimFailureReason.None, rank1Minimum, expectedCharge, targetClaimAmount, becameTop);
+        return new ClaimDecision(true, ClaimFailureReason.None, rank1Minimum, expectedCharge, newCurrentClaimAmount, becameTop);
     }
 }

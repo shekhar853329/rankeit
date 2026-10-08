@@ -182,13 +182,12 @@ public class PlaceClaimCommandHandler(
             else
             {
                 listing = existingListing;
-                // All-time mode: CurrentClaimAmount is the running cumulative total; always advance it.
-                // Today mode: CurrentClaimAmount must NOT be lowered — it stores the all-time high, and
-                // today-mode payments do not contribute to that column unless the user beats their own record.
-                if (command.IsAllTimeMode || decision.NewCurrentClaimAmount > existingListing.CurrentClaimAmount)
-                {
-                    listing.CurrentClaimAmount = decision.NewCurrentClaimAmount;
-                }
+                // All-time mode: NewCurrentClaimAmount equals the targetClaimAmount, which IS the new
+                // all-time cumulative total (the delta-charge model means target == old total + charge).
+                // Today mode: NewCurrentClaimAmount = existingCurrentClaimAmount + payment, so the
+                // all-time rank score always grows by the full amount paid today.
+                //   e.g. existing = $100, today payment = $50 → NewCurrentClaimAmount = $150.
+                listing.CurrentClaimAmount = decision.NewCurrentClaimAmount;
                 listing.LastClaimAt = now;
                 if (!string.IsNullOrWhiteSpace(command.ListingName))
                     listing.Name = command.ListingName.Trim();
