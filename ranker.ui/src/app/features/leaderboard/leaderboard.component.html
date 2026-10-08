@@ -25,7 +25,8 @@
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
-            Top {{ categoryName() }} Rankings: Claim <span class="headline-rank-tag">{{ spotRank() !== null ? '#' + spotRank() : '#…' }}</span> Spot for
+            {{ timeMode() === 'today' ? "Today's" : "Global" }} Claim <span class="headline-rank-tag">{{ spotRank() !==
+              null ? '#' + spotRank() : '#…' }}</span> Spot for
           </h1>
           <div class="placement-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
@@ -356,7 +357,9 @@
             </div>
 
             <div class="compact-entry-right">
-              <span class="compact-price" [title]="timeMode() === 'today' ? 'Paid today: ₹' + (entry.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (entry.currentClaimAmount | number: '1.0-0')">₹{{ entry.currentClaimAmount | number: '1.0-0' }}</span>
+              <span class="compact-price"
+                [title]="timeMode() === 'today' ? 'Paid today: ₹' + (entry.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (entry.currentClaimAmount | number: '1.0-0')">₹{{
+                entry.currentClaimAmount | number: '1.0-0' }}</span>
               <button type="button" class="compact-btn"
                 (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), entry.rank); $event.stopPropagation()">
                 Claim This Position
@@ -402,16 +405,19 @@
 
             <!-- Quick KPIs in Header -->
             <div class="liquidity-stats-row">
-              <div class="liquidity-stat-pill" [title]="timeMode() === 'today' ? 'Total category placement volume today' : 'Total all-time category placement volume'">
+              <div class="liquidity-stat-pill"
+                [title]="timeMode() === 'today' ? 'Total category placement volume today' : 'Total all-time category placement volume'">
                 <span class="stat-pill-label">{{ kpiVolumeLabel() }}</span>
                 <span class="stat-pill-val">₹{{ displayedTotalVolume() | number: '1.2-2' }}</span>
               </div>
-              <div class="liquidity-stat-pill" [title]="timeMode() === 'today' ? 'Total category payments registered today' : 'Total all-time category payments registered'">
+              <div class="liquidity-stat-pill"
+                [title]="timeMode() === 'today' ? 'Total category payments registered today' : 'Total all-time category payments registered'">
                 <span class="stat-pill-label">Count</span>
                 <span class="stat-pill-val">{{ displayedTotalClaims() }}</span>
               </div>
               @if (peakClaimInfo(); as peak) {
-              <div class="liquidity-stat-pill liquidity-stat-pill--highlight" [title]="timeMode() === 'today' ? 'Peak category payment today' : 'Peak all-time category payment'">
+              <div class="liquidity-stat-pill liquidity-stat-pill--highlight"
+                [title]="timeMode() === 'today' ? 'Peak category payment today' : 'Peak all-time category payment'">
                 <span class="stat-pill-label">Peak</span>
                 <span class="stat-pill-val">₹{{ peak.amount | number: '1.0-2' }}</span>
               </div>

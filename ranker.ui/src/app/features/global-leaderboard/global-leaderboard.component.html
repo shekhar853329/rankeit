@@ -14,7 +14,8 @@
       <div class="hero-top-row">
         <div class="headline-title-wrap">
           <h1 class="headline-title">
-            {{ timeMode() === 'today' ? "Today's" : "Global" }} Claim <span class="headline-rank-tag">{{ spotRank() !== null ? '#' + spotRank() : '#…' }}</span> for
+            {{ timeMode() === 'today' ? "Today's" : "Global" }} Claim <span class="headline-rank-tag">{{ spotRank() !==
+              null ? '#' + spotRank() : '#…' }}</span> for
           </h1>
           <div class="placement-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
@@ -44,7 +45,7 @@
             <span class="countdown-badge__time" id="daily-countdown">{{ countdownText() }}</span>
             <span class="countdown-badge__sep">•</span>
             <span class="countdown-badge__utc">Midnight UTC</span>
-          </div>          
+          </div>
         </div>
       </div>
 
@@ -528,7 +529,9 @@
           </div>
 
           <div class="compact-rank-card__right">
-            <span class="compact-price" [title]="timeMode() === 'today' ? 'Paid today: ₹' + (row.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (row.currentClaimAmount | number: '1.0-0')">{{ currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0' }}</span>
+            <span class="compact-price"
+              [title]="timeMode() === 'today' ? 'Paid today: ₹' + (row.currentClaimAmount | number: '1.0-0') : 'All-time cumulative: ₹' + (row.currentClaimAmount | number: '1.0-0')">{{
+              currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0' }}</span>
             <button type="button" class="compact-claim-btn"
               (click)="claimThisPosition(row.currentClaimAmount + incrementForCategory(row.categorySlug), row.rank); $event.stopPropagation()">
               Claim This Position
@@ -583,16 +586,19 @@
 
           <!-- Quick KPIs in Header -->
           <div class="liquidity-stats-row">
-            <div class="liquidity-stat-pill" [title]="timeMode() === 'today' ? 'Total placement volume today' : 'Total all-time placement volume'">
+            <div class="liquidity-stat-pill"
+              [title]="timeMode() === 'today' ? 'Total placement volume today' : 'Total all-time placement volume'">
               <span class="stat-pill-label">{{ kpiVolumeLabel() }}</span>
               <span class="stat-pill-val">{{ currencySymbol() }}{{ displayedTotalVolume() | number: '1.2-2' }}</span>
             </div>
-            <div class="liquidity-stat-pill" [title]="timeMode() === 'today' ? 'Total payments registered today' : 'Total all-time payments registered'">
+            <div class="liquidity-stat-pill"
+              [title]="timeMode() === 'today' ? 'Total payments registered today' : 'Total all-time payments registered'">
               <span class="stat-pill-label">Count</span>
               <span class="stat-pill-val">{{ displayedTotalClaims() }}</span>
             </div>
             @if (peakClaimInfo(); as peak) {
-            <div class="liquidity-stat-pill liquidity-stat-pill--highlight" [title]="timeMode() === 'today' ? 'Peak payment today' : 'Peak payment all-time'">
+            <div class="liquidity-stat-pill liquidity-stat-pill--highlight"
+              [title]="timeMode() === 'today' ? 'Peak payment today' : 'Peak payment all-time'">
               <span class="stat-pill-label">Peak</span>
               <span class="stat-pill-val">{{ currencySymbol() }}{{ peak.amount | number: '1.0-2' }}</span>
             </div>
