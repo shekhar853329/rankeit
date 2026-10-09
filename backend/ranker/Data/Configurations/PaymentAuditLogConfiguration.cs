@@ -18,6 +18,8 @@ public class PaymentAuditLogConfiguration : IEntityTypeConfiguration<PaymentAudi
         builder.Property(l => l.PaymentId).HasMaxLength(150);
         builder.Property(l => l.PaymentReference).HasMaxLength(200);
         builder.Property(l => l.Currency).HasMaxLength(10);
+        builder.Property(l => l.GatewayAmount).HasColumnType("numeric(18,2)");
+        builder.Property(l => l.GatewayCurrency).HasMaxLength(10);
         builder.Property(l => l.TransactionStatus).HasMaxLength(20);
         builder.Property(l => l.CustomerEmail).HasMaxLength(254);
         builder.Property(l => l.SessionId).HasMaxLength(150);

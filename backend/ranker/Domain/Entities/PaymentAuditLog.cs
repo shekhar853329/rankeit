@@ -25,6 +25,12 @@ public class PaymentAuditLog
 
     public string? Currency { get; set; }
 
+    /// <summary>Raw amount from payment gateway response (e.g. Dodo Payments) in the currency the customer actually paid.</summary>
+    public decimal? GatewayAmount { get; set; }
+
+    /// <summary>Currency the customer actually paid in (e.g. "INR" via Adaptive Currency), may differ from Currency which represents settlement currency.</summary>
+    public string? GatewayCurrency { get; set; }
+
     public string? TransactionStatus { get; set; }
 
     public string? CustomerEmail { get; set; }

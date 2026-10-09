@@ -113,7 +113,9 @@ public class VerifyDodoPaymentCommandHandler(
                 PaymentId = paymentId,
                 SessionId = sessionId,
                 Amount = Math.Round((decimal)payment.TotalAmount / 100m, 2),
-                Currency = payment.Currency,
+                Currency = "USD", // Settlement currency; customer may have paid in a different currency via Dodo Adaptive Currency
+                GatewayAmount = Math.Round((decimal)payment.TotalAmount / 100m, 2),
+                GatewayCurrency = payment.Currency,
                 CustomerEmail = payment.CustomerEmail,
                 TransactionStatus = statusStr,
                 IsSuccess = false,
@@ -192,7 +194,9 @@ public class VerifyDodoPaymentCommandHandler(
                 PaymentId = paymentId,
                 SessionId = sessionId,
                 Amount = confirmedPaymentAmount,
-                Currency = payment.Currency,
+                Currency = "USD", // Settlement currency; customer may have paid in a different currency via Dodo Adaptive Currency
+                GatewayAmount = Math.Round((decimal)payment.TotalAmount / 100m, 2),
+                GatewayCurrency = payment.Currency,
                 CustomerEmail = ownerEmail,
                 TransactionStatus = "Succeeded",
                 IsSuccess = false,
@@ -226,7 +230,7 @@ public class VerifyDodoPaymentCommandHandler(
             Description: description,
             FaviconUrl: faviconUrl,
             IsAllTimeMode: isAllTimeMode,
-            Currency: payment.Currency);
+            Currency: "USD"); // Always log in settlement currency (USD); payment.Currency reflects the customer's billing currency which may differ when Dodo Adaptive Currency is used
 
         var placeResult = await sender.Send(placeCommand, ct);
 
@@ -239,7 +243,9 @@ public class VerifyDodoPaymentCommandHandler(
                 PaymentId = paymentId,
                 SessionId = sessionId,
                 Amount = placeResult.AmountCharged ?? confirmedPaymentAmount,
-                Currency = payment.Currency,
+                Currency = "USD", // Settlement currency; customer may have paid in a different currency via Dodo Adaptive Currency
+                GatewayAmount = Math.Round((decimal)payment.TotalAmount / 100m, 2),
+                GatewayCurrency = payment.Currency,
                 CustomerEmail = ownerEmail,
                 TransactionStatus = "Succeeded",
                 IsSuccess = true,
@@ -268,7 +274,9 @@ public class VerifyDodoPaymentCommandHandler(
                 PaymentId = paymentId,
                 SessionId = sessionId,
                 Amount = confirmedPaymentAmount,
-                Currency = payment.Currency,
+                Currency = "USD", // Settlement currency; customer may have paid in a different currency via Dodo Adaptive Currency
+                GatewayAmount = Math.Round((decimal)payment.TotalAmount / 100m, 2),
+                GatewayCurrency = payment.Currency,
                 CustomerEmail = ownerEmail,
                 TransactionStatus = "Succeeded",
                 IsSuccess = false,
