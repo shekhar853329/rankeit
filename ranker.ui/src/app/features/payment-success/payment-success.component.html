@@ -95,7 +95,7 @@
         <div class="details-card__row">
           <span class="details-card__label">Payment Reference</span>
           <div class="ref-pill" (click)="copyPaymentId()" title="Click to copy">
-            <span class="font-mono text-xs">{{ pid }}</span>
+            <span class="font-mono text-xs ref-pill__code">{{ pid }}</span>
             <span class="material-symbols-outlined icon-xs text-muted">{{ copied() ? 'done' : 'content_copy' }}</span>
           </div>
         </div>

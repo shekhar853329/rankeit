@@ -1,14 +1,18 @@
 .daily-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.25rem 1.5rem 4rem;
+  padding: 0.5rem 0.65rem 2.5rem 0.65rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.65rem;
 
-  @media (max-width: 768px) {
-    padding: 1rem 1rem 3rem;
-    gap: 1rem;
+  @media (min-width: 480px) {
+    padding: 0.75rem 1rem 3rem 1rem;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    padding: 0.85rem 1.25rem 3rem 1.25rem;
   }
 }
 
@@ -16,8 +20,8 @@
 .daily-header {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding-bottom: 1rem;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border);
 
   .breadcrumb-row {
@@ -25,14 +29,15 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 0.65rem;
+    gap: 0.5rem;
   }
 
   .breadcrumb-nav {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
     font-family: var(--font-numeric, inherit);
     color: var(--text-muted);
   }
@@ -50,20 +55,21 @@
   .stat-pills {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     flex-wrap: wrap;
   }
 
   .stat-pill {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 0.25rem 0.75rem;
+    gap: 4px;
+    padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     background: var(--surface-container-low);
     color: var(--text);
     font-family: var(--font-numeric, inherit);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
     border: 1px solid var(--border);
 
     &--highlight {
@@ -77,21 +83,22 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem 1.5rem;
+    gap: 0.75rem 1.25rem;
     flex-wrap: wrap;
   }
 
   .headline-copy {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.15rem;
     max-width: 680px;
   }
 
   .daily-title {
-    font-size: clamp(1.4rem, 3.5vw, 1.85rem);
+    font-size: clamp(1.25rem, 2.8vw, 1.5rem);
     font-weight: 800;
     letter-spacing: -0.025em;
+    line-height: 1.2;
     color: var(--text);
     margin: 0;
   }
@@ -99,8 +106,8 @@
   .daily-subtitle {
     margin: 0;
     color: var(--text-muted);
-    font-size: 0.875rem;
-    line-height: 1.45;
+    font-size: 0.8rem;
+    line-height: 1.35;
   }
 
   .header-actions {
@@ -112,13 +119,14 @@
   .btn-return {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.95rem;
-    border-radius: var(--radius-lg);
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-md);
     background: var(--surface-container-lowest);
     color: var(--text);
     border: 1px solid var(--border);
-    font-size: 0.825rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
@@ -206,13 +214,13 @@
 .day-groups-list {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.75rem;
 }
 
 .day-group {
   background: var(--surface-container-lowest);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -226,26 +234,26 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.85rem 1.25rem;
+    gap: 0.65rem;
+    padding: 0.55rem 0.85rem;
     background: var(--surface-container-low);
     border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
 
     @media (max-width: 640px) {
-      padding: 0.75rem 0.85rem;
+      padding: 0.5rem 0.75rem;
     }
   }
 
   &__title-wrap {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.5rem;
 
     .day-icon {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       color: var(--color-primary);
-      padding: 0.35rem;
+      padding: 0.25rem;
       border-radius: var(--radius-sm);
       background: var(--surface-container-lowest);
       border: 1px solid var(--border);
@@ -253,15 +261,16 @@
   }
 
   &__date {
-    font-size: 0.98rem;
+    font-size: 0.9rem;
     font-weight: 800;
     color: var(--text);
     letter-spacing: -0.02em;
+    line-height: 1.2;
     margin: 0;
   }
 
   &__date-sub {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     font-family: 'Space Grotesk', monospace;
     font-weight: 500;
@@ -270,11 +279,12 @@
   .count-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.65rem;
+    gap: 0.3rem;
+    padding: 0.18rem 0.55rem;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
+    line-height: 1.2;
     background: var(--surface-container-lowest);
     color: var(--text);
     border: 1px solid var(--border);
@@ -283,32 +293,33 @@
   &__rows {
     display: flex;
     flex-direction: column;
-    padding: 0.65rem 0.85rem;
-    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    gap: 0.35rem;
 
     @media (max-width: 640px) {
-      padding: 0.5rem;
-      gap: 0.45rem;
+      padding: 0.35rem 0.5rem;
+      gap: 0.35rem;
     }
   }
 
   &__footer {
     display: flex;
     justify-content: center;
-    padding: 0.85rem 1.5rem 1rem;
+    padding: 0.45rem 1rem 0.55rem;
     background: var(--surface-container-low);
     border-top: 1px solid var(--border);
 
     .btn-toggle-expand {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
       background: var(--surface-container-lowest);
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 0.5rem 1rem;
-      font-size: 0.825rem;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.78rem;
+      line-height: 1.2;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -326,23 +337,23 @@
 .feed-row {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.65rem 0.95rem;
+  gap: 0.65rem;
+  padding: 0.45rem 0.75rem;
   background: var(--surface-container-lowest);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 0.75rem;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    transform: translateY(-1.5px);
+    transform: translateY(-1px);
     border-color: var(--border-strong);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   }
 
   @media (max-width: 640px) {
-    gap: 0.65rem;
-    padding: 0.65rem 0.75rem;
+    gap: 0.5rem;
+    padding: 0.5rem 0.65rem;
     flex-wrap: wrap;
   }
 
@@ -371,7 +382,7 @@
   /* Rank Badges */
   &__rank-col {
     flex-shrink: 0;
-    width: 2.25rem;
+    width: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -381,59 +392,60 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.15rem;
+    gap: 0.12rem;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
 
     &--gold {
       color: #b45309;
       background: linear-gradient(135deg, #fef3c7, #fde68a);
-      padding: 0.25rem 0.5rem;
+      padding: 0.18rem 0.45rem;
       border-radius: var(--radius-sm);
       border: 1px solid rgba(224, 169, 38, 0.4);
 
       .rank-icon {
-        font-size: 16px;
+        font-size: 14px;
       }
     }
 
     &--silver {
       color: #334155;
       background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-      padding: 0.25rem 0.5rem;
+      padding: 0.18rem 0.45rem;
       border-radius: var(--radius-sm);
       border: 1px solid rgba(148, 163, 184, 0.4);
 
       .rank-icon {
-        font-size: 16px;
+        font-size: 14px;
       }
     }
 
     &--bronze {
       color: #7c2d12;
       background: linear-gradient(135deg, #ffedd5, #fed7aa);
-      padding: 0.25rem 0.5rem;
+      padding: 0.18rem 0.45rem;
       border-radius: var(--radius-sm);
       border: 1px solid rgba(205, 127, 50, 0.3);
 
       .rank-icon {
-        font-size: 16px;
+        font-size: 14px;
       }
     }
 
     &--standard {
       color: var(--text-muted);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 700;
     }
   }
 
   /* Avatar */
   &__avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: var(--radius-md);
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
     background: var(--surface-container-low);
     border: 1px solid var(--border);
     position: relative;
@@ -453,7 +465,7 @@
 
     .avatar-fallback {
       font-weight: 800;
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: var(--color-primary);
       z-index: 1;
     }
@@ -465,19 +477,20 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.15rem;
   }
 
   &__title-row {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
   }
 
   &__title {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     font-weight: 700;
+    line-height: 1.25;
     color: var(--text);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -488,11 +501,12 @@
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
     color: var(--text-muted);
     text-decoration: none;
     background: var(--surface-container-low);
-    padding: 0.15rem 0.45rem;
+    padding: 0.12rem 0.4rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     transition: all 0.15s ease;
@@ -513,22 +527,24 @@
   &__meta {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.775rem;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
     color: var(--text-muted);
     flex-wrap: wrap;
 
     .category-tag {
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
-      font-size: 0.72rem;
+      gap: 0.2rem;
+      font-size: 0.68rem;
       font-weight: 700;
+      line-height: 1.2;
       color: var(--color-primary, #f95738);
       text-decoration: none;
       background: rgba(249, 87, 56, 0.09);
       border: 1px solid rgba(249, 87, 56, 0.22);
-      padding: 0.15rem 0.55rem;
+      padding: 0.12rem 0.45rem;
       border-radius: 9999px;
       transition: all 0.15s ease;
 
@@ -557,16 +573,16 @@
   &__claim-col {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 0.85rem;
     margin-left: auto;
     flex-shrink: 0;
 
     @media (max-width: 640px) {
       width: 100%;
       justify-content: space-between;
-      padding-top: 0.5rem;
+      padding-top: 0.4rem;
       border-top: 1px solid var(--border);
-      margin-top: 0.35rem;
+      margin-top: 0.25rem;
     }
 
     .price-box {
@@ -575,22 +591,26 @@
       align-items: flex-end;
 
       @media (max-width: 640px) {
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0.35rem;
       }
     }
 
     .price-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       font-weight: 700;
       letter-spacing: 0.06em;
+      line-height: 1.1;
       color: var(--text-muted);
     }
 
     .price-val {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       font-weight: 800;
+      line-height: 1.2;
       color: var(--text);
       letter-spacing: -0.02em;
     }
@@ -599,13 +619,14 @@
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      padding: 0.45rem 0.85rem;
+      padding: 0.32rem 0.65rem;
       border-radius: var(--radius-md);
       background: var(--surface-container-low);
       border: 1px solid var(--border);
       color: var(--text);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
+      line-height: 1.2;
       text-decoration: none;
       transition: all 0.15s ease;
 
@@ -623,18 +644,19 @@
 .load-more-wrap {
   display: flex;
   justify-content: center;
-  padding-top: 1rem;
+  padding-top: 0.75rem;
 
   .btn-load-more {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.85rem 2rem;
+    gap: 0.45rem;
+    padding: 0.55rem 1.35rem;
     border-radius: var(--radius-lg);
     background: var(--surface-container-lowest);
     border: 1.5px solid var(--border);
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);

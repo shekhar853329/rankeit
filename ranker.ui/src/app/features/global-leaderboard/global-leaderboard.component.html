@@ -294,13 +294,12 @@
 
               <!-- Product Avatar / Media Preview with pinging dot -->
               <div class="product-avatar-wrap">
+                <div class="product-avatar product-avatar--placeholder" aria-hidden="true">
+                  {{ (row.siteName || row.listingName).charAt(0).toUpperCase() }}
+                </div>
                 @if (row.logoUrl || row.faviconUrl) {
                 <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
-                  fetchpriority="high" decoding="async" (error)="onListingFaviconError($event)" />
-                } @else {
-                <div class="product-avatar product-avatar--placeholder">
-                  {{ row.listingName.charAt(0).toUpperCase() }}
-                </div>
+                  fetchpriority="high" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
                 }
                 <span class="avatar-live-beacon">
                   <span class="avatar-live-beacon__ping"></span>
@@ -375,13 +374,12 @@
               <div class="rank-badge rank-badge--silver">#2</div>
 
               <div class="product-avatar-wrap">
+                <div class="product-avatar product-avatar--placeholder" aria-hidden="true">
+                  {{ (row.siteName || row.listingName).charAt(0).toUpperCase() }}
+                </div>
                 @if (row.logoUrl || row.faviconUrl) {
                 <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
-                  loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
-                } @else {
-                <div class="product-avatar product-avatar--placeholder">
-                  {{ row.listingName.charAt(0).toUpperCase() }}
-                </div>
+                  loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
                 }
               </div>
 
@@ -441,13 +439,12 @@
               <div class="rank-badge rank-badge--bronze">#3</div>
 
               <div class="product-avatar-wrap">
+                <div class="product-avatar product-avatar--placeholder" aria-hidden="true">
+                  {{ (row.siteName || row.listingName).charAt(0).toUpperCase() }}
+                </div>
                 @if (row.logoUrl || row.faviconUrl) {
                 <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
-                  loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
-                } @else {
-                <div class="product-avatar product-avatar--placeholder">
-                  {{ row.listingName.charAt(0).toUpperCase() }}
-                </div>
+                  loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
                 }
               </div>
 

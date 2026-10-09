@@ -54,11 +54,11 @@ export class PaymentSuccessComponent implements OnInit {
 
       // Set browser tab title based on status
       const titleMap: Record<string, string> = {
-        succeeded: 'Payment Confirmed | RankIt',
-        cancelled: 'Payment Cancelled | RankIt',
-        failed: 'Payment Failed | RankIt',
+        succeeded: 'Payment Confirmed | RankUp',
+        cancelled: 'Payment Cancelled | RankUp',
+        failed: 'Payment Failed | RankUp',
       };
-      this.titleService.setTitle(st ? (titleMap[st] ?? 'Payment | RankIt') : 'Payment | RankIt');
+      this.titleService.setTitle(st ? (titleMap[st] ?? 'Payment | RankUp') : 'Payment | RankUp');
 
       // Only verify when payment actually succeeded (or no status = legacy flow)
       if (st === 'cancelled' || st === 'failed') {

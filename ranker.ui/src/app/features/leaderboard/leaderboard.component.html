@@ -1,4 +1,4 @@
-﻿<div class="category-arena-page">
+<div class="category-arena-page">
   <!-- ═══════════════════════════════════════════════════════════
        CATEGORY COMMAND & URGENCY HERO STATION
        ═══════════════════════════════════════════════════════════ -->
@@ -180,11 +180,10 @@
                 </div>
 
                 <div class="avatar-box">
+                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName || entry.listingName).charAt(0).toUpperCase() }}</div>
                   @if (entry.logoUrl || entry.faviconUrl) {
-                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="48" height="48"
-                    fetchpriority="high" decoding="async" (error)="onListingFaviconError($event)" />
-                  } @else {
-                  <div class="avatar-placeholder">{{ entry.listingName.charAt(0).toUpperCase() }}</div>
+                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="38" height="38"
+                    fetchpriority="high" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
                   }
                   <span class="live-beacon">
                     <span class="live-beacon__ping"></span>
@@ -242,11 +241,10 @@
               <div class="podium-card__left">
                 <div class="rank-badge rank-badge--silver">#2</div>
                 <div class="avatar-box">
+                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName || entry.listingName).charAt(0).toUpperCase() }}</div>
                   @if (entry.logoUrl || entry.faviconUrl) {
-                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="48" height="48"
-                    loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
-                  } @else {
-                  <div class="avatar-placeholder">{{ entry.listingName.charAt(0).toUpperCase() }}</div>
+                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="38" height="38"
+                    loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
                   }
                 </div>
                 <div class="info-box">
@@ -291,11 +289,10 @@
               <div class="podium-card__left">
                 <div class="rank-badge rank-badge--bronze">#3</div>
                 <div class="avatar-box">
+                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName || entry.listingName).charAt(0).toUpperCase() }}</div>
                   @if (entry.logoUrl || entry.faviconUrl) {
-                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="48" height="48"
-                    loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
-                  } @else {
-                  <div class="avatar-placeholder">{{ entry.listingName.charAt(0).toUpperCase() }}</div>
+                  <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="38" height="38"
+                    loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
                   }
                 </div>
                 <div class="info-box">
