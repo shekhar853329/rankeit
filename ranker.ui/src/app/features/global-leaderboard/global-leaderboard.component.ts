@@ -940,11 +940,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
         const minInc = data.minClaimIncrement || 1;
         const currentTop = data.leaderboard.items[0]?.currentClaimAmount ?? null;
-        const rank1Amount = currentTop !== null ? currentTop + minInc : data.minStartingClaim;
-
-        this.showToastNotification(
-          `Selected ${data.categoryName}. Amount to claim Rank #1 is ${this.currencySymbol()}${rank1Amount}.`
-        );
+        const rank1Amount = currentTop !== null ? currentTop + minInc : data.minStartingClaim;        
       },
       error: () => {},
     });
@@ -1067,11 +1063,6 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     if (urlInput) {
       setTimeout(() => urlInput.focus({ preventScroll: true }), 350);
     }
-
-    const amountVal = targetAmount ?? this.effectiveClaimAmount() ?? 10;
-    this.showToastNotification(
-      `Staged at ${this.currencySymbol()}${amountVal}. Select your category and enter domain to claim.`
-    );
   }
 
   prepareClaim(productName: string, minAmount: number, categorySlug?: string, rank?: number): void {
