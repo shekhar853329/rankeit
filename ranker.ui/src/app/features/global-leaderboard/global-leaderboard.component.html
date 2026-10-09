@@ -700,32 +700,35 @@
         <div class="spotlight-card__top">
           <span class="spotlight-badge">
             <span class="material-symbols-outlined icon-xs">workspace_premium</span>
-            Global Crown Holder
+            {{hallOfFameMode() === 'alltime'? "Global": "Today's"}} Crown Holder
           </span>
-          <span class="spotlight-crown-disc">
-            <span class="material-symbols-outlined icon-sm">military_tech</span>
-          </span>
+          <div class="spotlight-stat" title="Capital spent to secure Rank #1">
+            <span class="spotlight-stat__val">{{ currencySymbol() }}{{ reigningChampion()?.currentClaimAmount ?? 0 |
+              number: '1.0-0' }}</span>
+            <span class="spotlight-stat__lbl">Spent</span>
+          </div>
         </div>
 
-        <div class="spotlight-card__avatar-area">
+        <div class="spotlight-card__body">
           <div class="champion-hero-row champion-hero-row--link"
             (click)="reigningChampion() && openListing(reigningChampion()!)">
             <div class="champion-avatar-ring">
               @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
               <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt=""
-                class="champion-avatar-img" width="46" height="46" loading="lazy" decoding="async" />
+                class="champion-avatar-img" width="38" height="38" loading="lazy" decoding="async" />
               } @else {
               <div class="champion-avatar-placeholder">
                 {{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}
               </div>
               }
               <div class="crown-topper">
-                <span class="material-symbols-outlined icon-sm">crown</span>
+                <span class="material-symbols-outlined icon-xxs">crown</span>
               </div>
             </div>
             <div class="champion-meta">
-              <h3 class="champion-name">{{ reigningChampion()?.siteName || reigningChampion()?.listingName || 'No Leader
-                Yet' }}</h3>
+              <h3 class="champion-name" [title]="reigningChampion()?.siteName || reigningChampion()?.listingName || ''">
+                {{ reigningChampion()?.siteName || reigningChampion()?.listingName || 'No Leader Yet' }}
+              </h3>
               <div class="champion-holding-row">
                 <span class="champion-holding">
                   <strong class="text-on-surface">{{ reigningChampion()?.categoryName || 'Global' }}</strong>
@@ -741,25 +744,11 @@
             </div>
           </div>
 
-          <div class="defense-grid">
-            <div class="defense-box">
-              <span class="defense-val">{{ reigningChampion()?.claimCount ?? 0 }} {{ (reigningChampion()?.claimCount ??
-                1)
-                === 1 ? 'Time' : 'Times' }}</span>
-              <span class="defense-label">Defended Today</span>
-            </div>
-            <div class="defense-box">
-              <span class="defense-val text-primary">{{ currencySymbol() }}{{ reigningChampion()?.currentClaimAmount ??
-                0
-                | number: '1.0-0' }}</span>
-              <span class="defense-label">Capital Spent</span>
-            </div>
-          </div>
-
           <button type="button" class="claim-throne-btn"
-            (click)="$event.stopPropagation(); claimThisPosition((reigningChampion()?.currentClaimAmount ?? 10) + 1, 1)">
-            <span class="material-symbols-outlined icon-sm">workspace_premium</span>
-            <span>Claim This Position</span>
+            (click)="$event.stopPropagation(); claimThisPosition((reigningChampion()?.currentClaimAmount ?? 10) + 1, 1)"
+            title="Claim Rank #1 Position">
+            <span class="material-symbols-outlined icon-xs">workspace_premium</span>
+            <span>Claim Position</span>
           </button>
         </div>
 
