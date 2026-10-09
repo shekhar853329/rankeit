@@ -28,7 +28,10 @@ builder.Services.AddDbContext<RankerDbContext>(options =>
         npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorCodesToAdd: null
+            // 40001 = serialization_failure — thrown by Serializable transactions under
+            // concurrent read/write conflicts. PostgreSQL itself says "retry the transaction",
+            // and the execution strategy wrapping PlaceClaimCommandHandler does exactly that.
+            errorCodesToAdd: ["40001"]
         )
     ));
 
