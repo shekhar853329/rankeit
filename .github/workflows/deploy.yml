@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - Production-V1
+      - Production-V1-DODOPayments
       - main
       - feature/postgres-migration
   workflow_dispatch:
@@ -124,8 +125,12 @@ jobs:
       - name: Generate Backend Production Environment File
         env:
           PROD_CONNECTION_STRING: ${{ secrets.PROD_CONNECTION_STRING }}
-          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
-          RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+          DODO_API_KEY: ${{ secrets.DODO_API_KEY }}
+          DODO_BASE_URL: ${{ secrets.DODO_BASE_URL }}
+          DODO_PRODUCT_ID: ${{ secrets.DODO_PRODUCT_ID }}
+          DODO_WEBHOOK_KEY: ${{ secrets.DODO_WEBHOOK_KEY }}
+          DODO_FRONTEND_BASE_URL: ${{ secrets.DODO_FRONTEND_BASE_URL }}
+          DODO_MODE: ${{ secrets.DODO_MODE }}
           GA_PROPERTY_ID: ${{ secrets.GA_PROPERTY_ID }}
           GA_CREDENTIALS_JSON: ${{ secrets.GA_CREDENTIALS_JSON }}
         run: |
@@ -133,8 +138,12 @@ jobs:
           import os
 
           conn = os.environ.get('PROD_CONNECTION_STRING', '').strip()
-          rzp_id = os.environ.get('RAZORPAY_KEY_ID', '').strip()
-          rzp_sec = os.environ.get('RAZORPAY_KEY_SECRET', '').strip()
+          dodo_api_key = os.environ.get('DODO_API_KEY', '').strip()
+          dodo_base_url = os.environ.get('DODO_BASE_URL', '').strip()
+          dodo_product_id = os.environ.get('DODO_PRODUCT_ID', '').strip()
+          dodo_webhook_key = os.environ.get('DODO_WEBHOOK_KEY', '').strip()
+          dodo_frontend_base_url = os.environ.get('DODO_FRONTEND_BASE_URL', '').strip()
+          dodo_mode = os.environ.get('DODO_MODE', 'live').strip()
           ga_prop = os.environ.get('GA_PROPERTY_ID', '').strip()
           ga_json = os.environ.get('GA_CREDENTIALS_JSON', '').strip()
 
@@ -143,8 +152,12 @@ jobs:
               "ASPNETCORE_URLS=http://127.0.0.1:5000",
               "ASPNETCORE_HTTP_PORTS=5000",
               f"ConnectionStrings__RankerDb={conn}",
-              f"Razorpay__KeyId={rzp_id}",
-              f"Razorpay__KeySecret={rzp_sec}",
+              f"DodoPayments__ApiKey={dodo_api_key}",
+              f"DodoPayments__BaseUrl={dodo_base_url}",
+              f"DodoPayments__ProductId={dodo_product_id}",
+              f"DodoPayments__WebhookKey={dodo_webhook_key}",
+              f"DodoPayments__FrontendBaseUrl={dodo_frontend_base_url}",
+              f"DodoPayments__Mode={dodo_mode}",
           ]
 
           if ga_prop:
