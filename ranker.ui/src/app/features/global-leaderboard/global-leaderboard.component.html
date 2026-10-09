@@ -295,7 +295,7 @@
               <!-- Product Avatar / Media Preview with pinging dot -->
               <div class="product-avatar-wrap">
                 @if (row.logoUrl || row.faviconUrl) {
-                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="48" height="48"
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
                   fetchpriority="high" decoding="async" (error)="onListingFaviconError($event)" />
                 } @else {
                 <div class="product-avatar product-avatar--placeholder">
@@ -376,7 +376,7 @@
 
               <div class="product-avatar-wrap">
                 @if (row.logoUrl || row.faviconUrl) {
-                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="48" height="48"
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
                   loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
                 } @else {
                 <div class="product-avatar product-avatar--placeholder">
@@ -442,7 +442,7 @@
 
               <div class="product-avatar-wrap">
                 @if (row.logoUrl || row.faviconUrl) {
-                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="48" height="48"
+                <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
                   loading="lazy" decoding="async" (error)="onListingFaviconError($event)" />
                 } @else {
                 <div class="product-avatar product-avatar--placeholder">
