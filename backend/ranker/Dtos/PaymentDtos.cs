@@ -4,7 +4,7 @@ namespace Ranker.Dtos;
 
 public sealed record CreateDodoSessionRequestDto(
     int AmountInMinorUnits,
-    string Currency = "INR",
+    string Currency = "USD",
     string? CustomerEmail = null,
     string? CustomerName = null,
     string? ReturnUrl = null,

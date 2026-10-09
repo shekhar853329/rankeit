@@ -94,7 +94,7 @@ public class DodoPaymentsService : IDodoPaymentsService
                     amount = amountInMinorUnits
                 }
             },
-            billing_currency = string.IsNullOrWhiteSpace(currency) ? "INR" : currency,
+            billing_currency = string.IsNullOrWhiteSpace(currency) ? "USD" : currency,
             return_url = returnUrl,
             cancel_url = cancelUrl,
             customer = !string.IsNullOrWhiteSpace(customerEmail)
@@ -200,7 +200,7 @@ public class DodoPaymentsService : IDodoPaymentsService
         var id = root.TryGetProperty("payment_id", out var pidProp) ? pidProp.GetString() ?? paymentId : paymentId;
         var status = root.TryGetProperty("status", out var stProp) ? stProp.GetString() ?? "" : "";
         var amount = root.TryGetProperty("total_amount", out var amtProp) && amtProp.TryGetInt64(out var a) ? a : 0L;
-        var currency = root.TryGetProperty("currency", out var curProp) ? curProp.GetString() ?? "INR" : "INR";
+        var currency = root.TryGetProperty("currency", out var curProp) ? curProp.GetString() ?? "USD" : "USD";
 
         string? customerEmail = null;
         string? customerName = null;

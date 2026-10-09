@@ -225,7 +225,8 @@ public class VerifyDodoPaymentCommandHandler(
             LogoUrl: logoUrl,
             Description: description,
             FaviconUrl: faviconUrl,
-            IsAllTimeMode: isAllTimeMode);
+            IsAllTimeMode: isAllTimeMode,
+            Currency: payment.Currency);
 
         var placeResult = await sender.Send(placeCommand, ct);
 

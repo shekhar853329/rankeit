@@ -220,7 +220,7 @@ public class PlaceClaimCommandHandler(
                 PaymentReference = command.PaymentReference,
                 Amount = decision.ExpectedChargeAmount,
                 AmountInPaise = (long)(decision.ExpectedChargeAmount * 100m),
-                Currency = "INR",
+                Currency = command.Currency,
                 IsSuccess = true,
                 RequestPayloadJson = System.Text.Json.JsonSerializer.Serialize(new
                 {

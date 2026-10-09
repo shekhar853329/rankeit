@@ -20,4 +20,5 @@ public sealed record PlaceClaimCommand(
     string? LogoUrl,
     string? Description,
     string? FaviconUrl,
-    bool IsAllTimeMode = false) : IRequest<PlaceClaimResultDto>;
+    bool IsAllTimeMode = false,
+    string Currency = "USD") : IRequest<PlaceClaimResultDto>;

@@ -54,7 +54,7 @@ public class PaymentsController(
 
             var command = new CreateDodoSessionCommand(
                 AmountInMinorUnits: request.AmountInMinorUnits,
-                Currency: string.IsNullOrWhiteSpace(request.Currency) ? "INR" : request.Currency,
+                Currency: string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency,
                 CustomerEmail: request.CustomerEmail,
                 CustomerName: request.CustomerName ?? request.ListingName,
                 ReturnUrl: returnUrl,

@@ -503,7 +503,7 @@ export class ConfirmClaimModalComponent implements OnInit {
         session = await firstValueFrom(
           this.dodoPayments.createSession({
             amountInMinorUnits: Math.max(100, Math.round(chargeAmount * 100)),
-            currency: 'INR',
+            currency: 'USD',
             customerEmail: email,
             customerName: resolvedTitle,
             listingName: resolvedTitle,
