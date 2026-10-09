@@ -4,6 +4,7 @@ import {
   DestroyRef,
   OnInit,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -23,6 +24,7 @@ import { PaymentTransactionItem } from '../../core/models/payment.model';
   templateUrl: './my-transactions.component.html',
   styleUrl: './my-transactions.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.is-modal]': 'isModal()' },
 })
 export class MyTransactionsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -31,6 +33,8 @@ export class MyTransactionsComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly isModal = input(false);
+
   readonly email = signal('');
   readonly transactions = signal<PaymentTransactionItem[]>([]);
   readonly loading = signal(false);
@@ -38,20 +42,22 @@ export class MyTransactionsComponent implements OnInit {
   readonly searched = signal(false);
 
   ngOnInit(): void {
-    this.seo.updateTags({
-      title: 'My Payment Transactions | RankUp',
-      description:
-        'Look up your pending, failed, or cancelled payment attempts by email.',
-      url: 'https://rankup.cyou/my-transactions',
-    });
+    if (!this.isModal()) {
+      this.seo.updateTags({
+        title: 'My Payment Transactions | RankUp',
+        description:
+          'Look up your pending, failed, or cancelled payment attempts by email.',
+        url: 'https://rankup.cyou/my-transactions',
+      });
 
-    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const emailParam = params.get('email');
-      if (emailParam) {
-        this.email.set(emailParam);
-        this.search();
-      }
-    });
+      this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+        const emailParam = params.get('email');
+        if (emailParam) {
+          this.email.set(emailParam);
+          this.search();
+        }
+      });
+    }
   }
 
   search(): void {

@@ -668,3 +668,45 @@
     transform: rotate(360deg);
   }
 }
+
+/* ── Payment Modal ─────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-sheet {
+  position: relative;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-xl, 1rem);
+  max-width: 740px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted, #6b7280);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  z-index: 1;
+
+  &:hover {
+    background: var(--surface-hover, rgba(0, 0, 0, 0.05));
+  }
+}

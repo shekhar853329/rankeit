@@ -8,13 +8,14 @@ import { SignalrService } from '../../core/services/signalr.service';
 import { DailyListingEntryDto, DailyListingGroupDto } from '../../core/models/daily-listing.model';
 
 import { SeoService } from '../../core/services/seo.service';
+import { MyTransactionsComponent } from '../my-transactions/my-transactions.component';
 
 const TOP_ENTRIES_PREVIEW = 4;
 
 @Component({
   selector: 'app-daily-listings',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, DatePipe],
+  imports: [RouterLink, DecimalPipe, DatePipe, MyTransactionsComponent],
   templateUrl: './daily-listings.component.html',
   styleUrl: './daily-listings.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +38,15 @@ export class DailyListingsComponent implements OnInit {
   readonly clickCounts = signal<Record<number, number>>({});
 
   readonly previewCount = TOP_ENTRIES_PREVIEW;
+  readonly showPaymentModal = signal(false);
+
+  openPaymentModal(): void {
+    this.showPaymentModal.set(true);
+  }
+
+  closePaymentModal(): void {
+    this.showPaymentModal.set(false);
+  }
 
   ngOnInit(): void {
     this.seo.updateTags({

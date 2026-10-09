@@ -31,10 +31,10 @@
           <span class="material-symbols-outlined text-[16px]">arrow_back</span>
           <span>Live Leaderboard</span>
         </a>
-        <a routerLink="/my-transactions" class="btn-return">
+        <button type="button" class="btn-return" (click)="openPaymentModal()">
           <span class="material-symbols-outlined text-[16px]">receipt_long</span>
           <span>Payment Issues?</span>
-        </a>
+        </button>
       </div>
     </div>
   </header>
@@ -201,3 +201,12 @@
   }
   }
 </section>
+
+@if (showPaymentModal()) {
+  <div class="modal-backdrop" (click)="closePaymentModal()">
+    <div class="modal-sheet" (click)="$event.stopPropagation()">
+      <button type="button" class="modal-close" (click)="closePaymentModal()">×</button>
+      <app-my-transactions [isModal]="true"></app-my-transactions>
+    </div>
+  </div>
+}

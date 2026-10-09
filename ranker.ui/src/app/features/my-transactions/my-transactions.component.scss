@@ -363,3 +363,12 @@
     text-decoration: underline;
   }
 }
+
+/* ── Modal host override ───────────────────────────────────── */
+:host.is-modal {
+  .transactions-page {
+    min-height: unset;
+    padding: 0;
+    display: block;
+  }
+}
