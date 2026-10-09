@@ -77,11 +77,25 @@ public class DodoPaymentsService : IDodoPaymentsService
         _logger.LogInformation("Creating Dodo checkout session for {CustomerEmail}, amount {Amount} {Currency}",
             customerEmail, amountInMinorUnits, currency);
 
-        var street = !string.IsNullOrWhiteSpace(billingStreet) ? billingStreet : "Syndicate Bank Layout";
-        var city = !string.IsNullOrWhiteSpace(billingCity) ? billingCity : "Bengaluru";
-        var state = !string.IsNullOrWhiteSpace(billingState) ? billingState : "Karnataka";
-        var country = !string.IsNullOrWhiteSpace(billingCountry) ? billingCountry : "IN";
-        var zipcode = !string.IsNullOrWhiteSpace(billingZipcode) ? billingZipcode : "560091";
+        // Only include billing_address when the caller explicitly provides address data.
+        // Sending pre-filled address fields to Dodo locks them as read-only on the checkout form,
+        // preventing the customer from editing their contact and billing information.
+        bool hasBillingAddress = !string.IsNullOrWhiteSpace(billingCountry)
+            || !string.IsNullOrWhiteSpace(billingZipcode)
+            || !string.IsNullOrWhiteSpace(billingStreet)
+            || !string.IsNullOrWhiteSpace(billingCity)
+            || !string.IsNullOrWhiteSpace(billingState);
+
+        object? billingAddressPayload = hasBillingAddress
+            ? new
+            {
+                country = billingCountry,
+                city = billingCity,
+                state = billingState,
+                street = billingStreet,
+                zipcode = billingZipcode
+            }
+            : null;
 
         var payload = new
         {
@@ -105,14 +119,7 @@ public class DodoPaymentsService : IDodoPaymentsService
                 }
                 : null,
             minimal_address = true,
-            billing_address = new
-            {
-                country = country,
-                city = city,
-                state = state,
-                street = street,
-                zipcode = zipcode
-            },
+            billing_address = billingAddressPayload,
             customization = new
             {
                 theme = "dark"

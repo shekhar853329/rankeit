@@ -54,16 +54,8 @@ public class CalculateClaimQuoteQueryHandler(
                 .FirstOrDefaultAsync(l => l.CategoryId == request.CategoryId && l.Url == trimmedUrl, ct);
         }
 
-        // If existing listing is matched and owner contact email is provided, check email match
-        if (existingListing != null && !string.IsNullOrWhiteSpace(request.OwnerContactEmail))
-        {
-            if (!string.Equals(existingListing.OwnerContactEmail.Trim(), request.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                return Failure(category.Id, "OwnerEmailMismatch", "Owner contact email does not match the listing on record.",
-                    category.Name, category.MinStartingClaim, category.MinClaimIncrement,
-                    existingListing.Id, existingListing.Name, existingListing.CurrentClaimAmount);
-            }
-        }
+        // If existing listing is matched and owner contact email is provided, skip email match check
+        // to allow reclaims with any email address.
 
         // Get current top listing in this category
         var topListing = await dbContext.Listings

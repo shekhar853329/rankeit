@@ -75,9 +75,7 @@ public class PlaceClaimCommandHandler(
 
                 if (!string.Equals(existingListing.OwnerContactEmail.Trim(), command.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
                 {
-                    await transaction.RollbackAsync(ct);
-                    result = Failure(ClaimFailureReason.OwnerEmailMismatch, "OwnerContactEmail does not match the listing on record.");
-                    return;
+                    // Email mismatch check removed — allow reclaims with any email address.
                 }
             }
             else if (!string.IsNullOrWhiteSpace(command.ListingUrl))
@@ -90,9 +88,7 @@ public class PlaceClaimCommandHandler(
                 {
                     if (!string.Equals(matchedListing.OwnerContactEmail.Trim(), command.OwnerContactEmail.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
-                        await transaction.RollbackAsync(ct);
-                        result = Failure(ClaimFailureReason.OwnerEmailMismatch, "This listing URL is already registered under a different owner contact email.");
-                        return;
+                        // Email mismatch check removed — allow reclaims with any email address.
                     }
 
                     existingListing = matchedListing;

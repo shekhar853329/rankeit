@@ -244,7 +244,6 @@
       <input type="email" [ngModel]="ownerEmail()" (ngModelChange)="ownerEmail.set($event)"
         placeholder="you@example.com" [disabled]="submitting()" />
       @if (isReclaim()) {
-      <span class="field-hint">Must match the email on record to authorize your previous payment credit.</span>
       }
     </label>
 
