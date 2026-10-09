@@ -100,10 +100,10 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   /* ── Interactive Claim Pressure Chart Controls ── */
   readonly chartViewMode = signal<'timeline' | 'hourly' | 'weekly'>('timeline');
   readonly chartMetric = signal<'both' | 'volume' | 'count'>('both');
-  readonly chartTimePreset = signal<'1h' | '6h' | 'today' | 'all'>('today');
+  readonly chartTimePreset = signal<'1h' | '6h' | 'today' | 'all'>('all');
 
   /* ── Time & Currency Controls ── */
-  readonly timeMode = signal<'today' | 'alltime'>('today');
+  readonly timeMode = signal<'today' | 'alltime'>('alltime');
   readonly selectedCurrency = signal<'USD' | 'EUR' | 'INR'>('INR');
   readonly countdownText = signal('05h : 42m : 18s');
   readonly currentUtcTime = signal('18:00 UTC');
