@@ -175,7 +175,7 @@
 
   .stat-metric {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     gap: 0.22rem;
     line-height: 1.2;
   }
@@ -187,13 +187,13 @@
 
     @media (min-width: 440px) {
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
     }
   }
 
   .stats-online-count {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     font-family: var(--font-numeric);
     font-weight: 700;
     color: var(--color-secondary);
@@ -212,11 +212,24 @@
 
   .stats-views-count {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     font-family: var(--font-numeric);
     font-weight: 700;
     color: var(--color-on-surface);
     line-height: 1.2;
+  }
+
+  .stats-trend-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-secondary);
+    vertical-align: middle;
+    flex-shrink: 0;
   }
 
   &__stats-sep {
@@ -637,7 +650,16 @@
 }
 
 .stats-trend-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--color-secondary);
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 /* ════════════════════════════════════════════
