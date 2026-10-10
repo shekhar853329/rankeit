@@ -504,6 +504,13 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.claimAmount() ?? this.globalDefaultPrice()
   );
 
+  readonly claimAmountDisplayLength = computed<number>(() => {
+    const val = this.isAmountFieldFocused()
+      ? (this.claimAmount() !== null ? String(this.claimAmount()) : '')
+      : String(this.effectiveClaimAmount() ?? 10);
+    return Math.max(1, val.length);
+  });
+
   readonly spotRank = toSignal(
     toObservable(this.effectiveClaimAmount).pipe(
       combineLatestWith(

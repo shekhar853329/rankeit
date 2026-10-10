@@ -227,6 +227,13 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   readonly effectiveClaimAmount = computed<number | null>(() => this.claimAmount() ?? this.claimPrice());
 
+  readonly claimAmountDisplayLength = computed<number>(() => {
+    const val = this.isAmountFieldFocused()
+      ? (this.claimAmount() !== null ? String(this.claimAmount()) : '')
+      : String(this.effectiveClaimAmount() ?? this.minStartingClaim());
+    return Math.max(1, val.length);
+  });
+
   /** Whether the all-time validation API call is in-flight. */
   readonly allTimeValidating = signal(false);
   /** Validation error message from the calculate endpoint, or null when valid. */

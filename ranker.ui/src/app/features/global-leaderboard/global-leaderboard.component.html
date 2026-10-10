@@ -25,7 +25,8 @@
               <input id="target-placement-display" type="number" class="stepper-input" aria-label="Claim Amount"
                 [value]="isAmountFieldFocused() ? (claimAmount() !== null ? claimAmount() : '') : (effectiveClaimAmount() ?? 10)"
                 (focus)="isAmountFieldFocused.set(true)" (input)="onClaimAmountInput($any($event.target).value)"
-                (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1" required />
+                (blur)="onClaimAmountBlur($any($event.target).value)" [min]="1" step="1"
+                [style.width.ch]="claimAmountDisplayLength()" required />
             </div>
             <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase amount"
               id="placement-increment">+</button>
