@@ -1,238 +1,256 @@
-﻿<section class="rules-container">
-  <!-- Hero Header -->
-  <header class="rules-header">
-    <div class="rules-badge-row">
-      <span class="badge-pill badge-pill--accent">
-        <span class="material-symbols-outlined text-[14px]">help</span>
-        Customer Guide
-      </span>
-      <span class="badge-pill">
-        <span class="material-symbols-outlined text-[14px]">verified</span>
-        100% Transparent
-      </span>
+<section class="rules-container">
+  <!-- ═══════════════════════════════════════════════════════════
+       HERO STATION (Ambient Card Header matching Global Leaderboard)
+       ═══════════════════════════════════════════════════════════ -->
+  <header class="hero-station">
+    <div class="hero-station__orbs-wrap" aria-hidden="true">
+      <div class="hero-station__orb hero-station__orb--primary"></div>
+      <div class="hero-station__orb hero-station__orb--gold"></div>
     </div>
 
-    <h1 class="rules-title">How Rankings & Sponsored Placements Work</h1>
-    <p class="rules-subtitle">
-      RankUp gives creators and founders a direct, transparent way to showcase their products.
-      Learn how promotional placements rank your listing, how rank upgrades credit your previous payments, and how daily
-      vs. all-time
-      leaderboards operate.
-    </p>
+    <div class="hero-station__inner">
+      <!-- Badges Row -->
+      <div class="hero-badges-row">
+        <span class="badge-pill badge-pill--accent">
+          <span class="material-symbols-outlined text-[13px]">help</span>
+          Customer Guide
+        </span>
+        <span class="badge-pill">
+          <span class="material-symbols-outlined text-[13px]">verified</span>
+          100% Transparent
+        </span>
+        <span class="badge-pill badge-pill--live">
+          <span class="pulse-dot"></span>
+          Zero Hidden Fees
+        </span>
+      </div>
+
+      <!-- Headline & Subtitle -->
+      <div class="hero-header-text">
+        <h1 class="headline-title">How Rankings &amp; Sponsored Placements Work</h1>
+        <p class="headline-subtitle">
+          RankUp gives creators and founders a direct, transparent way to showcase their products. Learn how promotional placements rank your listing, how rank upgrades credit previous payments, and how daily vs. all-time leaderboards operate.
+        </p>
+      </div>
+
+      <!-- Quick Summary Compliance Banner -->
+      <div class="compliance-banner">
+        <span class="material-symbols-outlined compliance-icon">verified_user</span>
+        <span class="compliance-text">
+          <strong>Guaranteed Fairness:</strong> 100% credit rollover on upgrades • Permanent listing security.
+        </span>
+      </div>
+    </div>
   </header>
 
-  <!-- 3-Step Quick Start Process -->
+  <!-- ═══════════════════════════════════════════════════════════
+       3-STEP QUICK START PROCESS
+       ═══════════════════════════════════════════════════════════ -->
   <div class="steps-card card">
-    <div class="steps-card__title">
-      <span class="material-symbols-outlined icon">speed</span>
-      <h2>Getting Ranked in 3 Simple Steps</h2>
+    <div class="accent-shimmer-bar"></div>
+
+    <div class="steps-card__header">
+      <div class="steps-header-icon">
+        <span class="material-symbols-outlined text-[20px]">speed</span>
+      </div>
+      <div class="steps-header-text">
+        <h2 class="steps-heading">Getting Ranked in 3 Simple Steps</h2>
+        <span class="steps-subheading">From zero to live global visibility in under 60 seconds</span>
+      </div>
     </div>
+
     <div class="steps-row">
       <div class="step-col">
-        <div class="step-num">1</div>
-        <h4>Choose Your Category</h4>
-        <p>Pick the category where your target audience browses and enter your website URL.</p>
+        <div class="step-badge font-numeric">1</div>
+        <h4 class="step-title">Choose Your Category</h4>
+        <p class="step-desc">Pick the vertical where your audience browses and submit your website URL.</p>
       </div>
-      <div class="step-divider">
-        <span class="material-symbols-outlined">arrow_forward</span>
-      </div>
-      <div class="step-col">
-        <div class="step-num">2</div>
-        <h4>Set Your Placement Amount</h4>
-        <p>Choose your amount to claim the #1 spotlight, or pick any rank that fits your budget.</p>
-      </div>
-      <div class="step-divider">
-        <span class="material-symbols-outlined">arrow_forward</span>
+      <div class="step-divider" aria-hidden="true">
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
       </div>
       <div class="step-col">
-        <div class="step-num">3</div>
-        <h4>Get Instant Traffic</h4>
-        <p>The moment payment is complete, your link goes live in your claimed rank across the platform.</p>
+        <div class="step-badge font-numeric">2</div>
+        <h4 class="step-title">Set Your Placement</h4>
+        <p class="step-desc">Enter any amount to claim the #1 spotlight, or take any rank fitting your budget.</p>
+      </div>
+      <div class="step-divider" aria-hidden="true">
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </div>
+      <div class="step-col">
+        <div class="step-badge font-numeric">3</div>
+        <h4 class="step-title">Get Instant Traffic</h4>
+        <p class="step-desc">Upon instant payment confirmation, your listing goes live across the leaderboards.</p>
       </div>
     </div>
   </div>
 
-  <!-- Core Rules Grid -->
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION DIVIDER / HEADER
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="section-title-row">
+    <div class="section-title-group">
+      <span class="material-symbols-outlined section-title-icon">gavel</span>
+      <h2 class="section-heading">Core Placement Rules &amp; Governance</h2>
+    </div>
+    <span class="section-subtext">Deterministic, automated placement rules</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CORE RULES GRID (2-column layout)
+       ═══════════════════════════════════════════════════════════ -->
   <div class="rules-grid">
     <!-- Rule 1: How Rankings Work -->
     <div class="rule-card card">
-      <div class="rule-card__number">01</div>
-      <div class="rule-card__content">
-        <div class="rule-card__header">
-          <span class="material-symbols-outlined rule-icon">trophy</span>
-          <h3>Top Placement Takes Rank #1</h3>
+      <span class="rule-watermark font-numeric">01</span>
+      <div class="rule-card__top">
+        <div class="rule-icon-wrap rule-icon-wrap--gold">
+          <span class="material-symbols-outlined text-[18px]">trophy</span>
         </div>
-        <p>
-          Rankings are calculated directly by your active sponsored placement amount within your chosen category. The
-          highest placement sits
-          at <strong>Rank #1</strong>, the second highest at <strong>Rank #2</strong>, and so on.
-        </p>
-        <div class="rule-highlight">
-          <span class="material-symbols-outlined highlight-icon">schedule</span>
-          <div>
-            <strong>Early-Bird Tiebreaker:</strong> If two products have the exact same placement amount, whichever
-            product
-            placed its initial listing first keeps the higher rank. Early adopters always retain their time advantage!
-          </div>
+        <h3 class="rule-title">Top Placement Takes Rank #1</h3>
+      </div>
+      <p class="rule-desc">
+        Rankings are calculated directly by your active sponsored placement amount within your chosen category. The highest placement sits at <strong>Rank #1</strong>, the second highest at <strong>Rank #2</strong>, and so on.
+      </p>
+      <div class="rule-callout">
+        <span class="material-symbols-outlined callout-icon">schedule</span>
+        <div class="callout-body">
+          <strong>Early-Bird Tiebreaker:</strong> If two products have the exact same placement amount, whichever product placed its initial listing first retains the higher rank.
         </div>
       </div>
     </div>
 
-    <!-- Rule 2: Claiming Any Rank -->
+    <!-- Rule 2: Promote for Any Position -->
     <div class="rule-card card">
-      <div class="rule-card__number">02</div>
-      <div class="rule-card__content">
-        <div class="rule-card__header">
-          <span class="material-symbols-outlined rule-icon">ads_click</span>
-          <h3>Promote for #1 or Any Position</h3>
+      <span class="rule-watermark font-numeric">02</span>
+      <div class="rule-card__top">
+        <div class="rule-icon-wrap rule-icon-wrap--primary">
+          <span class="material-symbols-outlined text-[18px]">ads_click</span>
         </div>
-        <p>
-          You don't have to pay for Rank #1 right away. You can place any placement amount starting from as low as
-          <strong>$1.00</strong> to enter the leaderboard.
-        </p>
-        <div class="rule-highlight">
-          <span class="material-symbols-outlined highlight-icon">flag</span>
-          <div>
-            <strong>To claim Rank #1:</strong> Your placement amount must beat the current leader by at least the
-            category increment (e.g. +$1). If the category is brand new, simply match the category starting price.
-          </div>
+        <h3 class="rule-title">Promote for #1 or Any Position</h3>
+      </div>
+      <p class="rule-desc">
+        You don't have to pay for Rank #1 right away. You can place any sponsored amount starting from as low as <strong class="font-numeric">$1.00</strong> to enter the category leaderboard.
+      </p>
+      <div class="rule-callout">
+        <span class="material-symbols-outlined callout-icon">flag</span>
+        <div class="callout-body">
+          <strong>To claim Rank #1:</strong> Your placement amount must beat the current leader by at least the category increment (e.g. +$1). Brand new categories simply start at the minimum price.
         </div>
       </div>
     </div>
 
-    <!-- Rule 3: Rank Upgrades - Pay Only the Difference -->
+    <!-- Rule 3: Rank Upgrades - Pay Only Difference -->
     <div class="rule-card card">
-      <div class="rule-card__number">03</div>
-      <div class="rule-card__content">
-        <div class="rule-card__header">
-          <span class="material-symbols-outlined rule-icon">savings</span>
-          <h3>You Only Pay the Difference!</h3>
+      <span class="rule-watermark font-numeric">03</span>
+      <div class="rule-card__top">
+        <div class="rule-icon-wrap rule-icon-wrap--emerald">
+          <span class="material-symbols-outlined text-[18px]">savings</span>
         </div>
-        <p>
-          When you want to raise your rank or reclaim the top spot, <strong>you never pay the full amount
-            again</strong>. Your existing active placement is credited 100% toward your new target.
-        </p>
-        <div class="rule-highlight rule-highlight--accent">
-          <span class="material-symbols-outlined highlight-icon">check_circle</span>
-          <div>
-            <strong>Example:</strong> If your current placement is $150 and you want to raise your rank to $220, you
-            only pay
-            <strong>$70</strong> at checkout. Your new displayed placement becomes $220!
-          </div>
+        <h3 class="rule-title">You Only Pay the Difference!</h3>
+      </div>
+      <p class="rule-desc">
+        When you want to raise your rank or reclaim the top spot, <strong>you never pay the full amount again</strong>. Your existing active placement is credited 100% toward your new target.
+      </p>
+      <div class="rule-callout rule-callout--accent">
+        <span class="material-symbols-outlined callout-icon">check_circle</span>
+        <div class="callout-body">
+          <strong>Example:</strong> If your current placement is $150 and you want to raise your rank to $220, you only pay <strong>$70</strong> at checkout. Your new displayed placement becomes $220!
         </div>
       </div>
     </div>
 
-    <!-- Rule 4: Today vs. All-Time Rankings -->
+    <!-- Rule 4: Today vs All-Time -->
     <div class="rule-card card">
-      <div class="rule-card__number">04</div>
-      <div class="rule-card__content">
-        <div class="rule-card__header">
-          <span class="material-symbols-outlined rule-icon">calendar_today</span>
-          <h3>Today vs. All-Time Rank</h3>
+      <span class="rule-watermark font-numeric">04</span>
+      <div class="rule-card__top">
+        <div class="rule-icon-wrap rule-icon-wrap--primary">
+          <span class="material-symbols-outlined text-[18px]">calendar_today</span>
         </div>
-        <p>
-          RankUp provides two distinct views to maximize discoverability:
-        </p>
-        <ul class="rule-bullets">
-          <li>
-            <strong>Today:</strong> Features products that placed or upgraded a sponsored placement today
-            (UTC). This is the
-            active daily feed that visitors check to discover what's hot right now.
-          </li>
-          <li>
-            <strong>All-Time Rankings:</strong> The permanent leaderboard showing every product ranked by its all-time
-            highest active placement.
-          </li>
-          <li>
-            <strong>Hall of Fame:</strong> A prestigious showcase celebrating the platform-wide top featured products
-            across all
-            categories.
-          </li>
-        </ul>
+        <h3 class="rule-title">Today vs. All-Time Rank</h3>
       </div>
+      <p class="rule-desc">
+        RankUp provides two distinct views to maximize discoverability:
+      </p>
+      <ul class="rule-bullets">
+        <li><strong>Today:</strong> Features products that placed or upgraded a placement today (UTC). This is the active daily feed visitors check to discover what's hot right now.</li>
+        <li><strong>All-Time Rankings:</strong> The permanent leaderboard showing every product ranked by its all-time highest active placement.</li>
+        <li><strong>Hall of Fame:</strong> A prestigious showcase celebrating the platform-wide top featured products across all categories.</li>
+      </ul>
     </div>
 
-    <!-- Rule 5: What Happens If You Get Outranked -->
+    <!-- Rule 5: You Never Lose Your Listing -->
     <div class="rule-card card">
-      <div class="rule-card__number">05</div>
-      <div class="rule-card__content">
-        <div class="rule-card__header">
-          <span class="material-symbols-outlined rule-icon">swap_vert</span>
-          <h3>You Never Lose Your Listing</h3>
+      <span class="rule-watermark font-numeric">05</span>
+      <div class="rule-card__top">
+        <div class="rule-icon-wrap rule-icon-wrap--gold">
+          <span class="material-symbols-outlined text-[18px]">swap_vert</span>
         </div>
-        <p>
-          If another creator places a higher promotional amount and overtakes your position, <strong>your product is
-            never
-            removed</strong>.
-        </p>
-        <p>
-          Your listing smoothly shifts down to the next position (e.g. from #1 to #2) and continues receiving visitors.
-          You can reclaim your top spot at any time simply by topping up the difference.
-        </p>
+        <h3 class="rule-title">You Never Lose Your Listing</h3>
       </div>
+      <p class="rule-desc">
+        If another creator places a higher promotional amount and overtakes your position, <strong>your product is never removed</strong>.
+      </p>
+      <p class="rule-desc">
+        Your listing smoothly shifts down to the next position (e.g. from #1 to #2) and continues receiving visitors. You can reclaim your top spot at any time simply by topping up the difference.
+      </p>
     </div>
 
-    <!-- Rule 6: Direct Traffic & Ownership Security -->
+    <!-- Rule 6: Protected Ownership -->
     <div class="rule-card card">
-      <div class="rule-card__number">06</div>
-      <div class="rule-card__content">
-        <div class="rule-card__header">
-          <span class="material-symbols-outlined rule-icon">lock</span>
-          <h3>Direct Traffic & Protected Ownership</h3>
+      <span class="rule-watermark font-numeric">06</span>
+      <div class="rule-card__top">
+        <div class="rule-icon-wrap rule-icon-wrap--emerald">
+          <span class="material-symbols-outlined text-[18px]">lock</span>
         </div>
-        <p>
-          Every visitor click sends users directly to your official website. Real-time click counters track your
-          exposure on your public profile.
-        </p>
-        <p>
-          To protect your listing, your domain is locked to your contact email. Only you can upgrade rankings or edit
-          details
-          for your product.
-        </p>
+        <h3 class="rule-title">Direct Traffic &amp; Protected Ownership</h3>
       </div>
+      <p class="rule-desc">
+        Every visitor click sends users directly to your official website. Real-time click counters track your exposure on your public profile.
+      </p>
+      <p class="rule-desc">
+        To protect your listing, your domain is securely locked to your contact email. Only you can upgrade rankings or edit details for your product.
+      </p>
     </div>
   </div>
 
-  <!-- Interactive Example Card: Difference Pricing Explained -->
+  <!-- ═══════════════════════════════════════════════════════════
+       INTERACTIVE EXAMPLE: HOW UPGRADING WORKS
+       ═══════════════════════════════════════════════════════════ -->
   <div class="example-box card">
     <div class="example-box__header">
       <div class="example-box__icon">
-        <span class="material-symbols-outlined">calculate</span>
+        <span class="material-symbols-outlined text-[20px]">calculate</span>
       </div>
       <div>
-        <h3>Example: How Upgrading & Reclaiming Works</h3>
-        <p>See exactly how your payments accumulate when competing for the top spot.</p>
+        <h3 class="example-title">Example: How Upgrading &amp; Reclaiming Works</h3>
+        <p class="example-subtitle">See exactly how your payments accumulate when competing for the top spot.</p>
       </div>
     </div>
 
     <div class="timeline-steps">
       <div class="timeline-step">
-        <div class="timeline-badge">Day 1</div>
+        <span class="timeline-badge font-numeric">Day 1</span>
         <div class="timeline-body">
-          <div class="timeline-title">You Place an Initial Placement</div>
-          <p>You launch your product in <em>AI Tools</em> with a <strong>$100</strong> placement. You pay
-            <strong>$100</strong> and claim <strong>Rank #1</strong>.
-          </p>
+          <h4 class="timeline-title">You Place an Initial Placement</h4>
+          <p class="timeline-desc">You launch your product in <em>AI Tools</em> with a <strong>$100</strong> placement. You pay <strong>$100</strong> and claim <strong>Rank #1</strong>.</p>
         </div>
       </div>
 
       <div class="timeline-step">
-        <div class="timeline-badge">Day 2</div>
+        <span class="timeline-badge font-numeric">Day 2</span>
         <div class="timeline-body">
-          <div class="timeline-title">A Competitor Moves Ahead</div>
-          <p>Another maker places <strong>$120</strong>. They move to Rank #1. Your listing slides to <strong>Rank
-              #2</strong> (still fully visible and gaining clicks).</p>
+          <h4 class="timeline-title">A Competitor Moves Ahead</h4>
+          <p class="timeline-desc">Another maker places <strong>$120</strong>. They move to Rank #1. Your listing slides to <strong>Rank #2</strong> (still fully visible and gaining clicks).</p>
         </div>
       </div>
 
       <div class="timeline-step timeline-step--highlight">
-        <div class="timeline-badge timeline-badge--accent">Day 3</div>
+        <span class="timeline-badge timeline-badge--accent font-numeric">Day 3</span>
         <div class="timeline-body">
-          <div class="timeline-title">You Reclaim Rank #1</div>
-          <p>
+          <h4 class="timeline-title">You Reclaim Rank #1</h4>
+          <p class="timeline-desc">
             You want to reclaim #1 with a <strong>$150</strong> placement. Because your previous $100 is credited:
-            <span class="calc-tag">You only pay: $150 - $100 = <strong>$50</strong></span>
+            <span class="calc-tag font-numeric">You only pay: $150 - $100 = <strong>$50</strong></span>
             Your listing immediately jumps back to <strong>Rank #1</strong>!
           </p>
         </div>
@@ -240,68 +258,82 @@
     </div>
   </div>
 
-  <!-- FAQ Section -->
+  <!-- ═══════════════════════════════════════════════════════════
+       FREQUENTLY ASKED QUESTIONS
+       ═══════════════════════════════════════════════════════════ -->
   <section class="rules-faq card">
     <div class="faq-header">
-      <span class="material-symbols-outlined text-primary text-[24px]">help</span>
-      <h2>Frequently Asked Questions</h2>
+      <div class="faq-header-icon">
+        <span class="material-symbols-outlined text-[20px]">help</span>
+      </div>
+      <div class="faq-header-text">
+        <h2 class="faq-title">Frequently Asked Questions</h2>
+        <span class="faq-subtitle">Clear answers to common questions about placements and rankings</span>
+      </div>
     </div>
 
-    <div class="faq-list">
+    <div class="faq-grid">
       <div class="faq-item">
-        <h4>Do I have to pay every day to stay on the leaderboard?</h4>
-        <p>
-          No! Once placed, your placement is permanent on the <strong>All-Time Leaderboard</strong> for as long as your
-          listing is active. To appear in <strong>Today</strong>, you simply need to have placed a placement
-          or
-          top-up on that day.
+        <h4 class="faq-question">Do I have to pay every day to stay on the leaderboard?</h4>
+        <p class="faq-answer">
+          No! Once placed, your placement is permanent on the <strong>All-Time Leaderboard</strong> for as long as your listing is active. To appear in <strong>Today</strong>, you simply need to have placed a placement or top-up on that day.
         </p>
       </div>
 
       <div class="faq-item">
-        <h4>Can I lower my placement amount or withdraw it?</h4>
-        <p>
-          No. Placements can only be increased, never decreased. This ensures complete transparency, stability, and
-          fairness
-          for all competing products on the leaderboard.
+        <h4 class="faq-question">Can I lower my placement amount or withdraw it?</h4>
+        <p class="faq-answer">
+          No. Placements can only be increased, never decreased. This ensures complete transparency, stability, and fairness for all competing products on the leaderboard.
         </p>
       </div>
 
       <div class="faq-item">
-        <h4>Can someone else change or promote my website URL?</h4>
-        <p>
-          No. Every listing is securely tied to the contact email you provided during your first placement. If someone
-          tries
-          to submit a placement on your website using a different email, the system rejects it immediately.
+        <h4 class="faq-question">Can someone else change or promote my website URL?</h4>
+        <p class="faq-answer">
+          No. Every listing is securely tied to the contact email you provided during your first placement. If someone tries to submit a placement on your website using a different email, the system rejects it immediately.
         </p>
       </div>
 
       <div class="faq-item">
-        <h4>What if another creator places a placement at the exact same moment?</h4>
-        <p>
-          Our system processes transactions securely in real time. If a competitor's payment confirms a fraction of a
-          second
-          before yours and renders your placement too low, your funds are never lost—they are automatically held safely
-          for
-          immediate reconciliation or refund.
+        <h4 class="faq-question">What if another creator places a placement at the exact same moment?</h4>
+        <p class="faq-answer">
+          Our system processes transactions securely in real time. If a competitor's payment confirms a fraction of a second before yours and renders your placement too low, your funds are never lost—they are automatically held safely for immediate reconciliation or refund.
         </p>
       </div>
 
       <div class="faq-item">
-        <h4>Where do users go when they click on my listing?</h4>
-        <p>
-          Visitors are sent directly to your website URL in a new browser tab. We don't route them through annoying
-          interstitial pages or ad walls.
+        <h4 class="faq-question">Where do users go when they click on my listing?</h4>
+        <p class="faq-answer">
+          Visitors are sent directly to your website URL in a new browser tab. We don't route them through annoying interstitial pages or ad walls.
         </p>
       </div>
 
       <div class="faq-item">
-        <h4>Can I update my product's name, description, or logo?</h4>
-        <p>
-          Yes! Whenever you place an upgrade on your existing listing, our system automatically re-scrapes your URL's
-          updated metadata (title, logo, and description) to keep your profile fresh.
+        <h4 class="faq-question">Can I update my product's name, description, or logo?</h4>
+        <p class="faq-answer">
+          Yes! Whenever you place an upgrade on your existing listing, our system automatically re-scrapes your URL's updated metadata (title, logo, and description) to keep your profile fresh.
         </p>
       </div>
     </div>
   </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CTA BANNER
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="rules-cta-bar card">
+    <div class="cta-text">
+      <h3 class="cta-title">Ready to Claim Your Rank?</h3>
+      <p class="cta-subtitle">Choose your category and promote your product on the global leaderboard today.</p>
+    </div>
+    <div class="cta-actions">
+      <a routerLink="/" class="btn-cta-sec">
+        <span class="material-symbols-outlined text-[16px]">leaderboard</span>
+        <span>View Leaderboards</span>
+      </a>
+      <a routerLink="/" class="btn-cta-pri">
+        <span class="material-symbols-outlined text-[16px]">rocket_launch</span>
+        <span>Claim Rank Now</span>
+      </a>
+    </div>
+  </div>
 </section>

@@ -1,243 +1,275 @@
 <section class="contact-container">
-  <!-- Header -->
-  <header class="contact-header">
-    <div class="badge-row">
-      <span class="badge-pill badge-pill--accent">
-        <span class="material-symbols-outlined text-[14px]">person</span>
-        Creator Direct
-      </span>
-      <span class="badge-pill">
-        <span class="material-symbols-outlined text-[14px]">history_edu</span>
-        Est. September 2026
-      </span>
+  <!-- ═══════════════════════════════════════════════════════════
+       HERO STATION (Ambient Card Header matching Global Leaderboard)
+       ═══════════════════════════════════════════════════════════ -->
+  <header class="hero-station">
+    <div class="hero-station__orbs-wrap" aria-hidden="true">
+      <div class="hero-station__orb hero-station__orb--primary"></div>
+      <div class="hero-station__orb hero-station__orb--gold"></div>
     </div>
 
-    <h1 class="contact-title">Contact Us &amp; Support</h1>
-    <p class="contact-subtitle">
-      Welcome to RankUp! Whether you have questions regarding payment reconciliation, sponsored ranking placements, or
-      platform support—reach out directly to our team.
-    </p>
+    <div class="hero-station__inner">
+      <!-- Badges Row -->
+      <div class="hero-badges-row">
+        <span class="badge-pill badge-pill--accent">
+          <span class="material-symbols-outlined text-[13px]">person</span>
+          Creator Direct
+        </span>
+        <span class="badge-pill">
+          <span class="material-symbols-outlined text-[13px]">history_edu</span>
+          Est. September 2026
+        </span>
+        <span class="badge-pill badge-pill--live">
+          <span class="pulse-dot"></span>
+          Open for Inquiries
+        </span>
+      </div>
 
-    <!-- Mandatory Payment Gateway Compliance Notice -->
-    <div class="legal-badge-banner"
-      style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--surface-container); border: 1px solid var(--border-strong); padding: 0.5rem 1.25rem; border-radius: 9999px; font-size: 0.875rem; color: var(--text); margin-top: 0.5rem;">
-      <span class="material-symbols-outlined"
-        style="color: var(--secondary, #10b981); font-size: 18px;">verified_user</span>
-      <span><strong>Legal Notice:</strong> {{ legal.operatedByText }}.</span>
+      <!-- Headline & Subtitle -->
+      <div class="hero-header-text">
+        <h1 class="headline-title">Contact &amp; Creator Support</h1>
+        <p class="headline-subtitle">
+          Whether you need assistance with payment reconciliation, claim ownership verification, custom vertical arenas, or platform feedback—reach out directly to the creator.
+        </p>
+      </div>
+
+      <!-- Compliance Notice Banner -->
+      <div class="compliance-banner">
+        <span class="material-symbols-outlined compliance-icon">verified_user</span>
+        <span class="compliance-text">
+          <strong>Legal Notice:</strong> {{ legal.operatedByText }} • Fast direct response within 24 hours.
+        </span>
+      </div>
     </div>
   </header>
 
-  <!-- Creator & Project Spotlight Card -->
+  <!-- ═══════════════════════════════════════════════════════════
+       FOUNDER SPOTLIGHT CARD
+       ═══════════════════════════════════════════════════════════ -->
   <div class="founder-card card">
-    <div class="founder-card__main">
-      <div class="founder-avatar">
-        <span class="material-symbols-outlined avatar-icon">code</span>
+    <div class="accent-shimmer-bar"></div>
+
+    <div class="founder-card__content">
+      <div class="founder-avatar-wrap">
+        <div class="founder-avatar">
+          <span class="material-symbols-outlined avatar-icon">terminal</span>
+        </div>
+        <div class="avatar-verified-badge" title="Verified Creator">
+          <span class="material-symbols-outlined text-[12px]">verified</span>
+        </div>
       </div>
 
-      <div class="founder-info">
+      <div class="founder-details">
         <div class="founder-meta-row">
           <div class="founder-names">
-            <h2>Shekhar</h2>
-            <span class="founder-role">Creator &amp; Solo Developer of RankUp</span>
+            <div class="founder-title-row">
+              <h2 class="founder-name">Shekhar</h2>
+              <span class="role-badge">Solo Creator &amp; Developer</span>
+            </div>
+            <span class="founder-sub">Founder of RankUp • Transparent Discovery Engine</span>
           </div>
-          <span class="live-tag">
-            <span class="live-dot"></span>
-            Open for Feedback &amp; Inquiries
-          </span>
+
+          <div class="founder-actions">
+            <a [href]="'mailto:' + email + '?subject=[RankUp Inquiries]'" class="btn-email-primary">
+              <span class="material-symbols-outlined text-[15px]">send</span>
+              <span>Send Email</span>
+            </a>
+            <button type="button" class="btn-copy-email" (click)="copyEmail()" title="Copy email address">
+              <span class="material-symbols-outlined text-[15px]">{{ copied() ? 'check' : 'content_copy' }}</span>
+              <span>{{ copied() ? 'Copied!' : 'Copy Email' }}</span>
+            </button>
+          </div>
         </div>
 
         <p class="founder-bio">
-          I started building <strong>RankUp</strong> on <strong>September 22, 2026</strong>, as a side project with a
-          simple goal: to help websites, products, and creators reach a wider audience.
+          I started building <strong>RankUp</strong> on <strong>September 22, 2026</strong>, as an open side project with a focused mission: giving indie makers, products, and web projects a fair, transparent stage to gain verified visibility and rank.
         </p>
 
         <div class="founder-chips">
           <div class="chip">
             <span class="material-symbols-outlined chip-icon">event</span>
-            <span>Created: <strong>September 22, 2026</strong></span>
+            <span class="chip-label">Created:</span>
+            <strong class="chip-val font-numeric">Sep 22, 2026</strong>
           </div>
           <div class="chip">
             <span class="material-symbols-outlined chip-icon">mail</span>
-            <span>Email: <strong>{{ email }}</strong></span>
+            <span class="chip-label">Direct:</span>
+            <strong class="chip-val">{{ email }}</strong>
           </div>
           <div class="chip">
             <span class="material-symbols-outlined chip-icon">location_on</span>
-            <span>Operating Address: <strong>{{ address }}</strong></span>
+            <span class="chip-label">Location:</span>
+            <strong class="chip-val">Muzaffarpur, Bihar, India</strong>
           </div>
           <div class="chip">
             <span class="material-symbols-outlined chip-icon">payments</span>
-            <span>Billing Currency: <strong>USD ($)</strong></span>
+            <span class="chip-label">Billing:</span>
+            <strong class="chip-val font-numeric">USD ($)</strong>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="founder-actions">
-      <a [href]="'mailto:' + email + '?subject=[RankUp Inquiries]'" class="btn-email-primary">
-        <span class="material-symbols-outlined text-[18px]">send</span>
-        <span>Send Email to Shekhar</span>
-      </a>
-
-      <button type="button" class="btn-copy-email" (click)="copyEmail()">
-        <span class="material-symbols-outlined text-[18px]">{{ copied() ? 'check' : 'content_copy' }}</span>
-        <span>{{ copied() ? 'Copied to Clipboard!' : 'Copy Email Address' }}</span>
-      </button>
-    </div>
   </div>
 
-  <!-- Contact Channels Grid -->
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION DIVIDER / HEADER
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="section-title-row">
+    <div class="section-title-group">
+      <span class="material-symbols-outlined section-title-icon">quick_reference_all</span>
+      <h2 class="section-heading">Support &amp; Communication Channels</h2>
+    </div>
+    <span class="section-subtext">Direct email routing for fastest turnaround</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CONTACT CHANNELS GRID (2-column responsive layout)
+       ═══════════════════════════════════════════════════════════ -->
   <div class="contact-grid">
-    <!-- Channel 1: Listing & Billing Support -->
-    <div class="contact-card card">
-      <div class="contact-card__icon-wrap">
-        <span class="material-symbols-outlined text-[26px]">support_agent</span>
+    <!-- Channel 1: Listing & Placement Support -->
+    <div class="channel-card card">
+      <div class="channel-card__top">
+        <div class="channel-icon-wrap channel-icon-wrap--primary">
+          <span class="material-symbols-outlined text-[20px]">support_agent</span>
+        </div>
+        <span class="sla-pill sla-pill--primary">Within 24 Hours</span>
       </div>
 
-      <div class="contact-card__body">
-        <div class="card-top-row">
-          <h3>General &amp; Listing Support</h3>
-          <span class="sla-badge">Fast Response</span>
-        </div>
-        <p>
-          Need assistance with payment reconciliation, upgrading an active placement, updating your product title or
-          logo, or
-          verifying your listing email? Contact me directly.
+      <div class="channel-card__body">
+        <h3 class="channel-title">General &amp; Listing Support</h3>
+        <p class="channel-desc">
+          Questions about payment reconciliation, upgrading an active placement, updating listing metadata, or verifying domain ownership.
         </p>
+      </div>
 
-        <div class="channel-action">
-          <a [href]="'mailto:' + email + '?subject=[RankUp Support Request]'" class="contact-link">
-            <span class="material-symbols-outlined text-[16px]">mail</span>
-            <span>{{ email }}</span>
-          </a>
-        </div>
+      <div class="channel-card__footer">
+        <a [href]="'mailto:' + email + '?subject=[RankUp Support Request]'" class="btn-channel-link">
+          <span class="material-symbols-outlined text-[15px]">mail</span>
+          <span>{{ email }}</span>
+          <span class="material-symbols-outlined text-[13px] arrow-icon">arrow_forward</span>
+        </a>
       </div>
     </div>
 
     <!-- Channel 2: Partnerships & Custom Arenas -->
-    <div class="contact-card card">
-      <div class="contact-card__icon-wrap contact-card__icon-wrap--emerald">
-        <span class="material-symbols-outlined text-[26px]">handshake</span>
+    <div class="channel-card card">
+      <div class="channel-card__top">
+        <div class="channel-icon-wrap channel-icon-wrap--emerald">
+          <span class="material-symbols-outlined text-[20px]">handshake</span>
+        </div>
+        <span class="sla-pill sla-pill--emerald">Collaboration</span>
       </div>
 
-      <div class="contact-card__body">
-        <div class="card-top-row">
-          <h3>Partnerships &amp; Custom Categories</h3>
-          <span class="sla-badge sla-badge--emerald">Collaboration</span>
-        </div>
-        <p>
-          Interested in creating a dedicated category arena for your incubator, developer community, or startup batch?
-          Let's discuss custom categories and collaborations.
+      <div class="channel-card__body">
+        <h3 class="channel-title">Partnerships &amp; Custom Categories</h3>
+        <p class="channel-desc">
+          Interested in creating a dedicated category arena for your incubator, developer collective, newsletter, or startup cohort.
         </p>
+      </div>
 
-        <div class="channel-action">
-          <a [href]="'mailto:' + email + '?subject=[RankUp Partnership]'" class="contact-link">
-            <span class="material-symbols-outlined text-[16px]">mail</span>
-            <span>{{ email }}</span>
-          </a>
-        </div>
+      <div class="channel-card__footer">
+        <a [href]="'mailto:' + email + '?subject=[RankUp Partnership]'" class="btn-channel-link">
+          <span class="material-symbols-outlined text-[15px]">mail</span>
+          <span>{{ email }}</span>
+          <span class="material-symbols-outlined text-[13px] arrow-icon">arrow_forward</span>
+        </a>
       </div>
     </div>
 
     <!-- Channel 3: Feedback & Feature Requests -->
-    <div class="contact-card card">
-      <div class="contact-card__icon-wrap contact-card__icon-wrap--gold">
-        <span class="material-symbols-outlined text-[26px]">lightbulb</span>
+    <div class="channel-card card">
+      <div class="channel-card__top">
+        <div class="channel-icon-wrap channel-icon-wrap--gold">
+          <span class="material-symbols-outlined text-[20px]">lightbulb</span>
+        </div>
+        <span class="sla-pill sla-pill--gold">Community</span>
       </div>
 
-      <div class="contact-card__body">
-        <div class="card-top-row">
-          <h3>Ideas, Feedback &amp; Bug Reports</h3>
-          <span class="sla-badge sla-badge--gold">Community</span>
-        </div>
-        <p>
-          RankUp is actively evolving. If you have an idea for a feature, spotted a bug, or want to suggest new category
-          verticals, your input is deeply appreciated!
+      <div class="channel-card__body">
+        <h3 class="channel-title">Ideas, Feedback &amp; Bug Reports</h3>
+        <p class="channel-desc">
+          RankUp is constantly refined. Found a visual bug, have ideas for ranking metrics, or want to suggest new verticals?
         </p>
+      </div>
 
-        <div class="channel-action">
-          <a [href]="'mailto:' + email + '?subject=[RankUp Feedback]'" class="contact-link">
-            <span class="material-symbols-outlined text-[16px]">feedback</span>
-            <span>{{ email }}</span>
-          </a>
-        </div>
+      <div class="channel-card__footer">
+        <a [href]="'mailto:' + email + '?subject=[RankUp Feedback]'" class="btn-channel-link">
+          <span class="material-symbols-outlined text-[15px]">feedback</span>
+          <span>{{ email }}</span>
+          <span class="material-symbols-outlined text-[13px] arrow-icon">arrow_forward</span>
+        </a>
       </div>
     </div>
 
-    <!-- Channel 4: Physical & Operating Address -->
-    <div class="contact-card card">
-      <div class="contact-card__icon-wrap contact-card__icon-wrap--emerald">
-        <span class="material-symbols-outlined text-[26px]">location_on</span>
+    <!-- Channel 4: Payment Self-Service Portal -->
+    <div class="channel-card card">
+      <div class="channel-card__top">
+        <div class="channel-icon-wrap channel-icon-wrap--secondary">
+          <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+        </div>
+        <span class="sla-pill sla-pill--secondary">Self-Service</span>
       </div>
 
-      <div class="contact-card__body">
-        <div class="card-top-row">
-          <h3>Operating &amp; Physical Address</h3>
-          <span class="sla-badge sla-badge--emerald">Registered Location</span>
-        </div>
-        <p>
-          <strong>{{ legal.operatedByText }}</strong><br />
-          {{ address }}
+      <div class="channel-card__body">
+        <h3 class="channel-title">Payment Transaction Lookup</h3>
+        <p class="channel-desc">
+          Made a placement payment that didn't appear immediately? Enter your checkout email to lookup status, retry, or retrieve receipt records.
         </p>
-
-        <div class="channel-action">
-          <span class="contact-link" style="cursor: default; user-select: text;">
-            <span class="material-symbols-outlined text-[16px]">pin_drop</span>
-            <span>Muzaffarpur, Bihar - 842001</span>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Channel 5: Payment Transaction History -->
-    <div class="contact-card card">
-      <div class="contact-card__icon-wrap">
-        <span class="material-symbols-outlined text-[26px]">receipt_long</span>
       </div>
 
-      <div class="contact-card__body">
-        <div class="card-top-row">
-          <h3>Payment Transaction History</h3>
-          <span class="sla-badge">Self-Service</span>
-        </div>
-        <p>
-          Made a payment that didn't go through? Enter the email you used at checkout to view your pending, failed, or
-          cancelled attempts.
-        </p>
-
-        <div class="channel-action">
-          <a routerLink="/my-transactions" class="contact-link">
-            <span class="material-symbols-outlined text-[16px]">manage_search</span>
-            <span>View My Transactions</span>
-          </a>
-        </div>
+      <div class="channel-card__footer">
+        <a routerLink="/my-transactions" class="btn-channel-link">
+          <span class="material-symbols-outlined text-[15px]">manage_search</span>
+          <span>View My Transactions</span>
+          <span class="material-symbols-outlined text-[13px] arrow-icon">arrow_forward</span>
+        </a>
       </div>
     </div>
   </div>
 
-  <!-- Website Operated By & Business Disclosures Card -->
-  <div class="about-project-card card" id="operated-by">
-    <div class="about-header">
-      <span class="material-symbols-outlined icon" style="color: var(--secondary, #10b981);">verified_user</span>
-      <div>
-        <h3>Website Operated By &amp; Business Information</h3>
-        <p><strong>{{ legal.operatedByText }}</strong>. Official platform disclosures and operational credentials:</p>
+  <!-- ═══════════════════════════════════════════════════════════
+       OPERATING ENTITY & LEGAL DISCLOSURES (Regulatory Compliance)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="disclosure-card card" id="operated-by">
+    <div class="disclosure-header">
+      <div class="disclosure-header-icon">
+        <span class="material-symbols-outlined text-[18px]">verified_user</span>
+      </div>
+      <div class="disclosure-header-text">
+        <h3 class="disclosure-title">Website Operated By &amp; Legal Disclosures</h3>
+        <p class="disclosure-subtitle">
+          Mandatory business information and operational entity details for merchant compliance
+        </p>
       </div>
     </div>
 
-    <div class="compliance-box"
-      style="background: var(--surface-container-low); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem;">
-      <ul
-        style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.92rem; color: var(--text-muted);">
-        <li><strong style="color: var(--text);">Operating Entity:</strong> {{ legal.operatedByText }} (Legal name as per
-          PAN Card)</li>
-        <li><strong style="color: var(--text);">Registered Address (Aadhaar):</strong> {{ address }}</li>
-        <li><strong style="color: var(--text);">Official Support Email:</strong> <a [href]="'mailto:' + email"
-            style="color: var(--accent); text-decoration: none;">{{ email }}</a></li>
-        <li><strong style="color: var(--text);">Platform Overview:</strong> RankUp is an open web discovery directory
-          and transparent sponsored ranking engine for creators, indie makers, and businesses.</li>
-        <li><strong style="color: var(--text);">Payment &amp; Currency:</strong> All transactions are securely processed
-          in US Dollars (USD / $).</li>
-      </ul>
+    <div class="disclosure-grid">
+      <div class="disclosure-item">
+        <span class="disclosure-label">Operating Entity</span>
+        <span class="disclosure-val">{{ legal.operatedByText }} <span class="val-sub">(PAN Registered)</span></span>
+      </div>
+
+      <div class="disclosure-item">
+        <span class="disclosure-label">Registered Address</span>
+        <span class="disclosure-val">{{ address }}</span>
+      </div>
+
+      <div class="disclosure-item">
+        <span class="disclosure-label">Official Support Email</span>
+        <a [href]="'mailto:' + email" class="disclosure-val disclosure-link">{{ email }}</a>
+      </div>
+
+      <div class="disclosure-item">
+        <span class="disclosure-label">Settlement &amp; Billing</span>
+        <span class="disclosure-val font-numeric">USD ($) • Instant digital confirmation</span>
+      </div>
+
+      <div class="disclosure-item disclosure-item--wide">
+        <span class="disclosure-label">Platform Purpose &amp; Delivery</span>
+        <span class="disclosure-val">
+          RankUp is an open web discovery directory and sponsored ranking engine. Listing activations and position updates are provisioned instantaneously upon payment confirmation.
+        </span>
+      </div>
     </div>
   </div>
 </section>

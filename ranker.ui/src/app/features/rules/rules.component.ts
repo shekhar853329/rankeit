@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-rules',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './rules.component.html',
   styleUrl: './rules.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,5 +22,3 @@ export class RulesComponent implements OnInit {
     });
   }
 }
-
-

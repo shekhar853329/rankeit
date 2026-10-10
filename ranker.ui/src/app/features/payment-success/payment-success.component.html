@@ -1,95 +1,154 @@
 <div class="success-page">
-  <div class="success-card">
+  <!-- Ambient background glow orbs matching Global Leaderboard -->
+  <div class="ambient-orbs-wrap" aria-hidden="true">
+    <div class="ambient-orb ambient-orb--primary"></div>
+    <div class="ambient-orb ambient-orb--gold"></div>
+  </div>
 
+  <div class="success-card card">
+    <!-- Signature top shimmer bar -->
+    <div class="accent-shimmer-bar"></div>
+
+    <!-- ── State: Loading ── -->
     @if (loading()) {
     <div class="success-card__loading">
-      <div class="spinner"></div>
-      <h2>Verifying Your Payment...</h2>
-      <p class="text-muted">Confirming your transaction with Dodo Payments and updating the leaderboard.</p>
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <div class="spinner-core"></div>
+      </div>
+      <h2 class="state-title">Verifying Your Payment...</h2>
+      <p class="state-desc">Securely confirming your transaction with Dodo Payments and activating your placement on the leaderboard.</p>
     </div>
 
+    <!-- ── State: Cancelled ── -->
     } @else if (status() === 'cancelled') {
-    <div class="success-card__cancelled">
+    <div class="success-card__status">
       <div class="icon-circle icon-circle--warning">
         <span class="material-symbols-outlined icon-xl">cancel</span>
       </div>
-      <h2>Payment Cancelled</h2>
-      <p class="text-muted">You cancelled the payment. No charge was made.</p>
-      <div class="actions">
-        <a [routerLink]="fromUrl()" class="btn btn-primary">Try Again</a>
-        <a routerLink="/" class="btn btn-ghost">Go to Home</a>
-        <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}"
-          class="btn btn-ghost">View My Transactions</a>
+      <div class="badge-row">
+        <span class="status-pill status-pill--warning">Checkout Cancelled</span>
+      </div>
+      <h2 class="state-title">Payment Cancelled</h2>
+      <p class="state-desc">You cancelled the checkout process. No charges were made to your account.</p>
+      <div class="actions-group">
+        <a [routerLink]="fromUrl()" class="btn-action-pri">
+          <span class="material-symbols-outlined text-[16px]">refresh</span>
+          <span>Try Again</span>
+        </a>
+        <a routerLink="/" class="btn-action-sec">
+          <span class="material-symbols-outlined text-[16px]">home</span>
+          <span>Go to Leaderboard</span>
+        </a>
+        <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}" class="btn-action-ghost">
+          <span class="material-symbols-outlined text-[16px]">manage_search</span>
+          <span>My Transactions</span>
+        </a>
       </div>
     </div>
 
+    <!-- ── State: Failed ── -->
     } @else if (status() === 'failed') {
-    <div class="success-card__failed">
+    <div class="success-card__status">
       <div class="icon-circle icon-circle--error">
         <span class="material-symbols-outlined icon-xl">error</span>
       </div>
-      <h2>Payment Failed</h2>
-      <p class="text-muted">Your payment could not be processed. Please try again or contact support.</p>
-      <div class="actions">
-        <a [routerLink]="fromUrl()" class="btn btn-primary">Try Again</a>
-        <a routerLink="/" class="btn btn-ghost">Go to Home</a>
-        <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}"
-          class="btn btn-ghost">View My Transactions</a>
+      <div class="badge-row">
+        <span class="status-pill status-pill--error">Transaction Declined</span>
+      </div>
+      <h2 class="state-title">Payment Failed</h2>
+      <p class="state-desc">Your payment could not be processed by the payment gateway. Please check your card details or try an alternate method.</p>
+      <div class="actions-group">
+        <a [routerLink]="fromUrl()" class="btn-action-pri">
+          <span class="material-symbols-outlined text-[16px]">refresh</span>
+          <span>Try Again</span>
+        </a>
+        <a routerLink="/" class="btn-action-sec">
+          <span class="material-symbols-outlined text-[16px]">home</span>
+          <span>Go to Leaderboard</span>
+        </a>
+        <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}" class="btn-action-ghost">
+          <span class="material-symbols-outlined text-[16px]">manage_search</span>
+          <span>My Transactions</span>
+        </a>
       </div>
     </div>
 
+    <!-- ── State: Error / Verification Issue ── -->
     } @else if (error()) {
-    <div class="success-card__error">
+    <div class="success-card__status">
       <div class="icon-circle icon-circle--error">
         <span class="material-symbols-outlined icon-xl">warning</span>
       </div>
-      <h2>Payment Verification Notice</h2>
-      <p class="error-desc">{{ error() }}</p>
+      <div class="badge-row">
+        <span class="status-pill status-pill--error">Verification Notice</span>
+      </div>
+      <h2 class="state-title">Payment Verification Notice</h2>
+      <p class="state-desc">{{ error() }}</p>
+
       @if (paymentId()) {
-      <div class="ref-box" (click)="copyPaymentId()">
+      <div class="ref-copy-box" (click)="copyPaymentId()" title="Click to copy payment reference">
         <span class="ref-label">Payment Reference:</span>
-        <span class="ref-val font-mono">{{ paymentId() }}</span>
-        <span class="material-symbols-outlined icon-xs text-muted">{{ copied() ? 'done' : 'content_copy' }}</span>
+        <span class="ref-val font-numeric">{{ paymentId() }}</span>
+        <span class="material-symbols-outlined icon-xs text-muted">{{ copied() ? 'check' : 'content_copy' }}</span>
       </div>
       }
-      <div class="actions">
-        <a routerLink="/" class="btn btn-primary">Go to Home</a>
-        <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}"
-          class="btn btn-ghost">View My Transactions</a>
+
+      <div class="actions-group">
+        <a routerLink="/" class="btn-action-pri">
+          <span class="material-symbols-outlined text-[16px]">home</span>
+          <span>Go to Leaderboard</span>
+        </a>
+        <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}" class="btn-action-sec">
+          <span class="material-symbols-outlined text-[16px]">manage_search</span>
+          <span>View My Transactions</span>
+        </a>
       </div>
     </div>
 
+    <!-- ── State: Success ── -->
     } @else {
     <div class="success-card__content">
-      <div class="badge-row">
-        <span class="status-pill">🎉 Payment Confirmed</span>
+      <!-- Badges Row -->
+      <div class="badges-row">
+        <span class="badge-pill badge-pill--live">
+          <span class="pulse-dot"></span>
+          Settled &amp; Secured
+        </span>
+        <span class="badge-pill">
+          <span class="material-symbols-outlined text-[13px]">verified</span>
+          Dodo Payments Verified
+        </span>
       </div>
 
+      <!-- Hero Success Block -->
       <div class="hero-block">
-        <div class="icon-circle icon-circle--success">
-          <span class="material-symbols-outlined icon-xl">check_circle</span>
+        <div class="success-icon-wrap">
+          <span class="material-symbols-outlined icon-success">check_circle</span>
         </div>
-        <h1 class="hero-title">Payment & Placement Successful!</h1>
+        <h1 class="hero-title">Payment &amp; Placement Successful!</h1>
         <p class="hero-desc">
-          Your payment has been verified and your sponsored placement is now live on RankUp!
+          Your payment has been verified and your sponsored placement is now live across the platform.
         </p>
+
         @if (verification()?.amount; as amt) {
-        <div class="hero-amount font-numeric">
-          ${{ amt | number: '1.2-2' }}
+        <div class="hero-amount-box">
+          <span class="hero-amount font-numeric">${{ amt | number: '1.2-2' }}</span>
+          <span class="hero-amount-sub">Amount Paid • USD</span>
         </div>
-        <span class="hero-amount-sub">Processed via Dodo Payments</span>
         }
       </div>
 
+      <!-- Transaction Details Card -->
       <div class="details-card">
         <div class="details-card__header">
-          <span class="material-symbols-outlined icon-sm">receipt_long</span>
-          <span>TRANSACTION DETAILS</span>
+          <span class="material-symbols-outlined text-[15px]">receipt_long</span>
+          <span class="header-text">TRANSACTION RECORD</span>
         </div>
 
         @if (verification()?.newClaimAmount; as totalPlacement) {
         <div class="details-card__row">
-          <span class="details-card__label">Total Leaderboard Score</span>
+          <span class="details-card__label">Active Placement Score</span>
           <span class="details-card__value font-numeric text-primary">${{ totalPlacement | number: '1.2-2' }}</span>
         </div>
         }
@@ -97,9 +156,9 @@
         @if (paymentId(); as pid) {
         <div class="details-card__row">
           <span class="details-card__label">Payment Reference</span>
-          <div class="ref-pill" (click)="copyPaymentId()" title="Click to copy">
-            <span class="font-mono text-xs ref-pill__code">{{ pid }}</span>
-            <span class="material-symbols-outlined icon-xs text-muted">{{ copied() ? 'done' : 'content_copy' }}</span>
+          <div class="ref-pill" (click)="copyPaymentId()" title="Click to copy payment reference">
+            <span class="font-numeric ref-pill__code">{{ pid }}</span>
+            <span class="material-symbols-outlined text-[14px]">{{ copied() ? 'check' : 'content_copy' }}</span>
           </div>
         </div>
         }
@@ -112,23 +171,37 @@
         }
 
         <div class="details-card__row">
-          <span class="details-card__label">Date & Time</span>
-          <span class="details-card__value text-muted">{{ now | date: 'medium' }}</span>
+          <span class="details-card__label">Timestamp (UTC)</span>
+          <span class="details-card__value font-numeric text-muted">{{ now | date: 'medium' }}</span>
         </div>
 
         <div class="details-card__row">
-          <span class="details-card__label">Status</span>
+          <span class="details-card__label">Verification Status</span>
           <span class="status-chip status-chip--success">
-            <span class="material-symbols-outlined icon-xs">verified</span>
-            Settled & Secured
+            <span class="material-symbols-outlined text-[13px]">verified</span>
+            Instant Live Activation
           </span>
         </div>
       </div>
 
-      <div class="actions">
-        <a [routerLink]="leaderboardLink()" class="btn btn-primary btn--block">
-          <span>View Profile 🚀</span>
+      <!-- Action Buttons -->
+      <div class="actions-group">
+        <a [routerLink]="leaderboardLink()" class="btn-action-pri btn--block">
+          <span class="material-symbols-outlined text-[17px]">rocket_launch</span>
+          <span>View Listing &amp; Profile</span>
+          <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
         </a>
+
+        <div class="actions-subrow">
+          <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}" class="btn-action-sec">
+            <span class="material-symbols-outlined text-[15px]">receipt_long</span>
+            <span>My Transactions</span>
+          </a>
+          <a routerLink="/" class="btn-action-sec">
+            <span class="material-symbols-outlined text-[15px]">home</span>
+            <span>Global Leaderboard</span>
+          </a>
+        </div>
       </div>
     </div>
     }
