@@ -79,6 +79,11 @@
           <span class="stat-eyebrow">Active Placement</span>
           <span class="stat-value stat-value--claim">${{ p.currentClaimAmount | number: '1.0-2' }}</span>
         </div>
+        <a [routerLink]="['/listings', p.listingId]" class="btn-full-details">
+          <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+          View Full Placement History & Details
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
       </div>
     </div>
   </header>
@@ -186,7 +191,7 @@
     }
   </section>
 
-  <!-- CTA Banner -->
+  <!-- CTA Banner
   <section class="profile-cta card">
     <div class="cta-content">
       <div class="cta-text">
@@ -198,7 +203,7 @@
         Claim Your Rank
       </a>
     </div>
-  </section>
+  </section> -->
 
   <!-- Same Category Websites -->
   @if (p.sameCategoryListings.length > 0) {
@@ -257,15 +262,6 @@
     </div>
   </section>
   }
-
-  <!-- Full Details Link -->
-  <div class="profile-footer-link">
-    <a [routerLink]="['/listings', p.listingId]" class="btn-full-details">
-      <span class="material-symbols-outlined text-[16px]">receipt_long</span>
-      View Full Placement History & Details
-      <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-    </a>
-  </div>
 
   } @else {
   <div class="profile-not-found card">

@@ -109,14 +109,6 @@ export class ListingDetailComponent implements OnInit {
     }
   }
 
-  claimThisPosition(): void {
-    const l = this.listing();
-    if (!l) return;
-    void this.router.navigate(['/leaderboard', l.categorySlug], {
-      fragment: 'claim-rank-section'
-    });
-  }
-
   openClaimModal(): void {
     const l = this.listing();
     if (!l) return;
