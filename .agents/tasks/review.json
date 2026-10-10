@@ -1,0 +1,55 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": 1,
+      "severity": "BLOCKING",
+      "confidence": "confirmed",
+      "label": "Webhook always ACKs 200 regardless of signature result",
+      "detail": "DodoWebhook in PaymentsController.cs discards the bool returned by ProcessDodoWebhookCommand and always returns Ok(new { received = true }). An attacker sending malformed payloads gets a 200 and can retry indefinitely. Fix: check the result and return 400 on false."
+    },
+    {
+      "id": 2,
+      "severity": "BLOCKING",
+      "confidence": "confirmed",
+      "label": "Timing-safe comparison missing in HMAC verification",
+      "detail": "candidate == computedSignature in VerifyWebhookSignature uses ordinary string equality which short-circuits on the first mismatch, enabling a timing side-channel attack on the HMAC. Replace with CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(candidate), Encoding.UTF8.GetBytes(computedSignature))."
+    },
+    {
+      "id": 3,
+      "severity": "BLOCKING",
+      "confidence": "likely",
+      "label": "Mobile app placeClaim will break on deploy",
+      "detail": "rankup-mob/src/services/api.ts exports a placeClaim() function that POSTs to /api/claims, which now returns 410. No active call site was found in screens/, but the function is exported. Confirm the mobile app is retired or update it to use /api/payments/dodo/verify before deploying the backend change."
+    },
+    {
+      "id": 4,
+      "severity": "NON-BLOCKING",
+      "confidence": "confirmed",
+      "label": "quoteValidating signal is dead state",
+      "detail": "Set and cleared in proceedToCheckout() but never read by the template or any other binding after Task 10 replaced it with checkoutStage. Remove it to avoid confusion."
+    },
+    {
+      "id": 5,
+      "severity": "NON-BLOCKING",
+      "confidence": "confirmed",
+      "label": "appsettings.json secrets in diff",
+      "detail": "The file contains a plaintext DB password and Dodo test API key. This PR touches the file, surfacing both secrets in the commit diff. Rotate both values and move them to dotnet user-secrets or environment variables."
+    },
+    {
+      "id": 6,
+      "severity": "NON-BLOCKING",
+      "confidence": "confirmed",
+      "label": "Silent skip if production WebhookKey is blank",
+      "detail": "appsettings.Production.json ships WebhookKey as empty string. If the deploy pipeline omits the override, all webhooks are processed without signature verification. Add a startup guard or explicit fail-fast assertion to catch this misconfiguration."
+    },
+    {
+      "id": 7,
+      "severity": "NON-BLOCKING",
+      "confidence": "confirmed",
+      "label": "Audit log IsSuccess=true for payment.failed and payment.cancelled events",
+      "detail": "The PaymentAuditLog always sets IsSuccess=true after the event-type dispatch, including for payment.failed webhooks. Not a functional bug, but misleading to anyone querying the audit table for failed payments. Consider using IsSuccess=false for these event types."
+    }
+  ],
+  "reviewDoc": "c:\\Users\\shekh\\source\\repos\\rankeit\\.agents\\tasks\\semantic-review.md"
+}

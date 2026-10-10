@@ -6,9 +6,16 @@
       <a routerLink="/" class="site-header__brand" aria-label="RankUp Home">
         <div class="site-header__logo-wrap">
           <svg class="site-header__logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="9" fill="var(--color-primary, #ff5a36)" />
+            <defs>
+              <linearGradient id="headerLogoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#f95738" />
+                <stop offset="60%" stop-color="#d53d21" />
+                <stop offset="100%" stop-color="#b12408" />
+              </linearGradient>
+            </defs>
+            <rect width="32" height="32" rx="8.5" fill="url(#headerLogoGrad)" />
             <path d="M16 7L24 20H8L16 7Z" fill="#FFFFFF" />
-            <rect x="10.5" y="22" width="11" height="2.5" rx="1" fill="#FFFFFF" fill-opacity="0.85" />
+            <rect x="10.5" y="22" width="11" height="2.5" rx="1" fill="#FFFFFF" fill-opacity="0.9" />
           </svg>
         </div>
         <div class="site-header__brand-info">
@@ -18,7 +25,7 @@
       </a>
     </div>
 
-    <!-- ── Live network stats pill (with Analytics link to the right of visited today) ── -->
+    <!-- ── Live network stats pill (with Analytics link) ── -->
     <div class="site-header__stats" [class.stats--increased]="onlineTrend() === 'up'" [class.stats--decreased]="onlineTrend() === 'down'">
       <span class="status-beacon" [class.status-beacon--pulse-up]="onlineTrend() === 'up'">
         <span class="status-beacon__ping"></span>
@@ -38,14 +45,14 @@
             <app-number-ticker [value]="visitsToday()!" label="Visits today" />
           </strong>
           <span class="stats-views-label">views</span>
-          <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+          <span class="material-symbols-outlined stats-trend-icon text-[14px]">trending_up</span>
         </span>
         }
       </span>
       <span class="site-header__stats-divider" aria-hidden="true"></span>
       <a routerLink="/analytics" routerLinkActive="active" class="site-header__stats-analytics"
         title="View Real-Time Traffic & Google Analytics Telemetry">
-        <span class="material-symbols-outlined stats-analytics-icon">insights</span>
+        <span class="material-symbols-outlined stats-analytics-icon text-[14px]">insights</span>
         <span class="stats-analytics-label">Google Stats</span>
       </a>
     </div>
@@ -63,7 +70,7 @@
     <div class="site-header__actions">
       <button type="button" class="site-header__theme-toggle" (click)="theme.toggle()"
         [attr.aria-label]="theme.dark() ? 'Switch to light mode' : 'Switch to dark mode'">
-        <span class="material-symbols-outlined icon-toggle">
+        <span class="material-symbols-outlined icon-toggle text-[18px]">
           {{ theme.dark() ? 'dark_mode' : 'light_mode' }}
         </span>
       </button>
@@ -100,36 +107,36 @@
             <app-number-ticker [value]="visitsToday()!" label="Visits today" />
           </strong>
           <span class="stats-views-label">views</span>
-          <span class="material-symbols-outlined stats-trend-icon">trending_up</span>
+          <span class="material-symbols-outlined stats-trend-icon text-[14px]">trending_up</span>
         </span>
         }
       </span>
       <span class="site-header__stats-divider" aria-hidden="true"></span>
       <a routerLink="/analytics" routerLinkActive="active" (click)="closeMenu()" class="site-header__stats-analytics"
         title="View Real-Time Traffic & Google Analytics Telemetry">
-        <span class="material-symbols-outlined stats-analytics-icon">insights</span>
+        <span class="material-symbols-outlined stats-analytics-icon text-[14px]">insights</span>
         <span class="stats-analytics-label">Analytics</span>
       </a>
     </div>
 
     <div class="mobile-nav__links">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">
-        <span class="material-symbols-outlined">leaderboard</span>Leaderboards
+        <span class="material-symbols-outlined text-[18px]">leaderboard</span>Leaderboards
       </a>
       <a routerLink="/categories" routerLinkActive="active" (click)="closeMenu()">
-        <span class="material-symbols-outlined">category</span>Categories
+        <span class="material-symbols-outlined text-[18px]">category</span>Categories
       </a>
       <a routerLink="/daily" routerLinkActive="active" (click)="closeMenu()">
-        <span class="material-symbols-outlined">today</span>Daily
+        <span class="material-symbols-outlined text-[18px]">today</span>Daily
       </a>
       <a routerLink="/analytics" routerLinkActive="active" (click)="closeMenu()">
-        <span class="material-symbols-outlined">insights</span>Analytics
+        <span class="material-symbols-outlined text-[18px]">insights</span>Analytics
       </a>
       <a routerLink="/rules" routerLinkActive="active" (click)="closeMenu()">
-        <span class="material-symbols-outlined">help_outline</span>Rules
+        <span class="material-symbols-outlined text-[18px]">help_outline</span>Rules
       </a>
       <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">
-        <span class="material-symbols-outlined">mail</span>Contact
+        <span class="material-symbols-outlined text-[18px]">mail</span>Contact
       </a>
     </div>
   </nav>
