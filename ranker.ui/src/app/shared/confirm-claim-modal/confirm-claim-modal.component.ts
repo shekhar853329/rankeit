@@ -505,7 +505,7 @@ export class ConfirmClaimModalComponent implements OnInit {
             amountInMinorUnits: Math.max(100, Math.round(chargeAmount * 100)),
             currency: 'USD',
             customerEmail: email,
-            customerName: resolvedTitle,
+            // customerName: resolvedTitle,
             listingName: resolvedTitle,
             listingId: resolvedListingId ? resolvedListingId.toString() : undefined,
             categoryId: categoryId.toString(),

@@ -56,7 +56,7 @@ public class PaymentsController(
                 AmountInMinorUnits: request.AmountInMinorUnits,
                 Currency: string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency,
                 CustomerEmail: request.CustomerEmail,
-                CustomerName: request.CustomerName ?? request.ListingName,
+                CustomerName: request.CustomerName,
                 ReturnUrl: returnUrl,
                 CancelUrl: cancelUrl,
                 ListingName: request.ListingName,

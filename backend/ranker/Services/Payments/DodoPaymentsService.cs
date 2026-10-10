@@ -115,7 +115,7 @@ public class DodoPaymentsService : IDodoPaymentsService
                 ? new
                 {
                     email = customerEmail,
-                    name = customerName ?? customerEmail
+                    name = customerName
                 }
                 : null,
             minimal_address = true,
