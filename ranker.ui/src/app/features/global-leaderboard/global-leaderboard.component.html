@@ -369,6 +369,9 @@
         } @else if (row.rank === 2) {
         <!-- RANK #2: SILVER CONTENDER CARD -->
         <article class="champion-card champion-card--silver" (click)="openListing(row)">
+          <div class="silver-shimmer-bar"></div>
+          <div class="silver-ambient-orb" aria-hidden="true"></div>
+
           <div class="champion-card__body">
             <div class="champion-card__left">
               <div class="rank-badge rank-badge--silver">#2</div>
@@ -432,11 +435,14 @@
           </div>
         </article>
         } @else if (row.rank === 3) {
-        <!-- RANK #3: BRONZE CONTENDER CARD -->
-        <article class="champion-card champion-card--bronze" (click)="openListing(row)">
+        <!-- RANK #3: COPPER CONTENDER CARD -->
+        <article class="champion-card champion-card--copper champion-card--bronze" (click)="openListing(row)">
+          <div class="copper-shimmer-bar"></div>
+          <div class="copper-ambient-orb" aria-hidden="true"></div>
+
           <div class="champion-card__body">
             <div class="champion-card__left">
-              <div class="rank-badge rank-badge--bronze">#3</div>
+              <div class="rank-badge rank-badge--copper rank-badge--bronze">#3</div>
 
               <div class="product-avatar-wrap">
                 <div class="product-avatar product-avatar--placeholder" aria-hidden="true">
@@ -784,7 +790,7 @@
           <div class="hof-row" (click)="openListingDirect(hof.url, hof.id)">
             <div class="hof-row__left">
               <span class="hof-rank" [class.hof-rank--gold]="i === 0" [class.hof-rank--silver]="i === 1"
-                [class.hof-rank--bronze]="i === 2">
+                [class.hof-rank--copper]="i === 2" [class.hof-rank--bronze]="i === 2">
                 {{ i + 1 }}
               </span>
               <div class="hof-row__info">

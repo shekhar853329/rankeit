@@ -717,30 +717,46 @@ export default function GlobalLeaderboardScreen() {
                     style={[
                       styles.championCard,
                       {
-                        backgroundColor: colors.surface,
+                        backgroundColor: isSilver
+                          ? isDark
+                            ? '#11151f'
+                            : '#f8fafc'
+                          : isDark
+                            ? '#1a120d'
+                            : '#fdf8f5',
                         borderColor: isSilver
                           ? isDark
-                            ? '#334155'
-                            : '#cbd5e1'
+                            ? 'rgba(148, 163, 184, 0.45)'
+                            : 'rgba(148, 163, 184, 0.55)'
                           : isDark
-                            ? '#451a03'
-                            : '#fed7aa',
+                            ? 'rgba(217, 119, 54, 0.45)'
+                            : 'rgba(184, 115, 51, 0.45)',
                       },
                     ]}
                     onPress={() => handleOpenUrlDirect(row.listingId, row.listingUrl)}>
+                    {/* Top Shimmer Bar */}
+                    <View
+                      style={[
+                        styles.goldBar,
+                        {
+                          backgroundColor: isSilver ? colors.silver : colors.copper,
+                        },
+                      ]}
+                    />
+
                     <View style={styles.championBody}>
                       <View style={styles.championLeft}>
                         <View
                           style={[
                             styles.rankContenderBadge,
                             {
-                              backgroundColor: isSilver ? colors.silverBg : colors.bronzeBg,
+                              backgroundColor: isSilver ? colors.silverBg : colors.copperBg,
                             },
                           ]}>
                           <Text
                             style={[
                               styles.rankContenderText,
-                              { color: isSilver ? colors.silver : colors.bronze },
+                              { color: isSilver ? colors.silver : colors.copper },
                             ]}>
                             #{row.rank}
                           </Text>
@@ -754,8 +770,8 @@ export default function GlobalLeaderboardScreen() {
                             faviconUrl={row.faviconUrl}
                             size={34}
                             borderRadius={Radius.md}
-                            fallbackBg={isSilver ? colors.silverBg : colors.bronzeBg}
-                            fallbackTextColor={isSilver ? colors.silver : colors.bronze}
+                            fallbackBg={isSilver ? colors.silverBg : colors.copperBg}
+                            fallbackTextColor={isSilver ? colors.silver : colors.copper}
                           />
                         </View>
 

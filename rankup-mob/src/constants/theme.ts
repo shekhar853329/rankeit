@@ -35,6 +35,8 @@ export interface AppColors {
   goldBg: string;
   silver: string;
   silverBg: string;
+  copper: string;
+  copperBg: string;
   bronze: string;
   bronzeBg: string;
 
@@ -82,8 +84,10 @@ export const Colors: { light: AppColors; dark: AppColors } = {
     goldBg: '#fff9e6',
     silver: '#94a3b8',
     silverBg: '#f1f5f9',
-    bronze: '#ea580c',
-    bronzeBg: '#ffedd5',
+    copper: '#b87333',
+    copperBg: '#fdf6f0',
+    bronze: '#b87333',
+    bronzeBg: '#fdf6f0',
 
     success: '#10b981',
     warning: '#f59e0b',
@@ -125,10 +129,12 @@ export const Colors: { light: AppColors; dark: AppColors } = {
     gold: '#ffb95f',
     goldGlow: 'rgba(255, 185, 95, 0.25)',
     goldBg: 'rgba(255, 185, 95, 0.12)',
-    silver: '#94a3b8',
-    silverBg: 'rgba(148, 163, 184, 0.12)',
-    bronze: '#fdba74',
-    bronzeBg: 'rgba(253, 186, 116, 0.12)',
+    silver: '#cbd5e1',
+    silverBg: 'rgba(203, 213, 225, 0.14)',
+    copper: '#d97736',
+    copperBg: 'rgba(217, 119, 54, 0.16)',
+    bronze: '#d97736',
+    bronzeBg: 'rgba(217, 119, 54, 0.16)',
 
     success: '#4edea3',
     warning: '#f59e0b',

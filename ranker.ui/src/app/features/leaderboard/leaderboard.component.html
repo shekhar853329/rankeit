@@ -237,6 +237,7 @@
           } @else if (entry.rank === 2) {
           <!-- RANK #2 SILVER -->
           <article class="podium-card podium-card--silver" (click)="openListing(entry)">
+            <div class="silver-shimmer-bar"></div>
             <div class="podium-card__body">
               <div class="podium-card__left">
                 <div class="rank-badge rank-badge--silver">#2</div>
@@ -283,11 +284,12 @@
             </div>
           </article>
           } @else if (entry.rank === 3) {
-          <!-- RANK #3 BRONZE -->
-          <article class="podium-card podium-card--bronze" (click)="openListing(entry)">
+          <!-- RANK #3 COPPER / BRONZE -->
+          <article class="podium-card podium-card--copper podium-card--bronze" (click)="openListing(entry)">
+            <div class="copper-shimmer-bar"></div>
             <div class="podium-card__body">
               <div class="podium-card__left">
-                <div class="rank-badge rank-badge--bronze">#3</div>
+                <div class="rank-badge rank-badge--copper rank-badge--bronze">#3</div>
                 <div class="avatar-box">
                   <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName || entry.listingName).charAt(0).toUpperCase() }}</div>
                   @if (entry.logoUrl || entry.faviconUrl) {
