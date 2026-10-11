@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Ranker.Application.Common;
 using Ranker.Data;
 using Ranker.Dtos;
 
@@ -53,7 +54,7 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
             .ToListAsync(ct);
 
         var claimHistory = claims
-            .Select(c => new ClaimHistoryEntryDto(c.Amount, c.PaymentAmount, c.CreatedAt, MaskPaymentReference(c.PaymentReference)))
+            .Select(c => new ClaimHistoryEntryDto(c.Amount, c.PaymentAmount, c.CreatedAt, PaymentIdMasker.Mask(c.PaymentReference) ?? string.Empty))
             .ToList();
 
         return new ListingDetailDto(
@@ -74,14 +75,4 @@ public class GetListingDetailQueryHandler(RankerDbContext dbContext) : IRequestH
             claimHistory);
     }
 
-    // Never expose the full payment gateway transaction ID to the client - only enough to disambiguate rows.
-    private static string MaskPaymentReference(string reference)
-    {
-        const int visibleSuffixLength = 4;
-        if (reference.Length <= visibleSuffixLength)
-        {
-            return new string('*', reference.Length);
-        }
-        return new string('*', reference.Length - visibleSuffixLength) + reference[^visibleSuffixLength..];
-    }
 }

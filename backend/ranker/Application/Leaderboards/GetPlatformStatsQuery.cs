@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Ranker.Application.Common;
 using Ranker.Data;
 using Ranker.Domain.Entities;
 using Ranker.Dtos;
@@ -194,7 +195,7 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
                 x.Claim.Listing?.Category?.Name ?? (category?.Name ?? "General"),
                 x.ActualPaid,
                 x.Claim.CreatedAt,
-                x.Claim.PaymentReference,
+                PaymentIdMasker.Mask(x.Claim.PaymentReference),
                 x.Claim.Amount))
             .ToList();
 

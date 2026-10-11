@@ -1,0 +1,24 @@
+Build result: C# compilation SUCCEEDED (zero CS errors, zero CS warnings).
+
+The `dotnet build` command reported 2 MSBuild errors (MSB3027 + MSB3021) and 10 MSB3026 warnings,
+all of which are file-lock failures at the copy-to-bin step. They are NOT compilation errors.
+
+Root cause: Microsoft Visual Studio (PID 21968) and the running ranker dev server (PID 21148) both
+hold an exclusive lock on `bin\Debug\net10.0\ranker.dll` and `bin\Debug\net10.0\ranker.exe`,
+so MSBuild cannot overwrite the outputs. This is an environment issue unrelated to the code changes.
+
+Evidence that compilation is clean:
+  - `CoreCompile` completed with no CS#### diagnostics in the build output.
+  - `obj\Debug\net10.0\ranker.dll` was freshly written at 2026-10-11 18:04:05 (after the build run).
+  - No error like "CS0103", "CS0246", "CS0234" or similar appeared anywhere in the output.
+
+Files created/modified in this run:
+  CREATED  Application/Common/PaymentIdMasker.cs
+  CREATED  ranker.Tests/Application/Common/PaymentIdMaskerTests.cs
+  MODIFIED Application/Payments/GetDodoSessionStatusQueryHandler.cs
+  MODIFIED Application/Payments/VerifyDodoPaymentCommandHandler.cs
+  MODIFIED Application/Payments/GetPaymentTransactionsQueryHandler.cs
+  MODIFIED Application/Listings/GetListingDetailQueryHandler.cs
+
+To reproduce a clean build: stop the running ranker dev server (or close Visual Studio),
+then run: dotnet build c:\Users\shekh\source\repos\rankeit\backend\Ranker.slnx

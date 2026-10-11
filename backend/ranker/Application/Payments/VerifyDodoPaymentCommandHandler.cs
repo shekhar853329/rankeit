@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Ranker.Application.Claims;
+using Ranker.Application.Common;
 using Ranker.Data;
 using Ranker.Domain.Entities;
 using Ranker.Dtos;
@@ -44,6 +45,8 @@ public class VerifyDodoPaymentCommandHandler(
                 Error: "PaymentId could not be determined.");
         }
 
+        var maskedPaymentId = PaymentIdMasker.Mask(paymentId);
+
         // 1. Check if claim already fulfilled with this PaymentReference
         var existingClaim = await dbContext.Claims
             .Include(c => c.Listing)
@@ -71,7 +74,7 @@ public class VerifyDodoPaymentCommandHandler(
 
             return new VerifyDodoPaymentResponseDto(
                 Verified: true,
-                PaymentId: paymentId,
+                PaymentId: maskedPaymentId,
                 Status: "succeeded",
                 Amount: existingClaim.PaymentAmount,
                 ListingId: existingClaim.ListingId,
@@ -98,7 +101,7 @@ public class VerifyDodoPaymentCommandHandler(
 
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
-                PaymentId: paymentId,
+                PaymentId: maskedPaymentId,
                 Error: "Payment not found in Dodo Payments gateway.");
         }
 
@@ -127,7 +130,7 @@ public class VerifyDodoPaymentCommandHandler(
 
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
-                PaymentId: paymentId,
+                PaymentId: maskedPaymentId,
                 Status: payment.Status,
                 Error: $"Payment status is '{payment.Status}', not 'succeeded'.");
         }
@@ -208,7 +211,7 @@ public class VerifyDodoPaymentCommandHandler(
 
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
-                PaymentId: paymentId,
+                PaymentId: maskedPaymentId,
                 Status: payment.Status,
                 Error: "Payment metadata missing required categoryId.");
         }
@@ -256,7 +259,7 @@ public class VerifyDodoPaymentCommandHandler(
 
             return new VerifyDodoPaymentResponseDto(
                 Verified: true,
-                PaymentId: paymentId,
+                PaymentId: maskedPaymentId,
                 Status: "succeeded",
                 Amount: placeResult.AmountCharged ?? confirmedPaymentAmount,
                 ListingId: placeResult.ListingId,
@@ -288,7 +291,7 @@ public class VerifyDodoPaymentCommandHandler(
 
             return new VerifyDodoPaymentResponseDto(
                 Verified: false,
-                PaymentId: paymentId,
+                PaymentId: maskedPaymentId,
                 Status: "succeeded",
                 Error: placeResult.ErrorMessage ?? "Claim placement rejected by server.");
         }

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Ranker.Application.Common;
 using Ranker.Dtos;
 using Ranker.Services.Payments;
 
@@ -27,6 +28,6 @@ public class GetDodoSessionStatusQueryHandler(
             "Retrieved Dodo Payments session {SessionId}: PaymentId={PaymentId}, Status={Status}, IsPaid={IsPaid}",
             id, paymentId, paymentStatus, isPaid);
 
-        return new DodoSessionStatusResponseDto(id, paymentId, paymentStatus, isPaid);
+        return new DodoSessionStatusResponseDto(id, PaymentIdMasker.Mask(paymentId), paymentStatus, isPaid);
     }
 }

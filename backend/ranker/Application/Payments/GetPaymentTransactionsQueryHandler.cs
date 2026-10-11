@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Ranker.Application.Common;
 using Ranker.Data;
 using Ranker.Dtos;
 
@@ -12,11 +13,12 @@ public class GetPaymentTransactionsQueryHandler(RankerDbContext dbContext)
         GetPaymentTransactionsQuery query,
         CancellationToken ct)
     {
-        var result = await dbContext.PaymentAuditLogs
+        var raw = await dbContext.PaymentAuditLogs
             .Where(l => l.CustomerEmail == query.Email && l.TransactionStatus != "Succeeded")
             .OrderByDescending(l => l.CreatedAt)
             .Take(100)
-            .Select(l => new PaymentTransactionDto(
+            .Select(l => new
+            {
                 l.Id,
                 l.Action,
                 l.TransactionStatus,
@@ -27,8 +29,24 @@ public class GetPaymentTransactionsQueryHandler(RankerDbContext dbContext)
                 l.Currency,
                 l.IsSuccess,
                 l.ErrorMessage,
-                l.CreatedAt))
+                l.CreatedAt,
+            })
             .ToListAsync(ct);
+
+        var result = raw
+            .Select(l => new PaymentTransactionDto(
+                l.Id,
+                l.Action,
+                l.TransactionStatus,
+                PaymentIdMasker.Mask(l.PaymentId),
+                PaymentIdMasker.Mask(l.SessionId),
+                PaymentIdMasker.Mask(l.OrderId),
+                l.Amount,
+                l.Currency,
+                l.IsSuccess,
+                l.ErrorMessage,
+                l.CreatedAt))
+            .ToList();
 
         return result;
     }
