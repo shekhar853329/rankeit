@@ -92,6 +92,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   private readonly claimService = inject(ClaimService);
 
   @ViewChild('claimChartContainer') chartContainerRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('categorySearchInput') categorySearchInputRef?: ElementRef<HTMLInputElement>;
   private echartsModule: typeof import('echarts') | null = null;
   private echartsInstance: echarts.ECharts | null = null;
   private chartResizeObserver: ResizeObserver | null = null;
@@ -988,13 +989,19 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
     this.categoryDropdownOpen.set(nextState);
     if (!nextState) {
       this.categorySearchQuery.set('');
-    } else if (this.allCategories().length === 0) {
-      this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe({
-        next: (result) => {
-          this.allCategories.set(result.items);
-        },
-        error: () => { },
-      });
+    } else {
+      if (this.allCategories().length === 0) {
+        this.categoryService.getCategories({ sortBy: 'Alphabetical', pageSize: 100 }).subscribe({
+          next: (result) => {
+            this.allCategories.set(result.items);
+          },
+          error: () => { },
+        });
+      }
+      // Focus the search input after the dropdown panel renders
+      setTimeout(() => {
+        this.categorySearchInputRef?.nativeElement.focus();
+      }, 0);
     }
   }
 

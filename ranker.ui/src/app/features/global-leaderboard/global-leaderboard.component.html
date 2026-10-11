@@ -107,6 +107,7 @@
               <div class="custom-dropdown-search">
                 <span class="material-symbols-outlined search-icon">search</span>
                 <input type="text" class="search-input" placeholder="Search categories..."
+                  #categorySearchInput
                   [value]="categorySearchQuery()" (input)="onCategorySearch($event)"
                   (click)="$event.stopPropagation()" />
                 @if (categorySearchQuery()) {
