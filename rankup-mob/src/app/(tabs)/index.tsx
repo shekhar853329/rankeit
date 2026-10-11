@@ -26,6 +26,7 @@ import { AppFooter } from '../../components/AppFooter';
 import { AppHeader } from '../../components/AppHeader';
 import { CategoryPills } from '../../components/CategoryPills';
 import { ProductAvatar } from '../../components/ProductAvatar';
+import { ReigningSpotlightCard } from '../../components/ReigningSpotlightCard';
 import { SmoothChevron, useCollapsible } from '../../components/SmoothCollapsible';
 import { getCategoryIcon } from '../../constants/icons';
 import { Radius, Spacing } from '../../constants/theme';
@@ -67,6 +68,7 @@ export default function GlobalLeaderboardScreen() {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [categoryData, setCategoryData] = useState<CategoryLeaderboardResponseDto | null>(null);
   const [platformStats, setPlatformStats] = useState<PlatformStatsDto | null>(null);
+  const [allTimeChampion, setAllTimeChampion] = useState<GlobalLeaderboardEntryDto | null>(null);
 
   // Command bar hero state
   const [heroClaimAmount, setHeroClaimAmount] = useState<number>(1);
@@ -112,6 +114,16 @@ export default function GlobalLeaderboardScreen() {
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Dedicated one-off fetch: always shows the all-time #1 in the crown holder card,
+  // independent of the user's current timeMode or searchQuery.
+  useEffect(() => {
+    getGlobalLeaderboard(1, 'alltime').then((entries) => {
+      if (entries && entries.length > 0) {
+        setAllTimeChampion(entries[0]);
+      }
+    }).catch(() => {});
   }, []);
 
   const loadData = useCallback(async () => {
@@ -463,6 +475,11 @@ export default function GlobalLeaderboardScreen() {
           onSelectCategory={(slug) => setSelectedSlug(slug)}
           timeMode={timeMode}
         />
+
+        {/* ═══════════════════════════════════════════════════════════
+             GLOBAL CROWN HOLDER — always shows all-time #1
+             ═══════════════════════════════════════════════════════════ */}
+        <ReigningSpotlightCard champion={allTimeChampion} />
 
         {/* ═══════════════════════════════════════════════════════════
              LEADERBOARD STAGE HEADER: Mode Switcher & Search

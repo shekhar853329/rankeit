@@ -464,14 +464,11 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   readonly showAllRows = computed(() => !this.hasMoreProducts());
 
   private readonly leadChampion = signal<FeedRow | null>(null);
+  private readonly allTimeChampion = signal<FeedRow | null>(null);
   readonly championAvatarFailed = signal(false);
 
   readonly reigningChampion = computed<FeedRow | null>(() => {
-    if (this.searchQuery().trim() && this.leadChampion()) {
-      return this.leadChampion();
-    }
-    const r = this.rows();
-    return r.length > 0 ? r[0] : null;
+    return this.allTimeChampion();
   });
 
   /* ── Pricing & Validation ── */
@@ -664,6 +661,33 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
     this.loadTop3Sponsors();
     this.loadSelection();
+
+    // Dedicated one-off fetch: always shows the all-time #1 in the crown holder card,
+    // independent of the user's current timeMode or searchQuery.
+    this.leaderboardService.getGlobalLeaderboard(1, 'alltime').subscribe({
+      next: (entries) => {
+        if (entries.length > 0) {
+          const e = entries[0];
+          this.allTimeChampion.set({
+            rank: 1,
+            listingId: e.listingId,
+            listingName: e.listingName,
+            listingUrl: e.listingUrl,
+            currentClaimAmount: e.currentClaimAmount,
+            categoryName: e.categoryName,
+            categorySlug: e.categorySlug,
+            categoryIcon: e.categoryIcon ?? this.categoryIcon(e.categorySlug),
+            clickCount: e.clickCount,
+            claimCount: e.claimCount ?? 1,
+            siteName: e.siteName,
+            logoUrl: e.logoUrl,
+            description: e.description,
+            faviconUrl: e.faviconUrl,
+          });
+        }
+      },
+      error: () => {},
+    });
 
     // Stagger non-critical / secondary network calls & SignalR to eliminate startup connection contention
     if (isPlatformBrowser(this.platformId)) {
