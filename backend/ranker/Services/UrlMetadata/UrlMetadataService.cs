@@ -200,9 +200,25 @@ public sealed partial class UrlMetadataService(
         if (string.IsNullOrWhiteSpace(html))
             return null;
 
-        var siteName = FirstMatch(OgSiteNameRegex(), OgSiteNameAltRegex(), html)
+        // ── YouTube channel special handling ──────────────────────────────────
+        // og:site_name is always "YouTube" for every YouTube page, which is
+        // useless as a listing name.  Instead, extract the channel name from
+        // og:title / <title> and strip the trailing " - YouTube" suffix.
+        string? siteName;
+        if (IsYouTubeChannelUrl(url))
+        {
+            var rawTitle = FirstMatch(OgTitleRegex(), OgTitleAltRegex(), html)
+                        ?? FirstMatch(TitleRegex(), null, html);
+            siteName = rawTitle is not null
+                ? Regex.Replace(rawTitle, @"\s*[-–|]\s*YouTube\s*$", string.Empty, RegexOptions.IgnoreCase).Trim()
+                : null;
+        }
+        else
+        {
+            siteName = FirstMatch(OgSiteNameRegex(), OgSiteNameAltRegex(), html)
                     ?? FirstMatch(OgTitleRegex(), OgTitleAltRegex(), html)
                     ?? FirstMatch(TitleRegex(), null, html);
+        }
 
         // No title means either a bot-wall page or a JS-rendered SPA
         if (string.IsNullOrWhiteSpace(siteName))
@@ -221,6 +237,21 @@ public sealed partial class UrlMetadataService(
             Truncate(logoUrl, 2048),
             Truncate(HtmlDecode(description), 1000),
             Truncate(faviconUrl, 2048));
+    }
+
+    /// <summary>
+    /// Returns true when <paramref name="url"/> points to a YouTube channel
+    /// (handles /@handle, /channel/UCxxx, /c/name, and /user/name paths).
+    /// </summary>
+    private static bool IsYouTubeChannelUrl(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        var host = uri.Host.ToLowerInvariant();
+        if (!host.Contains("youtube.com")) return false;
+        return Regex.IsMatch(
+            uri.AbsolutePath,
+            @"^/((@[\w.\-]+)|(channel|c|user)/[\w.\-]+)",
+            RegexOptions.IgnoreCase);
     }
 
     private async Task<UrlMetadataDto> GetFallbackMetadata(string url)
