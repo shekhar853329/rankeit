@@ -6,6 +6,7 @@ import { catchError, of, switchMap } from 'rxjs';
 import { WebsiteProfileDto, RelatedListingDto } from '../../core/models/website-profile.model';
 import { ListingService } from '../../core/services/listing.service';
 import { SeoService } from '../../core/services/seo.service';
+import { resolveUrl } from '../../core/utils/url.utils';
 
 @Component({
   selector: 'app-website-profile',
@@ -126,6 +127,9 @@ export class WebsiteProfileComponent implements OnInit {
       });
   }
 
+  /** Exposes the shared URL normalizer to the template. */
+  readonly resolveUrl = resolveUrl;
+
   onOutboundLinkClick(id: number): void {
     this.listingService.recordClick(id).subscribe((count) => {
       const current = this.profile();
@@ -136,7 +140,7 @@ export class WebsiteProfileComponent implements OnInit {
   }
 
   openExternalUrl(url: string, id: number): void {
-    window.open(url, '_blank', 'noopener');
+    window.open(resolveUrl(url), '_blank', 'noopener');
     this.onOutboundLinkClick(id);
   }
 

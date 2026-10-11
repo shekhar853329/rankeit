@@ -8,6 +8,7 @@ import { CategoryService } from '../../core/services/category.service';
 import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { ListingService } from '../../core/services/listing.service';
 import { SeoService } from '../../core/services/seo.service';
+import { resolveUrl as resolveUrlUtil } from '../../core/utils/url.utils';
 
 export interface CategoryCard {
   category: CategoryDto;
@@ -120,15 +121,7 @@ export class CategoryDirectoryComponent implements OnInit {
   }
 
   resolveUrl(url: string | null | undefined): string {
-    if (!url) return '';
-    const trimmed = url.trim();
-    if (trimmed.startsWith('@')) {
-      return `https://x.com/${trimmed.substring(1)}`;
-    }
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return trimmed;
-    }
-    return `https://${trimmed}`;
+    return resolveUrlUtil(url);
   }
 
   onListingClick(event: MouseEvent, entry: LeaderboardEntryDto): void {

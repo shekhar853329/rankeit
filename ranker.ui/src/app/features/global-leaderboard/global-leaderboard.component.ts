@@ -18,6 +18,7 @@ import type * as echarts from 'echarts';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, catchError, combineLatestWith, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { CategoryLeaderboardResponseDto, GlobalLeaderboardEntryDto, PlatformStatsDto } from '../../core/models/leaderboard.model';
+import { resolveUrl } from '../../core/utils/url.utils';
 import { CategoryDto } from '../../core/models/category.model';
 import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
 import { UrlMetadataDto } from '../../core/models/url-metadata.model';
@@ -95,6 +96,9 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   private echartsInstance: echarts.ECharts | null = null;
   private chartResizeObserver: ResizeObserver | null = null;
   private chartIntersectionObserver: IntersectionObserver | null = null;
+
+  /** Exposes the shared URL normalizer to the template. */
+  readonly resolveUrl = resolveUrl;
 
   /* ── Interactive Claim Pressure Chart Controls ── */
   /* ── Interactive Claim Pressure Chart Controls ── */
@@ -1181,14 +1185,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   openListing(row: FeedRow): void {
-    window.open(row.listingUrl, '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(row.listingUrl), '_blank', 'noopener,noreferrer');
     this.listingService.recordClick(row.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [row.listingId]: count }));
     });
   }
 
   openListingDirect(url: string, id: number): void {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(url), '_blank', 'noopener,noreferrer');
     this.listingService.recordClick(id).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [id]: count }));
     });

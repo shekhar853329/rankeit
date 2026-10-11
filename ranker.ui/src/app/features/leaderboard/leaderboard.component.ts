@@ -17,6 +17,7 @@ import { DecimalPipe, isPlatformBrowser } from '@angular/common';
 import type * as echarts from 'echarts';
 import { Subject, catchError, combineLatest, combineLatestWith, debounceTime, distinctUntilChanged, filter, map, of, switchMap } from 'rxjs';
 import { CategoryLeaderboardResponseDto, LeaderboardEntryDto, PlatformStatsDto } from '../../core/models/leaderboard.model';
+import { resolveUrl } from '../../core/utils/url.utils';
 import { CategoryDto } from '../../core/models/category.model';
 import { DailyListingEntryDto } from '../../core/models/daily-listing.model';
 import { UrlMetadataDto } from '../../core/models/url-metadata.model';
@@ -304,6 +305,9 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   );
 
   readonly currencySymbol = '$';
+
+  /** Exposes the shared URL normalizer to the template. */
+  readonly resolveUrl = resolveUrl;
 
   readonly reigningChampion = computed<LeaderboardEntryDto | null>(() => {
     const items = this.entries();
@@ -611,7 +615,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   openChampionUrl(url: string): void {
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    if (url) window.open(resolveUrl(url), '_blank', 'noopener,noreferrer');
   }
 
   moveToClaimRank(targetAmount?: number, rank?: number): void {
@@ -697,7 +701,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   openListing(entry: LeaderboardEntryDto): void {
-    window.open(entry.listingUrl, '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(entry.listingUrl), '_blank', 'noopener,noreferrer');
     this.listingService.recordClick(entry.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
     });

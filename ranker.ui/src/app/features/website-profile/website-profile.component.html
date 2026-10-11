@@ -55,7 +55,7 @@
 
           <!-- URL & Site Name -->
           <div class="profile-url-row">
-            <a [href]="p.listingUrl" target="_blank" rel="noopener" class="btn-visit-site"
+            <a [href]="resolveUrl(p.listingUrl)" target="_blank" rel="noopener" class="btn-visit-site"
               (click)="onOutboundLinkClick(p.listingId)" [title]="'Visit ' + p.listingName">
               <span class="material-symbols-outlined text-[16px]">open_in_new</span>
               <span>{{ formatDomain(p.listingUrl) }}</span>
@@ -97,7 +97,7 @@
     </div>
     <p class="about-text">{{ p.description }}</p>
     <div class="about-link-row">
-      <a [href]="p.listingUrl" target="_blank" rel="noopener" class="btn-about-visit"
+      <a [href]="resolveUrl(p.listingUrl)" target="_blank" rel="noopener" class="btn-about-visit"
         (click)="onOutboundLinkClick(p.listingId)" [title]="'Visit ' + p.listingName">
         <span class="material-symbols-outlined text-[16px]">open_in_new</span>
         Visit {{ formatDomain(p.listingUrl) }}
@@ -113,7 +113,7 @@
         <span class="material-symbols-outlined info-icon">language</span>
         <span class="info-label">Website URL</span>
       </div>
-      <a [href]="p.listingUrl" target="_blank" rel="noopener" class="info-value info-value--link"
+      <a [href]="resolveUrl(p.listingUrl)" target="_blank" rel="noopener" class="info-value info-value--link"
         (click)="onOutboundLinkClick(p.listingId)" [title]="'Visit ' + p.listingName">
         {{ formatDomain(p.listingUrl) }}
         <span class="material-symbols-outlined text-[14px]">open_in_new</span>

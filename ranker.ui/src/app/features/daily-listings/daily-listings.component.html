@@ -120,7 +120,7 @@
           <div class="feed-row__info">
             <div class="feed-row__title-row">
               <span class="feed-row__title">{{ entry.listingName }}</span>
-              <a [href]="entry.listingUrl" target="_blank" rel="noopener noreferrer" class="feed-row__external-link"
+              <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="noopener noreferrer" class="feed-row__external-link"
                 (click)="$event.stopPropagation()" title="Visit {{ entry.listingName }}">
                 <span class="domain-text">{{ formatDomain(entry.listingUrl) }}</span>
                 <span class="material-symbols-outlined text-[13px]">open_in_new</span>

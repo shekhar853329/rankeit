@@ -9,6 +9,7 @@ import { DailyListingEntryDto, DailyListingGroupDto } from '../../core/models/da
 
 import { SeoService } from '../../core/services/seo.service';
 import { MyTransactionsComponent } from '../my-transactions/my-transactions.component';
+import { resolveUrl } from '../../core/utils/url.utils';
 
 const TOP_ENTRIES_PREVIEW = 4;
 
@@ -39,6 +40,9 @@ export class DailyListingsComponent implements OnInit {
 
   readonly previewCount = TOP_ENTRIES_PREVIEW;
   readonly showPaymentModal = signal(false);
+
+  /** Exposes the shared URL normalizer to the template. */
+  readonly resolveUrl = resolveUrl;
 
   openPaymentModal(): void {
     this.showPaymentModal.set(true);
@@ -100,7 +104,7 @@ export class DailyListingsComponent implements OnInit {
 
   /** Clicking a listing opens the product URL and records the click. */
   openListing(entry: DailyListingEntryDto): void {
-    window.open(entry.listingUrl, '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(entry.listingUrl), '_blank', 'noopener,noreferrer');
     this.listingService.recordClick(entry.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
     });
