@@ -701,9 +701,10 @@
     <aside class="sidebar-col">
       <!-- CARD 1: Reigning Champion Spotlight Trophy Card -->
       <section class="spotlight-card">
+        <div class="spotlight-card__aurora" aria-hidden="true"></div>
         <div class="spotlight-card__top">
           <span class="spotlight-badge">
-            <span class="material-symbols-outlined icon-xs">workspace_premium</span>
+            <span class="material-symbols-outlined icon-xs badge-trophy-icon">workspace_premium</span>
             {{hallOfFameMode() === 'alltime'? "Global": "Today's"}} Crown Holder
           </span>
           <div class="spotlight-stat" title="Capital spent to secure Rank #1">
@@ -717,9 +718,10 @@
           <div class="champion-hero-row champion-hero-row--link"
             (click)="reigningChampion() && openListing(reigningChampion()!)">
             <div class="champion-avatar-ring">
-              @if (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl) {
+              @if (!championAvatarFailed() && (reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl)) {
               <img [src]="reigningChampion()?.logoUrl || reigningChampion()?.faviconUrl" alt=""
-                class="champion-avatar-img" width="38" height="38" loading="lazy" decoding="async" />
+                class="champion-avatar-img" width="38" height="38" loading="lazy" decoding="async"
+                (error)="championAvatarFailed.set(true)" />
               } @else {
               <div class="champion-avatar-placeholder">
                 {{ reigningChampion()?.listingName?.charAt(0)?.toUpperCase() ?? '👑' }}

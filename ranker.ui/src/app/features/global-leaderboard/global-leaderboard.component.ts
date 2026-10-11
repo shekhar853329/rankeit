@@ -464,6 +464,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   readonly showAllRows = computed(() => !this.hasMoreProducts());
 
   private readonly leadChampion = signal<FeedRow | null>(null);
+  readonly championAvatarFailed = signal(false);
 
   readonly reigningChampion = computed<FeedRow | null>(() => {
     if (this.searchQuery().trim() && this.leadChampion()) {
