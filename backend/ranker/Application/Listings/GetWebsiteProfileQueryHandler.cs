@@ -113,8 +113,14 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
 
     /// <summary>
     /// Converts a full URL into a URL-safe slug, e.g.
-    /// "https://www.example.com/path" -> "example-com"
-    /// "https://blog.example.co.uk" -> "blog-example-co-uk"
+    /// "https://www.example.com"          -> "example-com"
+    /// "https://blog.example.co.uk"       -> "blog-example-co-uk"
+    /// "https://youtube.com/@ChannelA"    -> "youtube-com-channela"
+    /// "https://youtube.com/@ChannelB"    -> "youtube-com-channelb"
+    ///
+    /// The path is always included when present so that two listings on the
+    /// same host (e.g. two YouTube channels) each get a distinct slug without
+    /// needing a hardcoded list of "path-based" platforms.
     /// </summary>
     internal static string SlugifyUrl(string url)
     {
@@ -125,8 +131,23 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
             // Strip "www." prefix
             if (host.StartsWith("www."))
                 host = host[4..];
-            // Replace dots with hyphens
-            return host.Replace('.', '-');
+
+            var hostSlug = host.Replace('.', '-');
+
+            // Include the path when it carries identity information (i.e. it is not
+            // empty or a bare "/").  Strip the leading slash, lowercase, and replace
+            // every run of non-alphanumeric characters with a single hyphen.
+            var path = uri.AbsolutePath.Trim('/');
+            if (path.Length > 0)
+            {
+                var pathSlug = System.Text.RegularExpressions.Regex
+                    .Replace(path.ToLowerInvariant(), @"[^a-z0-9]+", "-")
+                    .Trim('-');
+                if (pathSlug.Length > 0)
+                    return $"{hostSlug}-{pathSlug}";
+            }
+
+            return hostSlug;
         }
         catch
         {

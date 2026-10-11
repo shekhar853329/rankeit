@@ -714,7 +714,17 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
       if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
         clean = 'https://' + clean;
       }
-      return new URL(clean).hostname.replace(/^www\./, '').replace(/\./g, '-');
+      const parsed = new URL(clean);
+      const host = parsed.hostname.replace(/^www\./, '');
+      const hostSlug = host.replace(/\./g, '-');
+      // Always include the path when it carries identity (e.g. youtube.com/@ChannelA).
+      // This naturally handles any platform without a hardcoded list.
+      const path = parsed.pathname.replace(/^\/|\/$/g, '');
+      if (path) {
+        const pathSlug = path.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        if (pathSlug) return `${hostSlug}-${pathSlug}`;
+      }
+      return hostSlug;
     } catch {
       return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].replace(/\./g, '-');
     }

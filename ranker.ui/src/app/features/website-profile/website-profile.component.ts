@@ -195,10 +195,17 @@ export class WebsiteProfileComponent implements OnInit {
 
   getProfileSlug(url: string): string {
     try {
-      const host = new URL(url.includes('://') ? url : 'https://' + url).hostname
-        .replace(/^www\./, '')
-        .replace(/\./g, '-');
-      return host;
+      const parsed = new URL(url.includes('://') ? url : 'https://' + url);
+      const host = parsed.hostname.replace(/^www\./, '');
+      const hostSlug = host.replace(/\./g, '-');
+      // Always include the path when it carries identity (e.g. youtube.com/@ChannelA).
+      // This naturally handles any platform without a hardcoded list.
+      const path = parsed.pathname.replace(/^\/|\/$/g, '');
+      if (path) {
+        const pathSlug = path.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        if (pathSlug) return `${hostSlug}-${pathSlug}`;
+      }
+      return hostSlug;
     } catch {
       return url.replace(/\./g, '-');
     }
