@@ -24,7 +24,8 @@ relative paths and produce `https://rankup.cyou/zcoder.in` instead of `https://z
 | `website-profile.component.ts` | Import `resolveUrl`; fix `openExternalUrl()`; expose `resolveUrl` as class property |
 | `website-profile.component.html` | Wrap all 3 `[href]="p.listingUrl"` with `resolveUrl()` |
 | `category-directory.component.ts` | Import `resolveUrl as resolveUrlUtil`; delegate local `resolveUrl()` method to the shared util |
+| `listing-detail.component.ts` | Import `resolveUrl`; fix `openExternalUrl()` — was missing from initial pass (review finding `listing-detail-bare-window-open`) |
 
 ## Verification Result
 
-`npx tsc --noEmit` — **0 errors**
+`npx tsc --noEmit` — **0 errors** (confirmed after review-iteration fix)

@@ -9,6 +9,7 @@ import { LeaderboardService } from '../../core/services/leaderboard.service';
 import { ModalService } from '../../core/services/modal.service';
 import { SignalrService } from '../../core/services/signalr.service';
 import { SeoService } from '../../core/services/seo.service';
+import { resolveUrl } from '../../core/utils/url.utils';
 
 @Component({
   selector: 'app-listing-detail',
@@ -165,7 +166,7 @@ export class ListingDetailComponent implements OnInit {
   }
 
   openExternalUrl(url: string, id: number): void {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(url), '_blank', 'noopener,noreferrer');
     this.listingService.recordClick(id).subscribe((count) => {
       const current = this.listing();
       if (current && current.listingId === id) {
