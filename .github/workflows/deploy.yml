@@ -3,10 +3,7 @@ name: Build & Deploy to Ubuntu Server
 on:
   push:
     branches:
-      - Production-V1
-      - Production-V1-DODOPayments
-      - main
-      - feature/postgres-migration
+      - master
   workflow_dispatch:
 
 concurrency:
