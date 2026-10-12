@@ -20,6 +20,13 @@ public class CreateDodoSessionCommandHandler(
         CreateDodoSessionCommand command,
         CancellationToken ct)
     {
+        if (command.AmountInMinorUnits <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(command.AmountInMinorUnits),
+                command.AmountInMinorUnits,
+                "Amount must be greater than zero.");
+        }
         if (command.AmountInMinorUnits < MinAmountInMinorUnits)
         {
             throw new ArgumentOutOfRangeException(

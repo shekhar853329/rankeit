@@ -315,6 +315,13 @@
     </div>
 
     <!-- ── Validation Warnings / Errors ────────────────────────── -->
+    @if (isAmountInvalid()) {
+    <div class="alert-box alert-box--error">
+      <span class="material-symbols-outlined icon-sm">error</span>
+      <span>Transaction amount must be greater than zero.</span>
+    </div>
+    }
+
     @if (isBelowMinimum()) {
     <div class="alert-box alert-box--warning">
       <span class="material-symbols-outlined icon-sm">warning</span>

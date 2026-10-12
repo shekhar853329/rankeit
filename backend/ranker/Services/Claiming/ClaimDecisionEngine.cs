@@ -14,6 +14,10 @@ public enum ClaimFailureReason
     /// All-time mode only: the target amount does not exceed the listing's all-time cumulative total paid.
     /// </summary>
     AllTimeCumulativeTooLow,
+    /// <summary>
+    /// The transaction amount is zero or negative, which is never valid.
+    /// </summary>
+    InvalidAmount,
 }
 
 public sealed record ClaimDecision(

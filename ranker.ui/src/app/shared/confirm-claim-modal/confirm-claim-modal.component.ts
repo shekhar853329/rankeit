@@ -136,6 +136,11 @@ export class ConfirmClaimModalComponent implements OnInit {
     return Math.max(0, Math.round((target - credit) * 100) / 100);
   });
 
+  protected readonly isAmountInvalid = computed(() => {
+    const target = this.targetAmount();
+    return target !== null && target <= 0;
+  });
+
   protected readonly isBelowMinimum = computed(() => {
     const target = this.targetAmount();
     if (target === null || target === undefined) return false;
@@ -412,6 +417,12 @@ export class ConfirmClaimModalComponent implements OnInit {
     const email = this.ownerEmail().trim();
     const domain = this.domainUrl().trim();
     const categoryId = this.selectedCategoryId();
+
+    if (target === null || target <= 0) {
+      this.quoteError.set('Transaction amount must be greater than zero.');
+      this.toast.show('Transaction amount must be greater than zero.', 'error');
+      return;
+    }
 
     if (!target || !email || !domain) {
       this.toast.show('Please fill in domain, email, and target placement amount.', 'error');

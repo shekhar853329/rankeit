@@ -25,6 +25,8 @@ public class PaymentsController(
         [FromBody] CreateDodoSessionRequestDto request,
         CancellationToken ct)
     {
+        if (request.AmountInMinorUnits <= 0)
+            return BadRequest(new { error = "Amount must be greater than zero." });
         if (request.AmountInMinorUnits < 100)
             return BadRequest(new { error = "Amount must be at least 100 minor units (1.00)." });
 

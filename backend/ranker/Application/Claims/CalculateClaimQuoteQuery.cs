@@ -28,6 +28,14 @@ public class CalculateClaimQuoteQueryHandler(
             return Failure(request.CategoryId, "CategoryNotFound", "Category not found.");
         }
 
+        if (request.TargetClaimAmount <= 0)
+        {
+            return Failure(
+                request.CategoryId,
+                "InvalidAmount",
+                "Target claim amount must be greater than zero.");
+        }
+
         // Find existing listing if ListingId is specified or if ListingUrl is specified
         Listing? existingListing = null;
         if (request.ListingId.HasValue)

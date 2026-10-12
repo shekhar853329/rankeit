@@ -17,7 +17,8 @@
         <div class="spinner-core"></div>
       </div>
       <h2 class="state-title">Verifying Your Payment...</h2>
-      <p class="state-desc">Securely confirming your transaction with Dodo Payments and activating your placement on the leaderboard.</p>
+      <p class="state-desc">Securely confirming your transaction with Dodo Payments and activating your placement on the
+        leaderboard.</p>
     </div>
 
     <!-- ── State: Cancelled ── -->
@@ -57,7 +58,8 @@
         <span class="status-pill status-pill--error">Transaction Declined</span>
       </div>
       <h2 class="state-title">Payment Failed</h2>
-      <p class="state-desc">Your payment could not be processed by the payment gateway. Please check your card details or try an alternate method.</p>
+      <p class="state-desc">Your payment could not be processed by the payment gateway. Please check your card details
+        or try an alternate method.</p>
       <div class="actions-group">
         <a [routerLink]="fromUrl()" class="btn-action-pri">
           <span class="material-symbols-outlined text-[16px]">refresh</span>
@@ -185,22 +187,18 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="actions-group">
+      <div class="actions-subrow">
         <a [routerLink]="leaderboardLink()" class="btn-action-pri btn--block">
           <span class="material-symbols-outlined text-[17px]">rocket_launch</span>
-          <span>View Listing &amp; Profile</span>
+          <span>View Listing</span>
           <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
         </a>
-
+        <a routerLink="/" class="btn-action-sec">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          <span>Global Leaderboard</span>
+        </a>
         <div class="actions-subrow">
-          <a [routerLink]="['/my-transactions']" [queryParams]="email() ? {email: email()} : {}" class="btn-action-sec">
-            <span class="material-symbols-outlined text-[15px]">receipt_long</span>
-            <span>My Transactions</span>
-          </a>
-          <a routerLink="/" class="btn-action-sec">
-            <span class="material-symbols-outlined text-[15px]">home</span>
-            <span>Global Leaderboard</span>
-          </a>
+
         </div>
       </div>
     </div>

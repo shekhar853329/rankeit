@@ -21,6 +21,16 @@ public class PlaceClaimCommandHandler(
 {
     public async Task<PlaceClaimResultDto> Handle(PlaceClaimCommand command, CancellationToken ct)
     {
+        if (command.TargetClaimAmount <= 0)
+        {
+            return Failure(ClaimFailureReason.InvalidAmount, "Target claim amount must be greater than zero.");
+        }
+
+        if (command.ConfirmedPaymentAmount <= 0)
+        {
+            return Failure(ClaimFailureReason.InvalidAmount, "Confirmed payment amount must be greater than zero.");
+        }
+
         var category = await categoryRepository.GetByIdAsync(command.CategoryId, ct);
         if (category is null)
         {
