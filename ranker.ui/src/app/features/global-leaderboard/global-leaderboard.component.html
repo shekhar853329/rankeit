@@ -31,6 +31,25 @@
             <button type="button" class="stepper-btn" (click)="incrementClaimAmount()" aria-label="Increase amount"
               id="placement-increment">+</button>
           </div>
+          <div class="stepper-info-wrap">
+            <span class="stepper-info-btn" aria-label="Local currency payment information">
+              <span class="stepper-info-text">Local currency</span>
+              <span class="material-symbols-outlined">info</span>
+            </span>
+            <div class="currency-tooltip" role="tooltip" aria-hidden="true">
+              <div class="currency-tooltip__arrow"></div>
+              <div class="currency-tooltip__inner">
+                <span class="material-symbols-outlined currency-tooltip__icon">currency_exchange</span>
+                <div class="currency-tooltip__content">
+                  <span class="currency-tooltip__title">Pay in your local currency</span>
+                  <span class="currency-tooltip__desc">UPI (INR ₹), EUR €, GBP £, CAD $, AUD $ &amp; 150+ more</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
           @if (claimPrice(); as minRank1) {
           <span class="headline-badge-rank1" title="Amount required to claim Rank #1 in this category">
             Cat-#1: {{ currencySymbol() }}{{ minRank1 }}
