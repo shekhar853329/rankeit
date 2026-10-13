@@ -361,7 +361,7 @@
                   </a>
                   <span class="meta-chip meta-chip--clicks">
                     <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
-                    {{ row.clickCount | number }} clicks today
+                    {{ row.clickCount | number }} clicks
                   </span>
                   <a [routerLink]="['/website', slugifyUrl(row.listingUrl)]" class="meta-chip meta-chip--profile"
                     (click)="$event.stopPropagation()">
