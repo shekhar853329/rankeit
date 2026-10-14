@@ -11,6 +11,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'website/:slug', renderMode: RenderMode.Server },
   { path: 'daily', renderMode: RenderMode.Server },
   { path: 'analytics', renderMode: RenderMode.Server },
+  { path: 'about', renderMode: RenderMode.Prerender },
   { path: 'rules', renderMode: RenderMode.Prerender },
   { path: 'terms', renderMode: RenderMode.Prerender },
   { path: 'privacy', renderMode: RenderMode.Prerender },

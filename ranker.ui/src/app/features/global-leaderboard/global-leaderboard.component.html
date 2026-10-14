@@ -3,6 +3,7 @@
        TOP COMMAND & URGENCY HERO STATION
        ═══════════════════════════════════════════════════════════ -->
   <section class="hero-station">
+    <h1 class="visually-hidden">Live Product Leaderboard: Rank Your Website, App or Channel</h1>
     <!-- Ambient decorative orbs (isolated in dedicated overflow-clipped wrapper) -->
     <div class="hero-station__orbs-wrap" aria-hidden="true">
       <div class="hero-station__orb hero-station__orb--primary"></div>
@@ -13,10 +14,10 @@
       <!-- ── Central Claim Top Row: Headline + Stepper & Live Ranking Metadata ── -->
       <div class="hero-top-row">
         <div class="headline-title-wrap">
-          <h1 class="headline-title">
+          <div class="headline-title">
             {{ timeMode() === 'today' ? "Today's" : "Global" }} Claim <span class="headline-rank-tag">{{ spotRank() !==
               null ? '#' + spotRank() : '#…' }}</span> for
-          </h1>
+          </div>
           <div class="placement-stepper">
             <button type="button" class="stepper-btn" (click)="decrementClaimAmount()" aria-label="Decrease amount"
               id="placement-decrement">−</button>
@@ -331,7 +332,7 @@
               <!-- Main Payload Body -->
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="noopener" class="payload-title"
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer" class="payload-title"
                     (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
@@ -354,7 +355,7 @@
                     <span class="material-symbols-outlined icon-xxs">schedule</span>
                     Active
                   </span> -->
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="noopener" class="meta-chip meta-chip--link"
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer" class="meta-chip meta-chip--link"
                     (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
@@ -409,7 +410,7 @@
 
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="noopener" class="payload-title"
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer" class="payload-title"
                     (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
@@ -424,7 +425,7 @@
                   <span class="meta-chip meta-chip--category">
                     {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
                   </span>
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="noopener" class="meta-chip meta-chip--link"
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer" class="meta-chip meta-chip--link"
                     (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
@@ -477,7 +478,7 @@
 
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="noopener" class="payload-title"
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer" class="payload-title"
                     (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
@@ -492,7 +493,7 @@
                   <span class="meta-chip meta-chip--category">
                     {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
                   </span>
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="noopener" class="meta-chip meta-chip--link"
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer" class="meta-chip meta-chip--link"
                     (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
@@ -539,7 +540,7 @@
               <div class="compact-meta-row">
                 <span>{{ row.clickCount | number }} clicks</span>
                 <span>•</span>
-                <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="noopener" class="compact-link"
+                <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer" class="compact-link"
                   (click)="$event.stopPropagation()">
                   {{ formatDomain(row.listingUrl) }}
                 </a>
@@ -863,67 +864,6 @@
           }
         </div>
       </section>
-
-      <!-- CARD 3: Live Activity Ticker (Instant Stream) -->
-      <section class="side-card">
-        <div class="side-card__header">
-          <div class="side-card__title-group">
-            <span class="pulse-beacon">
-              <span class="pulse-beacon__ping"></span>
-              <span class="pulse-beacon__dot"></span>
-            </span>
-            <h3 class="side-card__title">Live Activity Feed</h3>
-          </div>
-          <span class="side-card__status text-secondary">Auto-syncing</span>
-        </div>
-
-        <div class="stream-list">
-          @for (event of liveEvents(); track $index) {
-          <div class="stream-item">
-            <span class="material-symbols-outlined stream-item__icon" [class]="event.iconClass">
-              {{ event.icon }}
-            </span>
-            <div class="stream-item__info">
-              <span class="stream-item__text">
-                <strong>{{ event.user }}</strong> {{ event.action }}
-              </span>
-              <span class="stream-item__time">{{ event.timeAgo }} • {{ event.highlight }}</span>
-            </div>
-          </div>
-          }
-        </div>
-      </section>
-
-      <!-- CARD 4: Transparent Economics & Discovery ROI -->
-      <!-- <section class="side-card side-card--muted">
-        <div class="side-card__header">
-          <div class="side-card__title-group">
-            <span class="material-symbols-outlined icon-sm text-secondary">verified</span>
-            <h3 class="side-card__title">Transparent Discovery Metrics</h3>
-          </div>
-        </div>
-        <p class="economics-desc">
-          Rankings operate as a transparent sponsored ranking leaderboard with a continuous daily reset window.
-        </p>
-
-        <div class="economics-grid">
-          <div class="econ-box">
-            <span class="econ-label">Average CPC Today</span>
-            <span class="econ-val">{{ currencySymbol() }}{{ (platformStats()?.averageCpcToday ?? 0.78) | number: '1.2-2'
-              }}</span>
-          </div>
-          <div class="econ-box">
-            <span class="econ-label">Direct CTR Rate</span>
-            <span class="econ-val text-secondary">{{ (platformStats()?.directCtrRate ?? 4.2) | number: '1.1-1'
-              }}%</span>
-          </div>
-        </div>
-
-        <div class="economics-footer">
-          <span>Live Protocol Audit {{ platformStats()?.protocolAuditId || '#AUDIT-1' }}</span>
-          <a routerLink="/rules" class="ledger-link">View Ledger</a>
-        </div>
-      </section> -->
     </aside>
   </div>
 </div>
