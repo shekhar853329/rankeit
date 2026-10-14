@@ -11,6 +11,7 @@ export interface SeoConfig {
   keywords?: string[];
   schema?: Record<string, unknown> | Array<Record<string, unknown>>;
   breadcrumbs?: Array<{ name: string; url?: string }>;
+  robots?: string;
 }
 
 const DEFAULT_ORIGIN = 'https://rankup.cyou';
@@ -46,7 +47,7 @@ export class SeoService {
 
     // 2. Primary Meta Tags
     this.metaService.updateTag({ name: 'description', content: config.description });
-    this.metaService.updateTag({ name: 'robots', content: 'index, follow, max-snippet:-1, max-image-preview:large' });
+    this.metaService.updateTag({ name: 'robots', content: config.robots ?? 'index, follow, max-snippet:-1, max-image-preview:large' });
 
     if (config.keywords && config.keywords.length > 0) {
       this.metaService.updateTag({ name: 'keywords', content: config.keywords.join(', ') });
