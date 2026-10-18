@@ -114,7 +114,7 @@ export class DailyListingsComponent implements OnInit {
 
   /** Clicking a listing opens the product URL and records the click. */
   openListing(entry: DailyListingEntryDto): void {
-    window.open(resolveUrl(entry.listingUrl), '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(entry.listingUrl), '_blank', 'noopener');
     this.listingService.recordClick(entry.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
     });
