@@ -19,6 +19,27 @@ export class AboutComponent implements OnInit {
       description:
         'RankUp is a live product leaderboard built by indie developer Shekhar. Learn how our transparent, claim-based ranking system helps founders, makers, and creators gain real visibility.',
       url: 'https://rankup.cyou/about',
+      breadcrumbs: [
+        { name: 'Home', url: 'https://rankup.cyou' },
+        { name: 'About RankUp' },
+      ],
+      schema: {
+        '@type': 'AboutPage',
+        name: 'About RankUp',
+        description:
+          'RankUp is a live product leaderboard built by indie developer Shekhar. Learn how our transparent, claim-based ranking system helps founders, makers, and creators gain real visibility.',
+        url: 'https://rankup.cyou/about',
+        mainEntity: {
+          '@type': 'Organization',
+          name: 'RankUp',
+          url: 'https://rankup.cyou/',
+          founder: {
+            '@type': 'Person',
+            name: 'Shekhar',
+            jobTitle: 'Founder & Developer',
+          },
+        },
+      },
     });
   }
 }

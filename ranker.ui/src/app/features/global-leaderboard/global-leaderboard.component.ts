@@ -639,18 +639,28 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
         'RankUp: real-time sponsored product discovery across 50+ curated categories. Feature your product and claim the #1 spot in your vertical.',
       url: 'https://rankup.cyou/',
       keywords: ['product leaderboard', 'startup ranking', 'live rankings', 'sponsored placement', 'product discovery', 'top products'],
-      schema: {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'RankUp',
-        url: 'https://rankup.cyou/',
-        description: 'Real-time sponsored rankings and product discovery across every category.',
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: 'https://rankup.cyou/categories?q={search_term_string}',
-          'query-input': 'required name=search_term_string',
+      schema: [
+        {
+          '@type': 'WebSite',
+          name: 'RankUp',
+          url: 'https://rankup.cyou/',
+          description: 'Real-time sponsored rankings and product discovery across 50+ curated categories.',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://rankup.cyou/categories?q={search_term_string}',
+            'query-input': 'required name=search_term_string',
+          },
         },
-      },
+        {
+          '@type': 'WebApplication',
+          name: 'RankUp Live Leaderboard',
+          url: 'https://rankup.cyou/',
+          applicationCategory: 'BusinessApplication',
+          operatingSystem: 'All',
+          description:
+            'Real-time claim-based product discovery platform with live rankings and continuous placement transparency.',
+        },
+      ],
     });
 
     this.startCountdownTimer();
