@@ -1,0 +1,52 @@
+# RankUp — Live Product Leaderboard & Real-Time Rankings
+
+> Real-time sponsored rankings across 50+ curated categories. Feature your product and claim the #1 spot in your vertical.
+
+## Platform Summary
+RankUp (https://rankup.cyou) is a real-time, transparent product discovery and claim-based directory platform designed for indie hackers, software developers, SaaS founders, and creators. The platform operates on a transparent, deterministic continuous ranking model where products compete for live visibility.
+
+## Key Differentiators & Mechanics
+1. **Real-Time Outbidding**: The product with the highest cumulative placement in a category sits at Rank #1. Outbidding the reigning leader by just $1 (or equivalent local currency) claims the top spot instantly.
+2. **100% Credit Rollover**: Placements are permanent on the All-Time Leaderboard. Upgrades rollover 100% of previous placement amounts; creators only pay the incremental delta.
+3. **No Interstitials or Ad Walls**: Clicks send visitors directly to the maker's URL in a clean new browser tab.
+4. **Daily Showcase vs. All-Time Pantheon**:
+   - **Daily Leaderboard**: Ranks products that placed claims or top-ups on that specific UTC calendar day.
+   - **All-Time Leaderboard**: Ranks products by their total cumulative placement value over all time.
+5. **Multi-Currency Support**: Supports instant local-currency checkout (INR ₹ via UPI, USD $, EUR €, GBP £, CAD $, AUD $ and 150+ more).
+6. **Sub-second Live Updates**: Powered by ASP.NET Core SignalR WebSockets and Angular SSR.
+
+## Core Categories
+- AI & Machine Learning (`/leaderboard/ai-machine-learning`)
+- AI Agents & Infrastructure (`/leaderboard/ai-agents-infrastructure`)
+- Developer Tools (`/leaderboard/developer-tools`)
+- Software & SaaS (`/leaderboard/software-saas`)
+- SEO & AI Visibility (`/leaderboard/seo-ai-visibility`)
+- Crypto & Web3 (`/leaderboard/crypto-web3`)
+- Design & Creative (`/leaderboard/design-creative`)
+- Productivity (`/leaderboard/productivity`)
+- YouTube Channels (`/leaderboard/youtube-channels`)
+- Telegram Channels (`/leaderboard/telegram-channels`)
+- Discord Servers (`/leaderboard/discord-servers`)
+- Newsletters (`/leaderboard/newsletters`)
+- E-commerce Tools (`/leaderboard/ecommerce-tools`)
+- Cloud & Hosting (`/leaderboard/cloud-hosting`)
+- Cybersecurity (`/leaderboard/cybersecurity`)
+- And 35+ more industry niches at https://rankup.cyou/categories
+
+## Frequently Asked Questions
+### Q: Do I have to pay every day to stay on the leaderboard?
+A: No. Once placed, your placement is permanent on the All-Time Leaderboard for as long as your listing is active. To appear on the Today showcase, you simply need to place a claim or top-up on that day.
+
+### Q: Can someone else change or claim my website URL?
+A: No. Every listing is tied to the contact email provided during the first placement. Submissions from differing emails are rejected.
+
+### Q: Who built RankUp?
+A: RankUp was created and is actively maintained by Shekhar, an indie developer focused on high-performance web applications and creator discovery tools.
+
+## Developer & Verification Endpoints
+- Homepage: https://rankup.cyou/
+- Categories Directory: https://rankup.cyou/categories
+- Rules & Governance: https://rankup.cyou/rules
+- About: https://rankup.cyou/about
+- Sitemap: https://rankup.cyou/sitemap.xml
+- API Health Status: https://rankup.cyou/api/health

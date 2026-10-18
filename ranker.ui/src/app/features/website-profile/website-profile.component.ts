@@ -68,7 +68,6 @@ export class WebsiteProfileComponent implements OnInit {
             ],
             schema: [
               {
-                '@context': 'https://schema.org',
                 '@type': 'WebSite',
                 name: result.listingName,
                 url: result.listingUrl,
@@ -76,23 +75,14 @@ export class WebsiteProfileComponent implements OnInit {
                 image: result.logoUrl || result.faviconUrl || undefined,
               },
               {
-                '@context': 'https://schema.org',
                 '@type': 'SoftwareApplication',
                 name: result.listingName,
                 url: result.listingUrl,
                 applicationCategory: result.categoryName,
                 description: desc,
                 operatingSystem: 'All',
-                aggregateRating: {
-                  '@type': 'AggregateRating',
-                  ratingValue: Math.max(4.5, 5 - (result.currentRankInCategory - 1) * 0.1).toFixed(1),
-                  bestRating: '5',
-                  worstRating: '1',
-                  ratingCount: Math.max(1, result.clickCount),
-                },
               },
               {
-                '@context': 'https://schema.org',
                 '@type': 'WebPage',
                 name: `${result.listingName} – Website Profile`,
                 url: `https://rankup.cyou/website/${result.slug}`,
@@ -106,19 +96,6 @@ export class WebsiteProfileComponent implements OnInit {
                   '@type': 'WebSite',
                   name: result.listingName,
                   url: result.listingUrl,
-                },
-                breadcrumb: {
-                  '@type': 'BreadcrumbList',
-                  itemListElement: [
-                    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://rankup.cyou' },
-                    {
-                      '@type': 'ListItem',
-                      position: 2,
-                      name: result.categoryName,
-                      item: `https://rankup.cyou/leaderboard/${result.categorySlug}`,
-                    },
-                    { '@type': 'ListItem', position: 3, name: result.listingName },
-                  ],
                 },
               },
             ],

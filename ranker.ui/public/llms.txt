@@ -4,11 +4,15 @@
 
 RankUp is a transparent product discovery and sponsored directory platform allowing products, projects, and creators to secure real-time ranked placement across categories and daily listings.
 
+## Full Context for LLMs
+- [Complete Platform Guide](https://rankup.cyou/llms-full.txt): Comprehensive markdown documentation of platform mechanics, ranking algorithms, 50+ categories, and rules.
+
 ## Core Navigation Links
 - [Global Leaderboard](https://rankup.cyou/): Real-time live sponsored rankings, stats, and active top spots across all categories.
 - [Category Directory](https://rankup.cyou/categories): Browse top categories, niches, and featured products.
 - [Daily Listings](https://rankup.cyou/daily): Today's active claims, sponsored placements, and highest performers.
 - [Rules & Guidelines](https://rankup.cyou/rules): How sponsored placement calculation and directory rankings work.
+- [About RankUp](https://rankup.cyou/about): Background on the platform and founder Shekhar.
 - [Contact Support](https://rankup.cyou/contact): Feedback, support, and inquiries.
 - [Terms of Service](https://rankup.cyou/terms): Platform terms and conditions.
 - [Privacy Policy](https://rankup.cyou/privacy): Privacy policy and data disclosures.

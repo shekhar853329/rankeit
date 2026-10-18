@@ -398,9 +398,12 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
           description: `Browse real-time ${catName} rankings on RankUp. Verified live placements, transparent ranking algorithms, and active competition for the #1 spot in ${catName}.`,
           url: `https://rankup.cyou/leaderboard/${catSlug}`,
           keywords: [catName, `${catName} rankings`, `${catName} leaderboard`, 'product discovery', 'top products'],
-          ...(hasListings ? {} : { robots: 'noindex, follow' }),
+          breadcrumbs: [
+            { name: 'Home', url: 'https://rankup.cyou' },
+            { name: 'Categories', url: 'https://rankup.cyou/categories' },
+            { name: catName },
+          ],
           schema: {
-            '@context': 'https://schema.org',
             '@type': 'ItemList',
             name: `Top ${catName} Products on RankUp`,
             description: `Live-ranked ${catName} products and websites on RankUp.`,

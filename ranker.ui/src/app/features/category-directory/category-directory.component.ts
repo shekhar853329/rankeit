@@ -58,6 +58,17 @@ export class CategoryDirectoryComponent implements OnInit {
       description: 'Explore 50+ curated product categories and competitive arenas on RankUp. Discover top-ranked tools, developer software, AI infrastructure, and SaaS startups.',
       url: 'https://rankup.cyou/categories',
       keywords: ['category directory', 'software categories', 'top tools directory', 'curated leaderboards'],
+      breadcrumbs: [
+        { name: 'Home', url: 'https://rankup.cyou' },
+        { name: 'Categories' },
+      ],
+      schema: {
+        '@type': 'CollectionPage',
+        name: 'Category Directory & Industry Arenas',
+        description:
+          'Explore 50+ curated product categories and competitive arenas on RankUp. Discover top-ranked tools, developer software, AI infrastructure, and SaaS startups.',
+        url: 'https://rankup.cyou/categories',
+      },
     });
 
     this.parentSlug.set(this.route.snapshot.paramMap.get('parentSlug'));

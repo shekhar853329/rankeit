@@ -57,6 +57,16 @@ export class DailyListingsComponent implements OnInit {
       title: "Today's Featured Placements & Daily Listing Feed",
       description: "Track today's live promotional activity, new product claims, and daily featured leaders on RankUp.",
       url: 'https://rankup.cyou/daily',
+      breadcrumbs: [
+        { name: 'Home', url: 'https://rankup.cyou' },
+        { name: "Today's Showcase" },
+      ],
+      schema: {
+        '@type': 'CollectionPage',
+        name: "Today's Featured Placements & Daily Listing Feed",
+        description: "Track today's live promotional activity, new product claims, and daily featured leaders on RankUp.",
+        url: 'https://rankup.cyou/daily',
+      },
     });
 
     this.load(1, false);
