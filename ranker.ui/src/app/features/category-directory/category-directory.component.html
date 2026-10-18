@@ -160,7 +160,7 @@
           <!-- Sector King Banner -->
           @if (card.topEntries[0]) {
           <a class="sector-king-banner sector-king-banner--clickable" [href]="resolveUrl(card.topEntries[0].listingUrl)"
-            target="_blank" rel="sponsored nofollow noopener noreferrer" (click)="onListingClick($event, card.topEntries[0])"
+            target="_blank" rel="sponsored nofollow noopener" (click)="onListingClick($event, card.topEntries[0])"
             [title]="'Visit ' + (card.topEntries[0].siteName || card.topEntries[0].listingName) + ' (' + card.topEntries[0].listingUrl + ')'">
             <div class="sector-king-banner__left">
               <div class="king-avatar" [class.king-avatar--alt]="i === 1" [class.king-avatar--alt2]="i === 2">
@@ -271,7 +271,7 @@
           <div class="arena-leaders">
             @if (card.topEntries.length > 0) {
             @for (entry of card.topEntries; track entry.listingId; let rankIdx = $index) {
-            <a class="arena-leader-row" [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener noreferrer"
+            <a class="arena-leader-row" [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
               (click)="onListingClick($event, entry)"
               [title]="'Visit ' + (entry.siteName || entry.listingName) + ' (' + entry.listingUrl + ')'">
               <div class="arena-leader-left">

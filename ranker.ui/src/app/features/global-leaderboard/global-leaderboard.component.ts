@@ -1202,14 +1202,14 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   openListing(row: FeedRow): void {
-    window.open(resolveUrl(row.listingUrl), '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(row.listingUrl), '_blank', 'noopener');
     this.listingService.recordClick(row.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [row.listingId]: count }));
     });
   }
 
   openListingDirect(url: string, id: number): void {
-    window.open(resolveUrl(url), '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(url), '_blank', 'noopener');
     this.listingService.recordClick(id).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [id]: count }));
     });

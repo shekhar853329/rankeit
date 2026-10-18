@@ -617,7 +617,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   openChampionUrl(url: string): void {
-    if (url) window.open(resolveUrl(url), '_blank', 'noopener,noreferrer');
+    if (url) window.open(resolveUrl(url), '_blank', 'noopener');
   }
 
   moveToClaimRank(targetAmount?: number, rank?: number): void {
@@ -703,7 +703,7 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
   }
 
   openListing(entry: LeaderboardEntryDto): void {
-    window.open(resolveUrl(entry.listingUrl), '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(entry.listingUrl), '_blank', 'noopener');
     this.listingService.recordClick(entry.listingId).subscribe((count) => {
       this.clickCounts.update((map) => ({ ...map, [entry.listingId]: count }));
     });

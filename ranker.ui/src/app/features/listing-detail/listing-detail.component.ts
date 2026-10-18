@@ -166,7 +166,7 @@ export class ListingDetailComponent implements OnInit {
   }
 
   openExternalUrl(url: string, id: number): void {
-    window.open(resolveUrl(url), '_blank', 'noopener,noreferrer');
+    window.open(resolveUrl(url), '_blank', 'noopener');
     this.listingService.recordClick(id).subscribe((count) => {
       const current = this.listing();
       if (current && current.listingId === id) {
