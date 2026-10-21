@@ -1,6 +1,7 @@
 :host {
   display: block;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .category-arena-page {
@@ -2324,5 +2325,53 @@ html.dark {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------
+   MOBILE RESPONSIVE OVERRIDES  (max-width: 767px)
+   -------------------------------------------------------------- */
+
+/* 1. Hide chart card on mobile */
+@media (max-width: 767px) {
+  .liquidity-chart-card {
+    display: none !important;
+  }
+}
+
+/* 2. Compact entry card overflow fix on very small screens */
+@media (max-width: 479px) {
+  .compact-entry-card {
+    .compact-details {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .compact-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .compact-entry-right {
+    flex-shrink: 0;
+    max-width: 120px;
+  }
+
+  .compact-btn {
+    font-size: 0.68rem;
+    padding: 0.28rem 0.45rem;
+    white-space: nowrap;
+  }
+}
+
+/* 3. Countdown badge trim on smallest screens */
+@media (max-width: 479px) {
+  .countdown-badge {
+    &__sep,
+    &__utc {
+      display: none;
+    }
   }
 }
