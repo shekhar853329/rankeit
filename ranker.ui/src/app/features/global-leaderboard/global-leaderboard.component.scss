@@ -1,10 +1,11 @@
-/* ============================================================
+﻿/* ============================================================
    RankUp – Global Leaderboard (Apex Dynamic Claim Matrix)
    ============================================================ */
 
 :host {
   display: block;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .visually-hidden {
@@ -1399,6 +1400,26 @@ html.dark {
         }
       }
     }
+
+    @media (max-width: 767px) {
+      width: 100%;
+      justify-content: space-between;
+
+      .search-box {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+  }
+}
+
+.stage-count {
+  font-size: 0.78rem;
+  line-height: 1.2;
+  color: var(--color-on-surface-variant);
+
+  @media (max-width: 767px) {
+    font-size: 0.72rem;
   }
 }
 
@@ -1422,12 +1443,6 @@ html.dark {
   font-size: 0.7rem;
   font-weight: 700;
   line-height: 1.15;
-}
-
-.stage-count {
-  font-size: 0.78rem;
-  line-height: 1.2;
-  color: var(--color-on-surface-variant);
 }
 
 .feed-list {
@@ -3548,4 +3563,63 @@ img.product-avatar {
 
 .text-on-surface {
   color: var(--color-on-surface) !important;
+}
+/* --------------------------------------------------------------
+   MOBILE RESPONSIVE OVERRIDES  (max-width: 767px)
+   -------------------------------------------------------------- */
+
+/* 1. Hide chart card on mobile */
+@media (max-width: 767px) {
+  .liquidity-chart-card {
+    display: none !important;
+  }
+}
+
+/* 2. Category filter chips - bigger touch targets on mobile */
+@media (max-width: 767px) {
+  .cat-chip {
+    min-height: 36px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+  }
+
+  .filter-ribbon {
+    padding: 0.25rem 0;
+  }
+}
+
+/* 3. Compact rank card overflow fix on very small screens */
+@media (max-width: 479px) {
+  .compact-rank-card {
+    &__left {
+      min-width: 0;
+      flex: 1 1 0;
+      overflow: hidden;
+    }
+
+    &__right {
+      flex-shrink: 0;
+      max-width: 120px;
+    }
+  }
+
+  .compact-price {
+    font-size: 0.82rem;
+  }
+
+  .compact-claim-btn {
+    font-size: 0.68rem;
+    padding: 0.28rem 0.45rem;
+    white-space: nowrap;
+  }
+}
+
+/* 4. Countdown badge trim on smallest screens */
+@media (max-width: 479px) {
+  .countdown-badge {
+    &__sep,
+    &__utc {
+      display: none;
+    }
+  }
 }
