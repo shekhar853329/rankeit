@@ -1,7 +1,6 @@
 :host {
   display: block;
   width: 100%;
-  overflow-x: hidden;
 }
 
 .category-arena-page {
@@ -795,8 +794,28 @@ html.dark {
   &__left {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
-    flex-wrap: wrap;
+    width: 100%;
+
+    @media (min-width: 768px) {
+      width: auto;
+      justify-content: flex-start;
+    }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+
+    @media (min-width: 768px) {
+      width: auto;
+      justify-content: flex-end;
+      gap: 0.65rem;
+    }
   }
 }
 
@@ -2332,46 +2351,433 @@ html.dark {
    MOBILE RESPONSIVE OVERRIDES  (max-width: 767px)
    -------------------------------------------------------------- */
 
-/* 1. Hide chart card on mobile */
+/* Responsive button text helpers */
+.btn-text-short {
+  display: inline;
+}
+.btn-text-long {
+  display: none;
+}
+@media (min-width: 640px) {
+  .btn-text-short {
+    display: none;
+  }
+  .btn-text-long {
+    display: inline;
+  }
+}
+
+/* 1. Global layout containment & container padding */
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.arena-hero {
+  overflow: hidden;
+  contain: paint;
+
+  &__orbs-wrap {
+    overflow: hidden;
+    contain: paint;
+    pointer-events: none;
+  }
+}
+
+.spotlight-card {
+  overflow: hidden;
+  contain: paint;
+}
+
+/* 2. Chart card hidden on mobile for clean vertical flow */
 @media (max-width: 767px) {
   .liquidity-chart-card {
     display: none !important;
   }
 }
 
-/* 2. Compact entry card overflow fix on very small screens */
-@media (max-width: 479px) {
-  .compact-entry-card {
-    .compact-details {
-      min-width: 0;
-      overflow: hidden;
+/* 3. Category Arena Mobile Optimization */
+@media (max-width: 767px) {
+  .category-arena-page {
+    padding: 0.5rem 0.5rem 2rem 0.5rem;
+    gap: 0.6rem;
+  }
+
+  .breadcrumb-nav {
+    flex-wrap: wrap;
+    row-gap: 0.2rem;
+    font-size: 0.76rem;
+  }
+
+  .breadcrumb-current {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .arena-hero {
+    border-radius: 0.85rem;
+
+    &__inner {
+      padding: 0.65rem 0.75rem;
+      gap: 0.45rem;
+    }
+  }
+
+  .hero-top-row {
+    gap: 0.4rem;
+    width: 100%;
+  }
+
+  .headline-title-wrap {
+    gap: 0.35rem 0.45rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .headline-title {
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  .placement-stepper {
+    padding: 2px 3px;
+    border-radius: 0.5rem;
+  }
+
+  .stepper-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 0.4rem;
+    font-size: 1rem;
+  }
+
+  .stepper-display-wrap {
+    min-width: 34px;
+    padding: 0 0.25rem;
+  }
+
+  .stepper-input,
+  .stepper-currency {
+    font-size: 1.05rem;
+  }
+
+  .stepper-info-btn {
+    height: 28px;
+    padding: 0 7px;
+
+    .stepper-info-text {
+      font-size: 0.7rem;
     }
 
-    .compact-title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .material-symbols-outlined {
+      font-size: 0.85rem;
     }
+  }
+
+  .headline-badge-rank1 {
+    font-size: 0.64rem;
+    padding: 2px 5px;
+  }
+
+  .countdown-badge {
+    padding: 0.18rem 0.5rem;
+    font-size: 0.7rem;
+    gap: 0.25rem;
+
+    &__icon {
+      font-size: 13px;
+    }
+
+    &__time {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Form & Command bar mobile ergonomics */
+  .command-bar {
+    gap: 0.35rem;
+    width: 100%;
+
+    &__field {
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.6rem;
+      min-height: 46px;
+    }
+  }
+
+  .field-input {
+    font-size: 16px !important; /* Prevents unwanted iOS Safari viewport auto-zoom */
+  }
+
+  .claim-submit-btn {
+    min-height: 44px;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  /* Feed header & time pills */
+  .feed-header {
+    gap: 0.45rem;
+
+    &__left {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  .feed-title {
+    font-size: 1.05rem;
+  }
+
+  .feed-count {
+    font-size: 0.72rem;
+  }
+
+  /* Podium cards (#1, #2, #3) */
+  .podium-card {
+    padding: 0.55rem 0.7rem;
+    border-radius: 0.85rem;
+    overflow: hidden;
+    contain: paint;
+
+    &__body {
+      gap: 0.35rem;
+    }
+
+    &__left {
+      gap: 0.5rem;
+    }
+
+    &__right {
+      padding-top: 0.35rem;
+      gap: 0.4rem;
+    }
+  }
+
+  .avatar-box {
+    width: 32px;
+    height: 32px;
+  }
+
+  .rank-badge {
+    &--gold,
+    &--silver,
+    &--copper,
+    &--bronze {
+      width: 28px;
+      height: 28px;
+      font-size: 0.85rem;
+      border-radius: 0.5rem;
+    }
+  }
+
+  .item-title {
+    font-size: 0.86rem;
+    word-break: break-word;
+  }
+
+  .chips-row {
+    gap: 2.5px;
+  }
+
+  .chip {
+    font-size: 0.63rem;
+    padding: 1px 4.5px;
+  }
+
+  .price-box {
+    .price-label {
+      font-size: 0.56rem;
+    }
+
+    .price-val {
+      font-size: 1.05rem;
+    }
+  }
+
+  .claim-action-btn {
+    padding: 0.32rem 0.65rem;
+    font-size: 0.72rem;
+    min-height: 32px;
+    white-space: nowrap;
+    border-radius: 0.5rem;
+    gap: 3px;
+
+    .icon-sm {
+      font-size: 14px;
+    }
+  }
+
+  /* Compact entry cards (#4+) */
+  .compact-entry-card {
+    padding: 0.45rem 0.6rem;
+    gap: 0.45rem;
+    border-radius: 0.65rem;
+  }
+
+  .compact-entry-left {
+    min-width: 0;
+    flex: 1 1 0;
+    overflow: hidden;
+    gap: 0.45rem;
+  }
+
+  .compact-num {
+    width: 24px;
+    height: 24px;
+    font-size: 0.74rem;
+    border-radius: 0.4rem;
+  }
+
+  .compact-title {
+    font-size: 0.82rem;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .compact-meta {
+    font-size: 0.66rem;
+    gap: 3px;
   }
 
   .compact-entry-right {
+    gap: 0.45rem;
     flex-shrink: 0;
-    max-width: 120px;
+  }
+
+  .compact-price {
+    font-size: 0.85rem;
+    font-weight: 800;
+    white-space: nowrap;
   }
 
   .compact-btn {
-    font-size: 0.68rem;
-    padding: 0.28rem 0.45rem;
+    padding: 0.28rem 0.55rem;
+    font-size: 0.72rem;
+    min-height: 28px;
+    font-weight: 700;
     white-space: nowrap;
+    border-radius: 0.4rem;
+  }
+
+  /* Empty arena card */
+  .empty-state {
+    padding: 1.75rem 1rem;
+    border-radius: 1rem;
+    gap: 0.6rem;
+
+    .empty-icon {
+      font-size: 32px;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    p {
+      font-size: 0.8rem;
+    }
+
+    .btn {
+      width: 100%;
+      max-width: 280px;
+      min-height: 38px;
+      font-size: 0.84rem;
+    }
+  }
+
+  /* Sidebar cards on mobile */
+  .spotlight-card {
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.95rem;
+  }
+
+  .spotlight-claim-btn {
+    min-height: 38px;
+    width: 100%;
+    font-size: 0.78rem;
+  }
+
+  .side-card {
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.95rem;
+  }
+
+  .trending-name {
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.82rem;
+  }
+
+  .trending-count {
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Pagination */
+  .pagination-row {
+    padding: 0.4rem 0;
+    gap: 0.4rem;
+  }
+
+  .btn-page {
+    min-height: 34px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  .page-text {
+    font-size: 0.72rem;
   }
 }
 
-/* 3. Countdown badge trim on smallest screens */
-@media (max-width: 479px) {
+/* 4. Extra-narrow screens (<= 380px) */
+@media (max-width: 380px) {
+  .headline-title {
+    font-size: 0.98rem;
+  }
+
+  .breadcrumb-current {
+    max-width: 110px;
+  }
+
+  .compact-title {
+    max-width: 100px;
+  }
+
   .countdown-badge {
     &__sep,
     &__utc {
       display: none;
+    }
+  }
+}
+
+/* 5. Tooltip positioning constraint on mobile screens */
+@media (max-width: 520px) {
+  .currency-tooltip {
+    left: 50%;
+    width: min(300px, calc(100vw - 32px));
+    transform: translateX(-50%) translateY(4px);
+
+    &__arrow {
+      display: none;
+    }
+
+    &__inner {
+      width: 100%;
+      white-space: normal;
+      box-sizing: border-box;
+      padding: 0.5rem 0.75rem;
     }
   }
 }

@@ -1010,7 +1010,7 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
       }
       // Focus the search input after the dropdown panel renders
       setTimeout(() => {
-        this.categorySearchInputRef?.nativeElement.focus();
+        this.categorySearchInputRef?.nativeElement.focus({ preventScroll: true });
       }, 0);
     }
   }

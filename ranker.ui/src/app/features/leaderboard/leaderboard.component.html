@@ -141,6 +141,8 @@
               <span class="pulse-dot"></span>
               Live Order
             </span>
+          </div>
+          <div class="feed-header__right">
             <div class="time-pills">
               <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
                 (click)="setTimeMode('alltime')" id="cat-feed-time-alltime"
@@ -154,9 +156,7 @@
                 Today
               </button>
             </div>
-          </div>
-          <div class="feed-header__right">
-            <span class="feed-count">{{ totalCount() }} competitors</span>
+            <span class="feed-count">{{ totalCount() }} {{ totalCount() === 1 ? 'competitor' : 'competitors' }}</span>
           </div>
         </div>
 
@@ -200,10 +200,12 @@
                 </div>
 
                 <div class="avatar-box">
-                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName || entry.listingName).charAt(0).toUpperCase() }}</div>
+                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName ||
+                    entry.listingName).charAt(0).toUpperCase() }}</div>
                   @if (entry.logoUrl || entry.faviconUrl) {
                   <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="38" height="38"
-                    fetchpriority="high" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
+                    fetchpriority="high" decoding="async" (load)="$any($event.target).classList.add('loaded')"
+                    (error)="onListingFaviconError($event)" />
                   }
                   <span class="live-beacon">
                     <span class="live-beacon__ping"></span>
@@ -213,8 +215,8 @@
 
                 <div class="info-box">
                   <div class="title-row">
-                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="item-title"
-                      (click)="$event.stopPropagation()">
+                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                      class="item-title" (click)="$event.stopPropagation()">
                       {{ entry.siteName || entry.listingName }}
                     </a>
                     <span class="material-symbols-outlined verified-icon">verified</span>
@@ -227,8 +229,8 @@
                       <span class="material-symbols-outlined icon-xxs">local_fire_department</span>
                       {{ clickCountFor(entry) | number }} clicks
                     </span>
-                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="chip chip--link"
-                      (click)="$event.stopPropagation()">
+                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                      class="chip chip--link" (click)="$event.stopPropagation()">
                       <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                       {{ formatDomain(entry.listingUrl) }}
                     </a>
@@ -262,15 +264,17 @@
               <div class="podium-card__left">
                 <div class="rank-badge rank-badge--silver">#2</div>
                 <div class="avatar-box">
-                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName || entry.listingName).charAt(0).toUpperCase() }}</div>
+                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName ||
+                    entry.listingName).charAt(0).toUpperCase() }}</div>
                   @if (entry.logoUrl || entry.faviconUrl) {
                   <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="38" height="38"
-                    loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
+                    loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')"
+                    (error)="onListingFaviconError($event)" />
                   }
                 </div>
                 <div class="info-box">
-                  <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="item-title"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="item-title" (click)="$event.stopPropagation()">
                     {{ entry.siteName || entry.listingName }}
                   </a>
                   @if (entry.description) {
@@ -278,8 +282,8 @@
                   }
                   <div class="chips-row">
                     <span class="chip">{{ clickCountFor(entry) | number }} clicks</span>
-                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="chip chip--link"
-                      (click)="$event.stopPropagation()">
+                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                      class="chip chip--link" (click)="$event.stopPropagation()">
                       {{ formatDomain(entry.listingUrl) }}
                     </a>
                     <a [routerLink]="['/website', slugifyUrl(entry.listingUrl)]" class="chip chip--profile"
@@ -311,15 +315,17 @@
               <div class="podium-card__left">
                 <div class="rank-badge rank-badge--copper rank-badge--bronze">#3</div>
                 <div class="avatar-box">
-                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName || entry.listingName).charAt(0).toUpperCase() }}</div>
+                  <div class="avatar-placeholder" aria-hidden="true">{{ (entry.siteName ||
+                    entry.listingName).charAt(0).toUpperCase() }}</div>
                   @if (entry.logoUrl || entry.faviconUrl) {
                   <img [src]="entry.logoUrl || entry.faviconUrl" alt="" class="avatar-img" width="38" height="38"
-                    loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
+                    loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')"
+                    (error)="onListingFaviconError($event)" />
                   }
                 </div>
                 <div class="info-box">
-                  <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="item-title"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="item-title" (click)="$event.stopPropagation()">
                     {{ entry.siteName || entry.listingName }}
                   </a>
                   @if (entry.description) {
@@ -327,8 +333,8 @@
                   }
                   <div class="chips-row">
                     <span class="chip">{{ clickCountFor(entry) | number }} clicks</span>
-                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="chip chip--link"
-                      (click)="$event.stopPropagation()">
+                    <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                      class="chip chip--link" (click)="$event.stopPropagation()">
                       {{ formatDomain(entry.listingUrl) }}
                     </a>
                     <a [routerLink]="['/website', slugifyUrl(entry.listingUrl)]" class="chip chip--profile"
@@ -362,8 +368,8 @@
                 <div class="compact-meta">
                   <span>{{ clickCountFor(entry) | number }} clicks</span>
                   <span>•</span>
-                  <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="compact-link"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(entry.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="compact-link" (click)="$event.stopPropagation()">
                     {{ formatDomain(entry.listingUrl) }}
                   </a>
                   <span>•</span>
@@ -381,7 +387,8 @@
                 entry.currentClaimAmount | number: '1.0-0' }}</span>
               <button type="button" class="compact-btn"
                 (click)="moveToClaimRank(entry.currentClaimAmount + minClaimIncrement(), entry.rank); $event.stopPropagation()">
-                Claim This Position
+                <span class="btn-text-short">Claim</span>
+                <span class="btn-text-long">Claim This Position</span>
               </button>
             </div>
           </article>
