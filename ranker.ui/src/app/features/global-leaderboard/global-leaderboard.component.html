@@ -126,8 +126,7 @@
             <div class="custom-dropdown-panel" (click)="$event.stopPropagation()" role="listbox">
               <div class="custom-dropdown-search">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" class="search-input" placeholder="Search categories..."
-                  #categorySearchInput
+                <input type="text" class="search-input" placeholder="Search categories..." #categorySearchInput
                   [value]="categorySearchQuery()" (input)="onCategorySearch($event)"
                   (click)="$event.stopPropagation()" />
                 @if (categorySearchQuery()) {
@@ -203,7 +202,7 @@
     <div class="category-carousel">
       <button type="button" class="cat-chip" [class.cat-chip--active]="selectedSlug() === null"
         (click)="selectTab(null)">
-        <span>All Categories</span>
+        <span>All</span>
         <span class="cat-chip__count">{{ allCategoriesCount() }}</span>
       </button>
 
@@ -235,20 +234,22 @@
           </span>
         </div>
         <div class="stage-header__right">
-          <div class="time-pills">
-            <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
-              (click)="setTimeMode('today')" id="view-today-btn">
-              <span class="pulse-dot"></span>
-              <span>Today</span>
-            </button>
-            <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
-              (click)="setTimeMode('alltime')" id="view-alltime-btn">
-              <span class="material-symbols-outlined icon-sm">military_tech</span>
-              <span>All-Time</span>
-            </button>
+          <div class="stage-header__filter-row">
+            <div class="time-pills">
+              <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'today'"
+                (click)="setTimeMode('today')" id="view-today-btn">
+                <span class="pulse-dot"></span>
+                <span>Today</span>
+              </button>
+              <button type="button" class="time-pill" [class.time-pill--active]="timeMode() === 'alltime'"
+                (click)="setTimeMode('alltime')" id="view-alltime-btn">
+                <span class="material-symbols-outlined icon-sm">military_tech</span>
+                <span>All-Time</span>
+              </button>
+            </div>
+            <span class="stage-count">{{ displayedRows().length }} {{ displayedRows().length === 1 ? 'project' :
+              'projects' }} {{ searchQuery().trim() ? 'found' : 'competing' }}</span>
           </div>
-          <span class="stage-count">{{ displayedRows().length }} {{ displayedRows().length === 1 ? 'project' :
-            'projects' }} {{ searchQuery().trim() ? 'found' : 'competing' }}</span>
           <div class="search-box">
             <span class="material-symbols-outlined search-box__icon">search</span>
             <input type="text" class="search-box__input" placeholder="Search maker or tag..." [value]="searchQuery()"
@@ -321,7 +322,8 @@
                 </div>
                 @if (row.logoUrl || row.faviconUrl) {
                 <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
-                  fetchpriority="high" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
+                  fetchpriority="high" decoding="async" (load)="$any($event.target).classList.add('loaded')"
+                  (error)="onListingFaviconError($event)" />
                 }
                 <span class="avatar-live-beacon">
                   <span class="avatar-live-beacon__ping"></span>
@@ -332,8 +334,8 @@
               <!-- Main Payload Body -->
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="payload-title"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="payload-title" (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
                     <span class="payload-subtitle">— {{ row.listingName }}</span>
@@ -355,8 +357,8 @@
                     <span class="material-symbols-outlined icon-xxs">schedule</span>
                     Active
                   </span> -->
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="meta-chip meta-chip--link"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="meta-chip meta-chip--link" (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
                   </a>
@@ -404,14 +406,15 @@
                 </div>
                 @if (row.logoUrl || row.faviconUrl) {
                 <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
-                  loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
+                  loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')"
+                  (error)="onListingFaviconError($event)" />
                 }
               </div>
 
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="payload-title"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="payload-title" (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
                     <span class="payload-subtitle">— {{ row.listingName }}</span>
@@ -425,8 +428,8 @@
                   <span class="meta-chip meta-chip--category">
                     {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
                   </span>
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="meta-chip meta-chip--link"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="meta-chip meta-chip--link" (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
                   </a>
@@ -472,14 +475,15 @@
                 </div>
                 @if (row.logoUrl || row.faviconUrl) {
                 <img [src]="row.logoUrl || row.faviconUrl" alt="" class="product-avatar" width="38" height="38"
-                  loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')" (error)="onListingFaviconError($event)" />
+                  loading="lazy" decoding="async" (load)="$any($event.target).classList.add('loaded')"
+                  (error)="onListingFaviconError($event)" />
                 }
               </div>
 
               <div class="payload-body">
                 <div class="payload-header">
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="payload-title"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="payload-title" (click)="$event.stopPropagation()">
                     <span>{{ row.siteName || row.listingName }}</span>
                     @if (row.siteName && row.listingName !== row.siteName) {
                     <span class="payload-subtitle">— {{ row.listingName }}</span>
@@ -493,8 +497,8 @@
                   <span class="meta-chip meta-chip--category">
                     {{ categoryIcon(row.categorySlug) }} {{ row.categoryName }}
                   </span>
-                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="meta-chip meta-chip--link"
-                    (click)="$event.stopPropagation()">
+                  <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                    class="meta-chip meta-chip--link" (click)="$event.stopPropagation()">
                     <span class="material-symbols-outlined icon-xxs">open_in_new</span>
                     {{ formatDomain(row.listingUrl) }}
                   </a>
@@ -540,8 +544,8 @@
               <div class="compact-meta-row">
                 <span>{{ row.clickCount | number }} clicks</span>
                 <span>•</span>
-                <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener" class="compact-link"
-                  (click)="$event.stopPropagation()">
+                <a [href]="resolveUrl(row.listingUrl)" target="_blank" rel="sponsored nofollow noopener"
+                  class="compact-link" (click)="$event.stopPropagation()">
                   {{ formatDomain(row.listingUrl) }}
                 </a>
                 <span>•</span>
@@ -559,7 +563,8 @@
               currencySymbol() }}{{ row.currentClaimAmount | number: '1.0-0' }}</span>
             <button type="button" class="compact-claim-btn"
               (click)="claimThisPosition(row.currentClaimAmount + incrementForCategory(row.categorySlug), row.rank); $event.stopPropagation()">
-              Claim This Position
+              <span class="btn-text-short">Claim</span>
+              <span class="btn-text-long">Claim This Position</span>
             </button>
           </div>
         </article>
