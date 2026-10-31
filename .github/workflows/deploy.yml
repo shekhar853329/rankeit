@@ -61,7 +61,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: ranker.ui/package-lock.json
 
       - name: Install Frontend Dependencies
@@ -94,11 +94,6 @@ jobs:
     needs: [build-backend, build-frontend]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
       - name: Download Backend Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -214,18 +209,6 @@ jobs:
             publish/frontend/ \
             "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/frontend/"
 
-      - name: Sync Nginx Configuration
-        env:
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
-        run: |
-          ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" \
-            "sudo tee /etc/nginx/sites-available/ranker > /dev/null && \
-             sudo rm -f /etc/nginx/sites-enabled/ranker && \
-             sudo ln -sf /etc/nginx/sites-available/ranker /etc/nginx/sites-enabled/ranker" \
-            < deploy/nginx/ranker.conf
-
       - name: Configure Permissions, Install Dependencies & Restart Services
         env:
           SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -246,10 +229,7 @@ jobs:
             cd /var/www/ranker/frontend
             npm install --omit=dev --no-audit --no-fund --cache /tmp/npm-cache
 
-            # 3. Test Nginx configuration (file already written by previous step)
-            sudo nginx -t
-
-            # 4. Restart systemd services
+            # 3. Restart systemd services
             echo "Restarting services..."
             sudo systemctl restart ranker-backend
             sudo systemctl restart ranker-frontend
