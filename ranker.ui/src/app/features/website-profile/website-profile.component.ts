@@ -7,6 +7,12 @@ import { WebsiteProfileDto, RelatedListingDto } from '../../core/models/website-
 import { ListingService } from '../../core/services/listing.service';
 import { SeoService } from '../../core/services/seo.service';
 import { resolveUrl } from '../../core/utils/url.utils';
+import { API_BASE_URL } from '../../core/config/api-config';
+
+export type BadgeStyleType = 'light' | 'dark' | 'brand' | 'compact' | 'crown';
+export type BadgeMetricType = 'category' | 'global';
+export type BadgeFormatType = 'html' | 'markdown' | 'url';
+export type BadgePreviewBgType = 'light' | 'dark' | 'checker';
 
 @Component({
   selector: 'app-website-profile',
@@ -27,6 +33,20 @@ export class WebsiteProfileComponent implements OnInit {
   readonly loading = signal(true);
   readonly notFound = signal(false);
 
+  // ── Badge Customizer State ─────────────────────────────────────────────────
+  readonly badgePanelOpen = signal(true);
+  readonly badgeStyle = signal<BadgeStyleType>('light');
+  readonly badgeMetric = signal<BadgeMetricType>('category');
+  readonly badgeFormat = signal<BadgeFormatType>('html');
+  readonly badgePreviewBg = signal<BadgePreviewBgType>('light');
+  readonly badgeCopied = signal(false);
+  readonly badgeVerifying = signal(false);
+  readonly badgeVerifyStatus = signal<'success' | 'warning' | null>(null);
+  readonly badgeVerifyMessage = signal<string | null>(null);
+  readonly previewKey = signal(Date.now());
+
+  private badgeCopyTimer: ReturnType<typeof setTimeout> | null = null;
+
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
@@ -44,6 +64,11 @@ export class WebsiteProfileComponent implements OnInit {
         this.profile.set(result);
 
         if (result) {
+          // If #1 ranked, default to crown style for maximum bragging rights
+          if (result.currentRankInCategory === 1) {
+            this.badgeStyle.set('crown');
+          }
+
           const desc =
             result.description ||
             `${result.listingName} is ranked #${result.currentRankInCategory} in ${result.categoryName} on RankUp. Visit their profile to see stats, ranking history, and similar websites.`;
@@ -175,8 +200,6 @@ export class WebsiteProfileComponent implements OnInit {
       const parsed = new URL(url.includes('://') ? url : 'https://' + url);
       const host = parsed.hostname.replace(/^www\./, '');
       const hostSlug = host.replace(/\./g, '-');
-      // Always include the path when it carries identity (e.g. youtube.com/@ChannelA).
-      // This naturally handles any platform without a hardcoded list.
       const path = parsed.pathname.replace(/^\/|\/$/g, '');
       if (path) {
         const pathSlug = path.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -186,5 +209,104 @@ export class WebsiteProfileComponent implements OnInit {
     } catch {
       return url.replace(/\./g, '-');
     }
+  }
+
+  // ── Badge Panel Methods ────────────────────────────────────────────────────
+  toggleBadgePanel(): void {
+    this.badgePanelOpen.update((v) => !v);
+  }
+
+  setBadgeStyle(s: BadgeStyleType): void {
+    this.badgeStyle.set(s);
+    this.previewKey.set(Date.now());
+    // Auto-adjust preview background if user picks dark or light style
+    if (s === 'dark') {
+      this.badgePreviewBg.set('dark');
+    } else if (s === 'light' || s === 'crown') {
+      this.badgePreviewBg.set('light');
+    }
+  }
+
+  setBadgeMetric(m: BadgeMetricType): void {
+    this.badgeMetric.set(m);
+    this.previewKey.set(Date.now());
+  }
+
+  setBadgeFormat(f: BadgeFormatType): void {
+    this.badgeFormat.set(f);
+  }
+
+  setBadgePreviewBg(bg: BadgePreviewBgType): void {
+    this.badgePreviewBg.set(bg);
+  }
+
+  /** URL for local preview rendering */
+  getBadgePreviewUrl(slug: string): string {
+    return `${API_BASE_URL}/api/badge/${encodeURIComponent(slug)}?style=${this.badgeStyle()}&metric=${this.badgeMetric()}&v=${this.previewKey()}`;
+  }
+
+  /** Production embeddable URL pointing to rankup.cyou */
+  getBadgeEmbedUrl(slug: string): string {
+    return `https://rankup.cyou/api/badge/${encodeURIComponent(slug)}?style=${this.badgeStyle()}&metric=${this.badgeMetric()}`;
+  }
+
+  getBadgeSnippet(slug: string): string {
+    const embedUrl = this.getBadgeEmbedUrl(slug);
+    const profileUrl = `https://rankup.cyou/website/${encodeURIComponent(slug)}`;
+
+    switch (this.badgeFormat()) {
+      case 'markdown':
+        return `[![Ranked on RankUp](${embedUrl})](${profileUrl})`;
+      case 'url':
+        return embedUrl;
+      case 'html':
+      default:
+        return `<a href="${profileUrl}" target="_blank" rel="noopener">\n  <img src="${embedUrl}" alt="Ranked on RankUp" />\n</a>`;
+    }
+  }
+
+  copyBadgeSnippet(slug: string): void {
+    const snippet = this.getBadgeSnippet(slug);
+    navigator.clipboard.writeText(snippet).then(() => {
+      this.badgeCopied.set(true);
+      if (this.badgeCopyTimer) clearTimeout(this.badgeCopyTimer);
+      this.badgeCopyTimer = setTimeout(() => this.badgeCopied.set(false), 2200);
+    });
+  }
+
+  verifyBadge(slug: string): void {
+    if (this.badgeVerifying()) return;
+    this.badgeVerifying.set(true);
+    this.badgeVerifyStatus.set(null);
+    this.badgeVerifyMessage.set(null);
+
+    this.listingService.verifyBadge(slug).subscribe({
+      next: (res) => {
+        this.badgeVerifying.set(false);
+        if (res.verified) {
+          const current = this.profile();
+          if (current) {
+            this.profile.set({
+              ...current,
+              badgeVerified: true,
+              badgeVerifiedAt: res.checkedAt,
+            });
+          }
+          this.badgeVerifyStatus.set('success');
+          this.badgeVerifyMessage.set('✓ Badge verified! The backlink was detected on your website.');
+          this.previewKey.set(Date.now());
+        } else {
+          this.badgeVerifyStatus.set('warning');
+          this.badgeVerifyMessage.set(
+            'We could not detect the badge link on your website homepage yet. Make sure your site HTML contains a link to your RankUp profile and try again.',
+          );
+        }
+      },
+      error: () => {
+        this.badgeVerifying.set(false);
+        this.badgeVerifyStatus.set('warning');
+        this.badgeVerifyMessage.set('Could not verify at this time. Please check your website URL and try again.');
+      },
+    });
   }
 }

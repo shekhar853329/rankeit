@@ -28,6 +28,10 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
         // PostgreSQL optimistic concurrency: maps to the built-in xmin system column
         builder.Property(l => l.Xmin).IsRowVersion();
 
+        builder.Property(l => l.BadgeVerified).HasDefaultValue(false);
+        builder.Property(l => l.BadgeVerifiedAt);
+        builder.Property(l => l.BadgeLastCheckedAt);
+
         builder.HasOne(l => l.Category)
             .WithMany(c => c.Listings)
             .HasForeignKey(l => l.CategoryId)

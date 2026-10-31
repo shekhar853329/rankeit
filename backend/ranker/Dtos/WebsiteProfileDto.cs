@@ -36,4 +36,6 @@ public sealed record WebsiteProfileDto(
     string? Description,
     string? FaviconUrl,
     string? OwnerContactEmailMasked,
-    IReadOnlyList<RelatedListingDto> SameCategoryListings);
+    IReadOnlyList<RelatedListingDto> SameCategoryListings,
+    bool BadgeVerified = false,
+    DateTimeOffset? BadgeVerifiedAt = null);

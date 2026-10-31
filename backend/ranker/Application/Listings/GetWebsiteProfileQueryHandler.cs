@@ -36,6 +36,8 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
                 l.Description,
                 l.FaviconUrl,
                 l.OwnerContactEmail,
+                l.BadgeVerified,
+                l.BadgeVerifiedAt,
                 CategoryName = l.Category!.Name,
                 CategorySlug = l.Category!.Slug,
                 CategoryIcon = l.Category!.Icon,
@@ -108,7 +110,9 @@ public class GetWebsiteProfileQueryHandler(RankerDbContext dbContext)
             listing.Description,
             listing.FaviconUrl,
             MaskEmail(listing.OwnerContactEmail),
-            sameCategoryListings);
+            sameCategoryListings,
+            listing.BadgeVerified,
+            listing.BadgeVerifiedAt);
     }
 
     /// <summary>

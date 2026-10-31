@@ -34,4 +34,6 @@ export interface WebsiteProfileDto {
   faviconUrl: string | null;
   ownerContactEmailMasked: string | null;
   sameCategoryListings: RelatedListingDto[];
+  badgeVerified?: boolean;
+  badgeVerifiedAt?: string | null;
 }
