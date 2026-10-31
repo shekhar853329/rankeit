@@ -209,6 +209,21 @@ jobs:
             publish/frontend/ \
             "${SERVER_USER}@${SERVER_HOST}:/var/www/ranker/frontend/"
 
+      - name: Sync Nginx Configuration
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          rsync -az \
+            --no-owner \
+            --no-group \
+            --no-perms \
+            --no-times \
+            -e "ssh -p ${SERVER_PORT}" \
+            deploy/nginx/ranker.conf \
+            "${SERVER_USER}@${SERVER_HOST}:/tmp/ranker.conf"
+
       - name: Configure Permissions, Install Dependencies & Restart Services
         env:
           SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -229,7 +244,14 @@ jobs:
             cd /var/www/ranker/frontend
             npm install --omit=dev --no-audit --no-fund --cache /tmp/npm-cache
 
-            # 3. Restart systemd services
+            # 3. Update Nginx configuration if changed
+            if [ -f /tmp/ranker.conf ]; then
+              sudo cp /tmp/ranker.conf /etc/nginx/sites-available/ranker
+              sudo rm -f /tmp/ranker.conf
+              sudo nginx -t
+            fi
+
+            # 4. Restart systemd services
             echo "Restarting services..."
             sudo systemctl restart ranker-backend
             sudo systemctl restart ranker-frontend

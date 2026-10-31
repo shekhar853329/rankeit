@@ -218,7 +218,8 @@ app.Use(async (context, next) =>
     if (!app.Environment.IsDevelopment() &&
         path.StartsWithSegments("/api") &&
         !path.StartsWithSegments("/api/health") &&
-        !path.StartsWithSegments("/api/sitemap"))
+        !path.StartsWithSegments("/api/sitemap") &&
+        !path.StartsWithSegments("/api/badge"))
     {
         // 1. Allow if Angular application verification header is present
         if (context.Request.Headers.TryGetValue("X-App-Client", out var clientHeader) &&

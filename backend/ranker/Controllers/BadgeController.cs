@@ -22,6 +22,7 @@ public class BadgeController(ISender sender, RankerDbContext dbContext, IHttpCli
         var svg = RenderSvg(data, style, metric);
 
         Response.Headers["Cache-Control"] = "public, max-age=600";
+        Response.Headers["Access-Control-Allow-Origin"] = "*";
         return Content(svg, "image/svg+xml");
     }
 
