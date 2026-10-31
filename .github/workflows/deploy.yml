@@ -224,7 +224,7 @@ jobs:
             --no-owner \
             --no-group \
             --no-perms \
-            --no-times \
+            --checksum \
             -e "ssh -p ${SERVER_PORT}" \
             deploy/nginx/ranker.conf \
             "${SERVER_USER}@${SERVER_HOST}:/tmp/ranker.conf"
