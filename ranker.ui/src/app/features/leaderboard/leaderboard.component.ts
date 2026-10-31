@@ -810,9 +810,9 @@ export class LeaderboardComponent implements OnInit, AfterViewInit {
 
   setChartTimePreset(preset: '1h' | '6h' | 'today' | 'all'): void {
     this.chartTimePreset.set(preset);
-    // If the user requests 'all' preset on the chart while in 'today' ranking mode,
-    // fetch 'alltime' stats from backend so the full historical timeline points are loaded
-    if (preset === 'all' && this.timeMode() === 'today') {
+    // When switching to "All" chart preset, always re-fetch stats with 'alltime' so the
+    // backend returns the full historical timeline instead of today-only data.
+    if (preset === 'all') {
       this.loadCategoryStats(this.categorySlug(), 'alltime');
     } else {
       this.updateChart();

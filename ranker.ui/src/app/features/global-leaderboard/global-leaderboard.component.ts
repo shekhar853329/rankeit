@@ -1537,7 +1537,13 @@ export class GlobalLeaderboardComponent implements OnInit, AfterViewInit {
 
   setChartTimePreset(preset: '1h' | '6h' | 'today' | 'all'): void {
     this.chartTimePreset.set(preset);
-    this.updateChart();
+    // When switching to "All" chart preset, always re-fetch stats with 'alltime' so the
+    // backend returns the full historical timeline instead of today-only data.
+    if (preset === 'all') {
+      this.loadPlatformStats(this.selectedSlug(), 'alltime');
+    } else {
+      this.updateChart();
+    }
   }
 
   private async initChart(): Promise<void> {
