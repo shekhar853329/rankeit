@@ -62,37 +62,54 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         // If listing clicks are low in dev, compute based on total impressions / visits or actual leader clicks
         var avgLeaderViews = topLeaderClicks > 0 ? topLeaderClicks : (todayVisits > 0 ? (int)(todayVisits * 0.6) : 3850);
 
-        // Retrieve claims from the past 7 days to calculate true incremental transaction volume
-        // (A re-claim only charges the difference between the new target claim and the previous claim)
+        // For 'today' mode we only need the past 7 days; for 'alltime' (chart "All" preset) we
+        // fetch every claim ever so the full historical timeline is available.
+        var isAllTimeMode = !string.Equals(request.TimeMode, "today", StringComparison.OrdinalIgnoreCase);
         var sevenDaysAgo = todayUtc.AddDays(-6);
+
         var recentClaimsQuery = dbContext.Claims
             .AsNoTracking()
             .Include(c => c.Listing)
-                .ThenInclude(l => l!.Category)
-            .Where(c => c.CreatedAt >= sevenDaysAgo);
+                .ThenInclude(l => l!.Category);
+
+        // Only restrict date range when in today mode (hourly chart / today leaderboard).
+        // For alltime we fetch all claims so the "All" chart preset shows complete history.
+        IQueryable<Claim> filteredClaimsQuery = isAllTimeMode
+            ? recentClaimsQuery
+            : recentClaimsQuery.Where(c => c.CreatedAt >= sevenDaysAgo);
 
         if (category != null)
         {
-            recentClaimsQuery = recentClaimsQuery.Where(c => c.Listing!.CategoryId == category.Id);
+            filteredClaimsQuery = filteredClaimsQuery.Where(c => c.Listing!.CategoryId == category.Id);
         }
 
-        var recentClaimsForStats = await recentClaimsQuery
+        var recentClaimsForStats = await filteredClaimsQuery
             .OrderBy(c => c.ListingId)
             .ThenBy(c => c.CreatedAt)
             .ToListAsync(ct);
 
-        // For any listing that had claims before 7 days ago, get their baseline claim amount
+        // For listings that had claims before the window start, fetch their baseline so
+        // the incremental-paid calculation is correct. Not needed in alltime mode since
+        // we already have the full history.
         var activeListingIds = recentClaimsForStats.Select(c => c.ListingId).Distinct().ToList();
-        var priorListingClaims = await dbContext.Claims
-            .AsNoTracking()
-            .Where(c => activeListingIds.Contains(c.ListingId) && c.CreatedAt < sevenDaysAgo)
-            .GroupBy(c => c.ListingId)
-            .Select(g => new
-            {
-                ListingId = g.Key,
-                LastAmount = g.OrderByDescending(c => c.CreatedAt).Select(c => c.Amount).FirstOrDefault()
-            })
-            .ToDictionaryAsync(x => x.ListingId, x => x.LastAmount, ct);
+        Dictionary<int, decimal> priorListingClaims;
+        if (isAllTimeMode)
+        {
+            priorListingClaims = new Dictionary<int, decimal>();
+        }
+        else
+        {
+            priorListingClaims = await dbContext.Claims
+                .AsNoTracking()
+                .Where(c => activeListingIds.Contains(c.ListingId) && c.CreatedAt < sevenDaysAgo)
+                .GroupBy(c => c.ListingId)
+                .Select(g => new
+                {
+                    ListingId = g.Key,
+                    LastAmount = g.OrderByDescending(c => c.CreatedAt).Select(c => c.Amount).FirstOrDefault()
+                })
+                .ToDictionaryAsync(x => x.ListingId, x => x.LastAmount, ct);
+        }
 
         var runningClaimMap = new Dictionary<int, decimal>(priorListingClaims);
         var processedClaims = new List<(Claim Claim, decimal ActualPaid)>(recentClaimsForStats.Count);
@@ -183,11 +200,13 @@ public class GetPlatformStatsQueryHandler(RankerDbContext dbContext)
         }
 
         // 7. Recent Claims Timeline (Individual claim payments with actual charged amount and resulting claim level)
-        var isToday = string.Equals(request.TimeMode, "today", StringComparison.OrdinalIgnoreCase);
-        var timelineSource = isToday ? todayProcessedClaims : processedClaims;
+        // For alltime mode we already fetched all history, so use all processedClaims; for today only show today's.
+        var timelineSource = isAllTimeMode ? processedClaims : todayProcessedClaims;
+        // Allow up to 500 points for alltime so the full history is visible on the chart.
+        var timelineTakeLimit = isAllTimeMode ? 500 : 150;
         var recentTimeline = timelineSource
             .OrderBy(x => x.Claim.CreatedAt)
-            .Take(150)
+            .Take(timelineTakeLimit)
             .Select(x => new ClaimTimelinePointDto(
                 x.Claim.Id,
                 x.Claim.ListingId,
