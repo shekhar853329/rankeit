@@ -40,5 +40,14 @@ public class Listing
     /// <summary>Optimistic-concurrency guard using PostgreSQL's built-in xmin system column.</summary>
     public uint Xmin { get; set; }
 
+    /// <summary>True when a crawl confirmed a rankup.cyou backlink on this site.</summary>
+    public bool BadgeVerified { get; set; }
+
+    /// <summary>Timestamp of the last successful badge verification crawl.</summary>
+    public DateTimeOffset? BadgeVerifiedAt { get; set; }
+
+    /// <summary>Timestamp of the last badge verification attempt (used for throttling).</summary>
+    public DateTimeOffset? BadgeLastCheckedAt { get; set; }
+
     public ICollection<Claim> Claims { get; set; } = new List<Claim>();
 }

@@ -5,6 +5,12 @@ import { API_BASE_URL } from '../config/api-config';
 import { ListingDetailDto, ListingLookupResultDto } from '../models/listing-detail.model';
 import { WebsiteProfileDto } from '../models/website-profile.model';
 
+export interface BadgeVerifyResponse {
+  verified: boolean;
+  checkedAt: string;
+  cached?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ListingService {
   private readonly http = inject(HttpClient);
@@ -29,5 +35,9 @@ export class ListingService {
       params: { categoryId: String(categoryId), url: url.trim() },
     });
   }
-}
 
+  /** Crawls the website to verify that the RankUp badge / backlink is active. */
+  verifyBadge(slug: string): Observable<BadgeVerifyResponse> {
+    return this.http.get<BadgeVerifyResponse>(`${API_BASE_URL}/api/badge/${encodeURIComponent(slug)}/verify`);
+  }
+}

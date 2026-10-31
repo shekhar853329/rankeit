@@ -48,6 +48,13 @@
             <span class="badge-rank" [class]="getRankBadgeClass(p.currentRankInCategory)">
               {{ getRankLabel(p.currentRankInCategory) }}
             </span>
+
+            @if (p.badgeVerified) {
+            <span class="badge-verified-indicator" title="RankUp backlink verified on website">
+              <span class="material-symbols-outlined text-[14px]">verified</span>
+              Badge Verified
+            </span>
+            }
           </div>
 
           <!-- Title -->
@@ -191,19 +198,213 @@
     }
   </section>
 
-  <!-- CTA Banner
-  <section class="profile-cta card">
-    <div class="cta-content">
-      <div class="cta-text">
-        <h2>Want to outrank {{ p.listingName }}?</h2>
-        <p>Claim your position in the <strong>{{ p.categoryName }}</strong> leaderboard and get your website noticed.</p>
+  <!-- Embed Badge Showcase Panel -->
+  <section class="profile-badge card" id="get-badge">
+    <div class="badge-card-header">
+      <div class="badge-header-left">
+        <div class="badge-header-icon-wrap">
+          <span class="material-symbols-outlined section-icon">verified</span>
+        </div>
+        <div>
+          <div class="badge-header-title-row">
+            <h2>Embed Your RankUp Badge</h2>
+            @if (p.badgeVerified) {
+            <span class="badge-status-pill badge-status-pill--active">
+              <span class="material-symbols-outlined text-[13px]">check_circle</span>
+              Active on Website
+            </span>
+            } @else {
+            <span class="badge-status-pill badge-status-pill--pending">
+              <span class="material-symbols-outlined text-[13px]">hourglass_empty</span>
+              Unverified Backlink
+            </span>
+            }
+          </div>
+          <p class="section-sub">Showcase your ranking on your website or GitHub README. The dynamic SVG updates automatically in real-time as your rank changes.</p>
+        </div>
       </div>
-      <a [routerLink]="['/leaderboard', p.categorySlug]" fragment="claim-rank-section" class="btn-cta">
-        <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
-        Claim Your Rank
-      </a>
+
+      <button class="btn-toggle-badge" (click)="toggleBadgePanel()" [attr.aria-expanded]="badgePanelOpen()" [title]="badgePanelOpen() ? 'Collapse panel' : 'Expand panel'">
+        <span class="material-symbols-outlined badge-chevron" [class.badge-chevron--open]="badgePanelOpen()">
+          expand_more
+        </span>
+      </button>
     </div>
-  </section> -->
+
+    @if (badgePanelOpen()) {
+    <div class="badge-panel-body">
+
+      <!-- Configuration Controls Grid -->
+      <div class="badge-controls-grid">
+        <!-- Style selector -->
+        <div class="control-group">
+          <label class="control-label">
+            <span class="material-symbols-outlined text-[14px]">palette</span>
+            Badge Theme
+          </label>
+          <div class="badge-style-tabs" role="tablist" aria-label="Badge style">
+            <button class="badge-tab" role="tab" [class.badge-tab--active]="badgeStyle() === 'light'" (click)="setBadgeStyle('light')">
+              <span class="tab-dot tab-dot--light"></span> Light
+            </button>
+            <button class="badge-tab" role="tab" [class.badge-tab--active]="badgeStyle() === 'dark'" (click)="setBadgeStyle('dark')">
+              <span class="tab-dot tab-dot--dark"></span> Dark
+            </button>
+            <button class="badge-tab" role="tab" [class.badge-tab--active]="badgeStyle() === 'brand'" (click)="setBadgeStyle('brand')">
+              <span class="tab-dot tab-dot--brand"></span> 🔥 Brand
+            </button>
+            <button class="badge-tab" role="tab" [class.badge-tab--active]="badgeStyle() === 'compact'" (click)="setBadgeStyle('compact')">
+              <span class="tab-dot tab-dot--compact"></span> 🏷️ Compact Pill
+            </button>
+            @if (p.currentRankInCategory === 1) {
+              <button class="badge-tab badge-tab--crown" role="tab" [class.badge-tab--active]="badgeStyle() === 'crown'" (click)="setBadgeStyle('crown')">
+                👑 Crown #1
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Metric selector -->
+        <div class="control-group">
+          <label class="control-label">
+            <span class="material-symbols-outlined text-[14px]">leaderboard</span>
+            Rank Metric
+          </label>
+          <div class="badge-metric-tabs" role="tablist" aria-label="Rank metric">
+            <button class="badge-tab" role="tab" [class.badge-tab--active]="badgeMetric() === 'category'" (click)="setBadgeMetric('category')">
+              Category (#{{ p.currentRankInCategory }} in {{ p.categoryName }})
+            </button>
+            <button class="badge-tab" role="tab" [class.badge-tab--active]="badgeMetric() === 'global'" (click)="setBadgeMetric('global')">
+              Global Leaderboard
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Preview Box -->
+      <div class="badge-preview-section">
+        <div class="badge-preview-topbar">
+          <div class="preview-title-wrap">
+            <span class="badge-preview-label">Live Preview</span>
+            <span class="badge-spec-pill">SVG Vector · Dynamic</span>
+          </div>
+
+          <!-- Background preview switcher -->
+          <div class="preview-bg-switcher">
+            <span class="switcher-label">Preview Background:</span>
+            <button class="btn-bg-switch" [class.btn-bg-switch--active]="badgePreviewBg() === 'light'" (click)="setBadgePreviewBg('light')" title="Light Background">
+              <span class="swatch swatch--light"></span> Light
+            </button>
+            <button class="btn-bg-switch" [class.btn-bg-switch--active]="badgePreviewBg() === 'dark'" (click)="setBadgePreviewBg('dark')" title="Dark Background">
+              <span class="swatch swatch--dark"></span> Dark
+            </button>
+            <button class="btn-bg-switch" [class.btn-bg-switch--active]="badgePreviewBg() === 'checker'" (click)="setBadgePreviewBg('checker')" title="Transparent Grid">
+              <span class="swatch swatch--checker"></span> Grid
+            </button>
+          </div>
+        </div>
+
+        <div class="badge-preview-canvas" [class]="'canvas--' + badgePreviewBg()">
+          <div class="badge-preview-wrap">
+            <img
+              [src]="getBadgePreviewUrl(p.slug)"
+              alt="Ranked on RankUp badge preview"
+              class="badge-preview-img"
+              [class.badge-preview-img--compact]="badgeStyle() === 'compact'"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Code Snippet Area -->
+      <div class="badge-snippet-section">
+        <div class="snippet-header">
+          <div class="format-tabs" role="tablist" aria-label="Snippet format">
+            <button class="format-tab" [class.format-tab--active]="badgeFormat() === 'html'" (click)="setBadgeFormat('html')">
+              HTML
+            </button>
+            <button class="format-tab" [class.format-tab--active]="badgeFormat() === 'markdown'" (click)="setBadgeFormat('markdown')">
+              Markdown (GitHub)
+            </button>
+            <button class="format-tab" [class.format-tab--active]="badgeFormat() === 'url'" (click)="setBadgeFormat('url')">
+              Image URL
+            </button>
+          </div>
+
+          <a [href]="getBadgeEmbedUrl(p.slug)" target="_blank" rel="noopener" class="btn-open-badge" title="Open live SVG in new tab">
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+            Open SVG
+          </a>
+        </div>
+
+        <div class="badge-snippet-wrap">
+          <pre class="badge-snippet"><code>{{ getBadgeSnippet(p.slug) }}</code></pre>
+          <button class="btn-copy-badge" (click)="copyBadgeSnippet(p.slug)" [class.btn-copy-badge--copied]="badgeCopied()">
+             @if (badgeCopied()) {
+               <span class="material-symbols-outlined text-[16px]">check_circle</span>
+               Copied!
+             } @else {
+               <span class="material-symbols-outlined text-[16px]">content_copy</span>
+               Copy Snippet
+             }
+          </button>
+        </div>
+      </div>
+
+      <!-- Verification Action Box -->
+      <div class="badge-verify-box">
+        <div class="verify-box-left">
+          <div class="verify-icon-wrap" [class.verify-icon-wrap--verified]="p.badgeVerified">
+            <span class="material-symbols-outlined">
+              {{ p.badgeVerified ? 'task_alt' : 'link' }}
+            </span>
+          </div>
+          <div>
+            <h3 class="verify-title">
+              {{ p.badgeVerified ? 'RankUp Backlink Verified' : 'Verify Badge on Your Website' }}
+            </h3>
+            <p class="verify-desc">
+              @if (p.badgeVerified) {
+                Verified active on your website. Your profile has earned the Verified Backlink badge on RankUp.
+                @if (p.badgeVerifiedAt) {
+                  <span class="verify-timestamp">Last checked {{ p.badgeVerifiedAt | date: 'medium' }}.</span>
+                }
+              } @else {
+                Paste the badge snippet onto your homepage HTML, then click Verify. Our crawler will confirm the link and award you the Verified Backlink badge!
+              }
+            </p>
+          </div>
+        </div>
+
+        <button
+          class="btn-verify-badge"
+          [disabled]="badgeVerifying()"
+          (click)="verifyBadge(p.slug)"
+        >
+          @if (badgeVerifying()) {
+            <span class="spinner-small"></span>
+            Verifying...
+          } @else if (p.badgeVerified) {
+            <span class="material-symbols-outlined text-[16px]">refresh</span>
+            Re-verify
+          } @else {
+            <span class="material-symbols-outlined text-[16px]">verified</span>
+            Verify Badge
+          }
+        </button>
+      </div>
+
+      @if (badgeVerifyMessage()) {
+        <div class="verify-alert" [class.verify-alert--success]="badgeVerifyStatus() === 'success'" [class.verify-alert--warning]="badgeVerifyStatus() === 'warning'">
+          <span class="material-symbols-outlined text-[18px]">
+            {{ badgeVerifyStatus() === 'success' ? 'check_circle' : 'info' }}
+          </span>
+          <span>{{ badgeVerifyMessage() }}</span>
+        </div>
+      }
+
+    </div>
+    }
+  </section>
 
   <!-- Same Category Websites -->
   @if (p.sameCategoryListings.length > 0) {

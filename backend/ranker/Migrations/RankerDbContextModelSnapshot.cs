@@ -171,6 +171,17 @@ namespace ranker.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTimeOffset?>("BadgeLastCheckedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("BadgeVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTimeOffset?>("BadgeVerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 
