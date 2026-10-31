@@ -251,12 +251,9 @@ jobs:
 
             # 3. Update Nginx configuration if changed
             if [ -f /tmp/ranker.conf ]; then
-              echo "--- Incoming ranker.conf preview (first 15 lines) ---"
-              head -15 /tmp/ranker.conf
-              echo "--- Copying to sites-available ---"
               sudo cp /tmp/ranker.conf /etc/nginx/sites-available/ranker
               sudo rm -f /tmp/ranker.conf
-              # Ensure sites-enabled symlink exists and points to sites-available
+              # Ensure sites-enabled points to sites-available (fix if it's a stale copy)
               sudo ln -sf /etc/nginx/sites-available/ranker /etc/nginx/sites-enabled/ranker
               sudo nginx -t
             fi
